@@ -46,9 +46,12 @@ protected:
 
 	bool cameramove = true;
 	
-
+	bool running = false;
 
 public:
+	void setRunning(bool b) { running = b; };
+	bool isRunning() { return running; };
+
 	PlayerStateMachine* m_pStateMachine = nullptr;
 
 	XMFLOAT3 offset{ -0.230000, 0.040000, -0.010000 }, scale{ 1.10000, 1.250000, 1.150000 };

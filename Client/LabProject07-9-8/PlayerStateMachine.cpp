@@ -316,6 +316,7 @@ public:
     PlayerStateID GetID() const override { return PlayerStateID::RunForward; }
 
     void Enter(CTerrainPlayer* player, PlayerStateMachine* stateMachine) override {
+        player->setRunning(true);
     }
 
     PlayerStateID Update(CTerrainPlayer* player, PlayerStateMachine* stateMachine, float deltaTime) override {
@@ -345,6 +346,7 @@ public:
     }
 
     void Exit(CTerrainPlayer* player, PlayerStateMachine* stateMachine) override {
+        player->setRunning(false);
     }
 };
 class RunBackwardState : public IPlayerState {
@@ -353,7 +355,7 @@ public:
     PlayerStateID GetID() const override { return PlayerStateID::RunBackward; }
 
     void Enter(CTerrainPlayer* player, PlayerStateMachine* stateMachine) override {
-        std::cout << "Entering RunBackward State\n";
+        player->setRunning(true);
     }
 
     PlayerStateID Update(CTerrainPlayer* player, PlayerStateMachine* stateMachine, float deltaTime) override {
@@ -385,7 +387,7 @@ public:
     }
 
     void Exit(CTerrainPlayer* player, PlayerStateMachine* stateMachine) override {
-        std::cout << "Exiting RunBackward State\n";
+        player->setRunning(false);
     }
 };
 class RunLeftState : public IPlayerState {
@@ -394,7 +396,7 @@ public:
     PlayerStateID GetID() const override { return PlayerStateID::RunLeft; }
 
     void Enter(CTerrainPlayer* player, PlayerStateMachine* stateMachine) override {
-        std::cout << "Entering RunLeft State\n";
+        player->setRunning(true);
     }
 
     PlayerStateID Update(CTerrainPlayer* player, PlayerStateMachine* stateMachine, float deltaTime) override {
@@ -422,7 +424,7 @@ public:
     }
 
     void Exit(CTerrainPlayer* player, PlayerStateMachine* stateMachine) override {
-        std::cout << "Exiting RunLeft State\n";
+        player->setRunning(false);
     }
 };
 class RunRightState : public IPlayerState {
@@ -431,7 +433,7 @@ public:
     PlayerStateID GetID() const override { return PlayerStateID::RunRight; }
 
     void Enter(CTerrainPlayer* player, PlayerStateMachine* stateMachine) override {
-        std::cout << "Entering RunRight State\n";
+        player->setRunning(true);
     }
 
     PlayerStateID Update(CTerrainPlayer* player, PlayerStateMachine* stateMachine, float deltaTime) override {
@@ -461,7 +463,7 @@ public:
     }
 
     void Exit(CTerrainPlayer* player, PlayerStateMachine* stateMachine) override {
-        std::cout << "Exiting RunRight State\n";
+        player->setRunning(false);
     }
 };
 
