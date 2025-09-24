@@ -13,7 +13,7 @@ ID3D12RootSignature* CPostProcessShader::CreateRootSignature(ID3D12Device* pd3dD
 
     CD3DX12_ROOT_PARAMETER rootParameters[2];
     rootParameters[0].InitAsDescriptorTable(1, &descRange, D3D12_SHADER_VISIBILITY_PIXEL);
-    rootParameters[1].InitAsConstants(1, 1, 0, D3D12_SHADER_VISIBILITY_PIXEL); // b1: 피격 강도
+    rootParameters[1].InitAsConstants(3, 1, 0, D3D12_SHADER_VISIBILITY_PIXEL);
 
     auto d3dStaticSamplers = CShader::GetStaticSamplers();
     CD3DX12_ROOT_SIGNATURE_DESC d3dRootSignatureDesc;

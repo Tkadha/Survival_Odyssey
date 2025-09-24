@@ -19,6 +19,14 @@
 #include <chrono>
 using namespace Microsoft::WRL; // 추가
 
+
+struct CB_POSTPROCESS
+{
+	float m_fHitEffectAmount;
+	float m_fSpeedEffectAmount;
+	float m_fTime;
+};
+
 struct CraftMaterial
 {
 	std::string MaterialName; // 재료 이름
@@ -347,5 +355,7 @@ private:
 public:
 	float m_fPlayerHitEffectAmount = 0.0f; // 피격 효과 강도
 	void OnPlayerHit() { m_fPlayerHitEffectAmount = 1.0f; } // 피격 시 호출
+
+	float m_fSpeedEffectAmount = 0.0f; // 속도 효과 강도
 };
 

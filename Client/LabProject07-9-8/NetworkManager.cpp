@@ -8,8 +8,8 @@
 
 short PORT = 8999; // 완성결과는 const 제외 하나의 포트가 왔다갔다 하는 형식
 const short GAME_PORT = 9000;
-char SERVER_ADDR[] = "118.221.0.109";
-//char SERVER_ADDR[] = "127.0.0.1";
+//char SERVER_ADDR[] = "118.221.0.109";
+char SERVER_ADDR[] = "127.0.0.1";
 
 void recv_callback(DWORD err, DWORD recv_size, LPWSAOVERLAPPED recv_over, DWORD sendflag)
 {
@@ -57,23 +57,6 @@ void recv_callback(DWORD err, DWORD recv_size, LPWSAOVERLAPPED recv_over, DWORD 
 void send_callback(DWORD err, DWORD sent_size, LPWSAOVERLAPPED send_over, DWORD sendflag)
 {
 	delete reinterpret_cast<OVER_EXP*>(send_over);
-}
-
-
-void NetworkManager::ReconnectToNewServer(const char* n_addr, short n_port)
-{
-	// 기존 소켓 종료
-	closesocket(server_s->m_fd);
-	Sleep(100);
-	// 새로운 소켓 생성 및 연결
-	char save_addr[20];
-	strncpy(save_addr, n_addr, sizeof(save_addr));
-	server_s = make_shared<Socket>(SocketType::Tcp);
-	server_s->Connect(Endpoint(save_addr, n_port));
-	//cout << "Reconnected to " << save_addr << ":" << n_port << endl;
-
-	// 첫 번째 데이터 수신 시작
-	do_recv();
 }
 
 NetworkManager& NetworkManager::GetInstance()

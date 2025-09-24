@@ -2351,6 +2351,19 @@ void CGameFramework::AnimateObjects()
 		m_fPlayerHitEffectAmount -= fTimeElapsed * 1.5f; // 1.5는 감쇠 속도
 		if (m_fPlayerHitEffectAmount < 0.0f) m_fPlayerHitEffectAmount = 0.0f;
 	}
+
+	if (m_pPlayer && m_pPlayer->isRunning())
+	{
+		// 달리고 있다면, 효과 강도를 1.0을 향해 서서히 증가
+		m_fSpeedEffectAmount += fTimeElapsed * 2.0f; // 2.0은 효과가 나타나는 속도
+		if (m_fSpeedEffectAmount > 1.0f) m_fSpeedEffectAmount = 1.0f;
+	}
+	else
+	{
+		// 멈추거나 걷고 있다면, 효과 강도를 0.0을 향해 서서히 감소
+		m_fSpeedEffectAmount -= fTimeElapsed * 2.0f;
+		if (m_fSpeedEffectAmount < 0.0f) m_fSpeedEffectAmount = 0.0f;
+	}
 }
 
 void CGameFramework::WaitForGpuComplete()
@@ -2506,7 +2519,14 @@ void CGameFramework::FrameAdvance()
 	m_pScene->SetGraphicsState(m_pd3dCommandList, pPostProcessShader);
 
 	m_pd3dCommandList->SetGraphicsRootDescriptorTable(0, GetOffscreenSrvGPUHandle());
-	m_pd3dCommandList->SetGraphicsRoot32BitConstants(1, 1, &m_fPlayerHitEffectAmount, 0);
+	CB_POSTPROCESS cbPostProcess;
+	cbPostProcess.m_fHitEffectAmount = m_fPlayerHitEffectAmount;
+	cbPostProcess.m_fSpeedEffectAmount = m_fSpeedEffectAmount;
+	cbPostProcess.m_fTime = m_GameTimer.GetTotalTime(); // 게임 총 경과 시간 전달
+
+
+	m_pd3dCommandList->SetGraphicsRoot32BitConstants(1, 3, &cbPostProcess, 0);
+
 
 	m_pd3dCommandList->IASetVertexBuffers(0, 1, &m_d3dFullScreenQuadVBView);
 	m_pd3dCommandList->IASetIndexBuffer(&m_d3dFullScreenQuadIBView);
