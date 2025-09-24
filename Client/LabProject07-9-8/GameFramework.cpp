@@ -3343,7 +3343,7 @@ void CGameFramework::FrameAdvance()
 				std::vector<std::tuple<int, const char*, const char*>> hpTraits = {
 					{350, "Extra Health", "Increases base max HP"},
 					{450, "HP-based Damage", "Damage increases by HP"},
-					
+					{550, "Decrease Damage", "Damage decreases from Monster"},
 				};
 
 				for (auto& [req, name, effect] : hpTraits)
@@ -3382,8 +3382,8 @@ void CGameFramework::FrameAdvance()
 			{
 				std::vector<std::tuple<int, const char*, const char*>> atkTraits = {
 					{15, "Double Damage", "50% to deal damage"},
-					{25, "Kill Heal", "Heal some HP when killing enemies"},
-					
+					{30, "Kill Heal", "Heal some HP when killing enemies"},
+					{60, "sharp sword", "double damage sword attack"},
 				};
 
 				for (auto& [req, name, effect] : atkTraits)
@@ -3401,9 +3401,9 @@ void CGameFramework::FrameAdvance()
 			if (ImGui::BeginTabItem("Speed"))
 			{
 				std::vector<std::tuple<int, const char*, const char*>> speedTraits = {
-					{15, "Extra Dash", "Gain an extra dash"},
-					{25, "Slow Resist", "Reduces duration of slowing effects"},
-					
+					{20, "Extra Dash", "Gain an extra dash"},
+					{30, "Slow Resist", "Reduces duration of slowing effects"},
+					{40, "extra damage", "increase damage by speed"},
 				};
 
 				for (auto& [req, name, effect] : speedTraits)
