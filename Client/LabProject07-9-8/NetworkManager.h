@@ -23,6 +23,19 @@ enum class SERVER_TYPE
 
 class NetworkManager
 {
+private:
+	char m_server_addr[128]; // IP 주소를 저장할 변수
+
+public:
+	void SetServerAddress(const char* addr) {
+		strncpy_s(m_server_addr, sizeof(m_server_addr), addr, _TRUNCATE);
+	}
+
+	const char* GetServerAddress() const {
+		return m_server_addr;
+	}
+
+
 public:
 	shared_ptr<Socket> server_s;
 	SERVER_TYPE s_type = SERVER_TYPE::E_LOBBY;
@@ -32,7 +45,7 @@ public:
 	mutex r_mu;
 
 public:
-	NetworkManager() = default;
+	NetworkManager();
 	~NetworkManager() = default;
 	static NetworkManager& GetInstance();
 

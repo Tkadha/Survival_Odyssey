@@ -9,7 +9,13 @@
 short PORT = 8999; // 완성결과는 const 제외 하나의 포트가 왔다갔다 하는 형식
 const short GAME_PORT = 9000;
 //char SERVER_ADDR[] = "118.221.0.109";
-char SERVER_ADDR[] = "127.0.0.1";
+//char SERVER_ADDR[] = "127.0.0.1";
+
+NetworkManager::NetworkManager()
+{
+	// 기본값으로 초기화 (입력 없을 때를 대비)
+	strncpy_s(m_server_addr, sizeof(m_server_addr), "127.0.0.1", _TRUNCATE);
+}
 
 void recv_callback(DWORD err, DWORD recv_size, LPWSAOVERLAPPED recv_over, DWORD sendflag)
 {
@@ -68,7 +74,7 @@ NetworkManager& NetworkManager::GetInstance()
 void NetworkManager::Init()
 {
 	server_s = make_shared<Socket>(SocketType::Tcp);
-	server_s->Connect(Endpoint(SERVER_ADDR, GAME_PORT));
+	server_s->Connect(Endpoint(m_server_addr, GAME_PORT));
 }
 
 void NetworkManager::do_recv()

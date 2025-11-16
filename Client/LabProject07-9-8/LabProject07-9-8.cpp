@@ -5,6 +5,7 @@
 #include "LabProject07-9-8.h"
 #include "GameFramework.h"
 #include "SoundManager.h"
+#include "NetworkManager.h"
 
 #define MAX_LOADSTRING 100
 
@@ -22,6 +23,29 @@ INT_PTR CALLBACK About(HWND, UINT, WPARAM, LPARAM);
 int APIENTRY _tWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLine, int nCmdShow){
 	UNREFERENCED_PARAMETER(hPrevInstance);
 	UNREFERENCED_PARAMETER(lpCmdLine);
+
+	char server_addr_input[128] = { 0 }; // 입력받을 IP 주소 저장용
+
+	if (::AllocConsole()) {
+		FILE* fp = nullptr;
+		freopen_s(&fp, "CONOUT$", "wt", stdout);
+		freopen_s(&fp, "CONIN$", "rt", stdin);
+		freopen_s(&fp, "CONOUT$", "wt", stderr);
+		std::ios::sync_with_stdio();
+	}
+
+	// 2. IP 주소 입력 받기
+	std::cout << "===========================================" << std::endl;
+	std::cout << "  Server Connection Setup                  " << std::endl;
+	std::cout << "===========================================" << std::endl;
+	std::cout << "Enter Server IP Address (e.g., 127.0.0.1): ";
+	std::cin >> server_addr_input;
+
+	// 3. 입력된 IP 주소를 NetworkManager에 설정
+	NetworkManager::GetInstance().SetServerAddress(server_addr_input);
+
+	// 4. 콘솔 창 닫기
+	::FreeConsole();
 
 	MSG msg;
 	HACCEL hAccelTable;
