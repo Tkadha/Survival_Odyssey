@@ -1,11 +1,7 @@
-#pragma once
+﻿#pragma once
 
-#ifdef _WIN32
 #include <Ws2tcpip.h>
-#else 
-#include <netinet/in.h>
-#include <netinet/ip.h>
-#endif
+
 
 class Endpoint
 {

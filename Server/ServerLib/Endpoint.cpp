@@ -1,4 +1,4 @@
-#include "stdafx.h"
+癤�#include "stdafx.h"
 #include "Endpoint.h"
 
 
@@ -9,7 +9,6 @@ Endpoint::Endpoint()
 
 }
 
-// address, port를 입력받아 endpoint를 준비한다.
 Endpoint::Endpoint(const char* address, int port)
 {
 	memset(&m_ipv4Endpoint, 0, sizeof(m_ipv4Endpoint));

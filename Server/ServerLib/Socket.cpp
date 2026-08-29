@@ -1,10 +1,5 @@
-#include "stdafx.h"
-#ifdef _WIN32
+﻿#include "stdafx.h"
 #include <rpc.h>
-#else
-#include <unistd.h>
-#include <sys/ioctl.h>
-#endif
 #include "Socket.h"
 #include "Endpoint.h"
 #include "SocketInit.h"
@@ -20,49 +15,27 @@ Socket::Socket(SocketType socketType)
 {
 	g_socketInit.Touch();
 
-	if(socketType==SocketType::Tcp)
-	{
-#ifdef _WIN32
+	if(socketType==SocketType::Tcp) {
 		m_fd = WSASocket(AF_INET, SOCK_STREAM, 0, NULL, 0, WSA_FLAG_OVERLAPPED);
-#else
-		m_fd = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
-#endif
 	}
-	else 
-	{
-#ifdef _WIN32
+	else {
 		m_fd = WSASocket(AF_INET, SOCK_DGRAM, 0, NULL, 0, WSA_FLAG_OVERLAPPED);
-#else
-		m_fd = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
-#endif
 	}
-
-#ifdef _WIN32
 	ZeroMemory(&m_readOverlappedStruct, sizeof(m_readOverlappedStruct));
-#endif
 }
 
 Socket::Socket(SOCKET fd)
 {
 	g_socketInit.Touch();
 	m_fd = fd;
-
-#ifdef _WIN32
 	ZeroMemory(&m_readOverlappedStruct, sizeof(m_readOverlappedStruct));
-#endif
 }
 
 Socket::Socket()
 {
-#ifdef _WIN32
 	static_assert(-1 == INVALID_SOCKET, "");
-#endif
-
 	m_fd = -1;
-
-#ifdef _WIN32
 	ZeroMemory(&m_readOverlappedStruct, sizeof(m_readOverlappedStruct));
-#endif
 }
 
 Socket::~Socket()
@@ -103,11 +76,7 @@ void Socket::SendOverlapped(void* packet)
 
 void Socket::Close()
 {
-#ifdef _WIN32
 	closesocket(m_fd);
-#else
-	close(m_fd);
-#endif
 }
 
 void Socket::Listen()
@@ -126,8 +95,6 @@ int Socket::Accept(Socket& acceptedSocket, string& errorText)
 	else
 		return 0;
 }
-
-#ifdef _WIN32
 
 bool Socket::AcceptOverlapped(Socket& acceptCandidateSocket, string& errorText)
 {
@@ -189,8 +156,6 @@ int Socket::UpdateAcceptContext(Socket& listenSocket)
 		(char*)&listenSocket.m_fd, sizeof(listenSocket.m_fd));
 }
 
-#endif // _WIN32
-
 Endpoint Socket::GetPeerAddr()
 {
 	Endpoint ret;
@@ -215,9 +180,6 @@ int Socket::Receive()
 {
 	return (int)recv(m_fd, m_recv_over.send_buf, BUFSIZE, 0);
 }
-
-#ifdef _WIN32
-
 int Socket::ReceiveOverlapped()
 {
 
@@ -228,9 +190,6 @@ int Socket::ReceiveOverlapped()
 
 	return WSARecv(m_fd, &m_recv_over.wsabuf, 1, NULL, &m_readFlags, &m_recv_over.over, NULL);
 }
-
-#endif
-
 void Socket::SetNonblocking()
 {
 	u_long val = 1;
@@ -249,7 +208,6 @@ void Socket::SetNonblocking()
 
 std::string GetLastErrorAsString()
 {
-#ifdef _WIN32
 	//Get the error message, if any.
 	DWORD errorMessageID = ::GetLastError();
 	if (errorMessageID == 0)
@@ -264,8 +222,5 @@ std::string GetLastErrorAsString()
 	//Free the buffer.
 	LocalFree(messageBuffer);
 
-#else 
-	std::string message = strerror(errno);
-#endif
 	return message;
 }

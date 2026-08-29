@@ -1,25 +1,15 @@
-#pragma once
+ï»¿#pragma once
 
-#ifdef _WIN32
 #include <winsock2.h>
 #include <windows.h>
 #include <mswsock.h>
-#else 
-#include <sys/socket.h>
-#endif
+
 
 
 #include <string>
 
-#ifndef _WIN32
-// SOCKETÀº 64bit È¯°æ¿¡¼­ 64bitÀÌ´Ù. ¹İ¸é linux¿¡¼­´Â ¿©ÀüÈ÷ 32bitÀÌ´Ù. ÀÌ Â÷ÀÌ¸¦ À§ÇÔ.
-typedef int SOCKET;
-#endif
 
-#define BUFSIZE 1024 * 4 // ÆĞÅ¶(ÇöÀç´Â ¹öÆÛ)Å©±â
-
-//#define MAX_CLIENT 100 // ÃÖ´ë Á¢¼Ó°¡´ÉÇÑ Å¬¶óÀÌ¾ğÆ® ¼ö
-//#define MAX_WORKERTHREAD 4 // ¾²·¹µå Ç®(CP°´Ã¼)¿¡ ³ÖÀ» ¾²·¹µå ¼ö
+#define BUFSIZE 1024 * 4 // íŒ¨í‚·(í˜„ì¬ëŠ” ë²„í¼)í¬ê¸°
 
 class Endpoint;
 
@@ -64,30 +54,24 @@ public:
 	~OVER_EXP() {}
 };
 
-// ¼ÒÄÏ Å¬·¡½º
+// ì†Œì¼“ í´ë˜ìŠ¤
 class Socket
 {
 public:
-	SOCKET m_fd; // ¼ÒÄÏ ÇÚµé
-
-#ifdef _WIN32
-	// AcceptEx ÇÔ¼ö Æ÷ÀÎÅÍ
+	SOCKET m_fd; // ì†Œì¼“ í•¸ë“¤
+	// AcceptEx í•¨ìˆ˜ í¬ì¸í„°
 	LPFN_ACCEPTEX AcceptEx = NULL;
-	// Overlapped I/O³ª IOCP¸¦ ¾µ ¶§¿¡¸¸ »ç¿ëµË´Ï´Ù. ÇöÀç overlapped I/O ÁßÀÌ¸é trueÀÔ´Ï´Ù.
+	// Overlapped I/Oë‚˜ IOCPë¥¼ ì“¸ ë•Œì—ë§Œ ì‚¬ìš©ë©ë‹ˆë‹¤. í˜„ì¬ overlapped I/O ì¤‘ì´ë©´ trueì…ë‹ˆë‹¤.
 	bool m_isReadOverlapped = false;
-
-	// Overlapped receive or acceptÀ» ÇÒ ¶§ »ç¿ëµÇ´Â overlapped °´Ã¼ÀÔ´Ï´Ù. 
-	// I/O ¿Ï·á Àü±îÁö´Â º¸Á¸µÇ¾î¾ß ÇÕ´Ï´Ù.
+	// Overlapped receive or acceptì„ í•  ë•Œ ì‚¬ìš©ë˜ëŠ” overlapped ê°ì²´ì…ë‹ˆë‹¤. 
+	// I/O ì™„ë£Œ ì „ê¹Œì§€ëŠ” ë³´ì¡´ë˜ì–´ì•¼ í•©ë‹ˆë‹¤.
 	WSAOVERLAPPED m_readOverlappedStruct;
-#endif
-	// Receive³ª ReceiveOverlapped¿¡ ÀÇÇØ ¼ö½ÅµÇ´Â µ¥ÀÌÅÍ°¡ Ã¤¿öÁö´Â °÷ÀÔ´Ï´Ù.
+	// Receiveë‚˜ ReceiveOverlappedì— ì˜í•´ ìˆ˜ì‹ ë˜ëŠ” ë°ì´í„°ê°€ ì±„ì›Œì§€ëŠ” ê³³ì…ë‹ˆë‹¤.
 	OVER_EXP m_recv_over = OVER_EXP();
 	u_short m_prev_remain = 0;
 
-#ifdef _WIN32
-	// overlapped ¼ö½ÅÀ» ÇÏ´Â µ¿¾È ¿©±â¿¡ recvÀÇ flags¿¡ ÁØÇÏ´Â °ªÀÌ Ã¤¿öÁı´Ï´Ù.
+	// overlapped ìˆ˜ì‹ ì„ í•˜ëŠ” ë™ì•ˆ ì—¬ê¸°ì— recvì˜ flagsì— ì¤€í•˜ëŠ” ê°’ì´ ì±„ì›Œì§‘ë‹ˆë‹¤.
 	DWORD m_readFlags = 0;
-#endif
 
 	Socket();
 	Socket(SOCKET fd);
@@ -101,22 +85,16 @@ public:
 	void Close();
 	void Listen();
 	int Accept(Socket& acceptedSocket, std::string& errorText);
-#ifdef _WIN32
 	bool AcceptOverlapped(Socket& acceptCandidateSocket, std::string& errorText);
 	int UpdateAcceptContext(Socket& listenSocket);
-#endif
 	Endpoint GetPeerAddr();
 	int Receive();
-#ifdef _WIN32
 	int ReceiveOverlapped();
-#endif
 	void SetNonblocking();
 	
 };
 
 std::string GetLastErrorAsString();
 
-#ifdef _WIN32
 #pragma comment(lib, "Ws2_32.lib")
 #pragma comment(lib, "mswsock.lib")
-#endif

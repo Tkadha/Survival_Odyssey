@@ -1,4 +1,4 @@
-#include "stdafx.h"
+ï»¿#include "stdafx.h"
 #include <iostream>
 #ifdef _DEBUG
 #pragma comment(lib,"../x64/Debug/serverlib.lib")
@@ -21,9 +21,7 @@
 
 using namespace std;
 
-#define LOBBY_PORT 8999
 #define PORT 9000
-#define DB_PORT 9001
 
 #define MIN_HEIGHT                  1055.f      
 //-----------------------------------------------
@@ -56,11 +54,11 @@ static int play_day = 0;
 
 BOOL WINAPI ConsoleHandler(DWORD dwCtrlType) {
 	if (dwCtrlType == CTRL_C_EVENT) {
-		std::cout << "\nINFO: Ctrl+C ½ÅÈ£ °¨Áö. ¼­¹ö Á¾·á ÀıÂ÷¸¦ ½ÃÀÛÇÕ´Ï´Ù..." << std::endl;
-		// Àü¿ª ÇÃ·¡±×¸¦ true·Î ¼³Á¤ÇÏ¿© ¸ğµç ·çÇÁ¸¦ Áß´Ü½ÃÅ´
+		std::cout << "\nINFO: Ctrl+C ì‹ í˜¸ ê°ì§€. ì„œë²„ ì¢…ë£Œ ì ˆì°¨ë¥¼ ì‹œì‘í•©ë‹ˆë‹¤..." << std::endl;
+		// ì „ì—­ í”Œë˜ê·¸ë¥¼ trueë¡œ ì„¤ì •í•˜ì—¬ ëª¨ë“  ë£¨í”„ë¥¼ ì¤‘ë‹¨ì‹œí‚´
 		g_is_shutting_down = true;
 
-		// ÇÚµé·¯°¡ ½ÅÈ£¸¦ Ã³¸®ÇßÀ½À» ¾Ë¸² (true¸¦ ¹İÈ¯ÇØ¾ß Á¤»ó Á¾·á ·ÎÁ÷ÀÌ ½ÇÇàµÊ)
+		// í•¸ë“¤ëŸ¬ê°€ ì‹ í˜¸ë¥¼ ì²˜ë¦¬í–ˆìŒì„ ì•Œë¦¼ (trueë¥¼ ë°˜í™˜í•´ì•¼ ì •ìƒ ì¢…ë£Œ ë¡œì§ì´ ì‹¤í–‰ë¨)
 		return TRUE;
 	}
 	return FALSE;
@@ -73,13 +71,13 @@ bool InHeilpad(float x, float z)
 
 void ProcessClientLeave(shared_ptr<PlayerClient> remoteClient)
 {
-	// ¿¡·¯ È¤Àº ¼ÒÄÏ Á¾·áÀÌ´Ù.
-	// ÇØ´ç ¼ÒÄÏÀº Á¦°ÅÇØ¹ö¸®ÀÚ. 
+	// ì—ëŸ¬ í˜¹ì€ ì†Œì¼“ ì¢…ë£Œì´ë‹¤.
+	// í•´ë‹¹ ì†Œì¼“ì€ ì œê±°í•´ë²„ë¦¬ì. 
 	std::lock_guard<std::mutex> lock(remoteClient->c_mu);
 	remoteClient->state = PC_FREE;
 	Octree::PlayerOctree.remove(remoteClient->m_id);
 
-	// ·Î±×¾Æ¿ô Á¤º¸ º¸³»±â
+	// ë¡œê·¸ì•„ì›ƒ ì •ë³´ ë³´ë‚´ê¸°
 	for(auto& cl : PlayerClient::PlayerClients) {
 		LOGOUT_PACKET s_packet;
 		s_packet.size = sizeof(LOGOUT_PACKET);
@@ -103,31 +101,31 @@ void worker_thread()
 	try {
 		while (!g_is_shutting_down)
 		{
-			// I/O ¿Ï·á ÀÌº¥Æ®°¡ ÀÖÀ» ¶§±îÁö ±â´Ù¸³´Ï´Ù.
+			// I/O ì™„ë£Œ ì´ë²¤íŠ¸ê°€ ìˆì„ ë•Œê¹Œì§€ ê¸°ë‹¤ë¦½ë‹ˆë‹¤.
 			IocpEvents readEvents;
 			iocp.Wait(readEvents, 100);
 
-			// ¹ŞÀº ÀÌº¥Æ® °¢°¢À» Ã³¸®ÇÕ´Ï´Ù.
+			// ë°›ì€ ì´ë²¤íŠ¸ ê°ê°ì„ ì²˜ë¦¬í•©ë‹ˆë‹¤.
 			for (int i = 0; i < readEvents.m_eventCount; i++)
 			{
 				auto& readEvent = readEvents.m_events[i];
 				auto p_read_over = (OVER_EXP*)readEvent.lpOverlapped;
 
 				if (readEvent.lpCompletionKey == 0 && p_read_over == nullptr) {
-					// ½º·¹µå Á¾·á
+					// ìŠ¤ë ˆë“œ ì¢…ë£Œ
 					return;
 				}
 
-				if (readEvent.lpCompletionKey == (ULONG_PTR)g_l_socket.get()) // ¸®½¼¼ÒÄÏÀÌ¸é
+				if (readEvent.lpCompletionKey == (ULONG_PTR)g_l_socket.get()) // ë¦¬ìŠ¨ì†Œì¼“ì´ë©´
 				{
 					ProcessAccept();				
 				}
 				else if (COMP_TYPE::OP_SEND == p_read_over->comp_type) {
 
 					p_read_over->m_isReadOverlapped = false;
-					delete p_read_over; // º¸³Â´Ù¸é deleteÇØÁÖ±â
+					delete p_read_over; // ë³´ëƒˆë‹¤ë©´ deleteí•´ì£¼ê¸°
 				}
-				else if (COMP_TYPE::OP_FSM_UPDATE == p_read_over->comp_type) // FSM ¾÷µ¥ÀÌÆ® ¿äÃ»ÀÌ¸é
+				else if (COMP_TYPE::OP_FSM_UPDATE == p_read_over->comp_type) // FSM ì—…ë°ì´íŠ¸ ìš”ì²­ì´ë©´
 				{
 					if (g_is_start_game) {
 						auto obj = GameObject::gameObjects[p_read_over->obj_id];
@@ -170,7 +168,7 @@ void worker_thread()
 									desiredstamina = 0;
 								}
 								if (Client->Playerstamina.compare_exchange_weak(stamina, desiredstamina)) {
-									// ÆĞÅ¶Àü¼Û
+									// íŒ¨í‚·ì „ì†¡
 									CHANGE_STAT_PACKET s_packet;
 									s_packet.size = sizeof(CHANGE_STAT_PACKET);
 									s_packet.type = static_cast<char>(E_PACKET::E_P_CHANGE_STAT);
@@ -196,7 +194,7 @@ void worker_thread()
 					for (auto& obj : results) new_vl.insert(obj->u_id);
 
 					for (auto o_id : before_vl) {
-						if (0 == new_vl.count(o_id)) {	// before¿¡¸¸ ÀÖ´Ù¸é Á¦°Å ÆĞÅ¶
+						if (0 == new_vl.count(o_id)) {	// beforeì—ë§Œ ìˆë‹¤ë©´ ì œê±° íŒ¨í‚·
 							Client->SendRemovePacket(GameObject::gameObjects[o_id]);
 						}
 						else if (1 == new_vl.count(o_id)) {
@@ -206,7 +204,7 @@ void worker_thread()
 						}
 					}
 					for (auto o_id : new_vl) {
-						if (0 == before_vl.count(o_id)) { //new¿¡¸¸ ÀÖ´Ù¸é Ãß°¡ ÆĞÅ¶
+						if (0 == before_vl.count(o_id)) { //newì—ë§Œ ìˆë‹¤ë©´ ì¶”ê°€ íŒ¨í‚·
 							if (GameObject::gameObjects[o_id]->is_alive == false) continue;
 							if (GameObject::gameObjects[o_id]->Gethp() <= 0) continue;
 							Client->SendAddPacket(GameObject::gameObjects[o_id]);
@@ -218,29 +216,29 @@ void worker_thread()
 
 					delete p_read_over;
 				}
-				else  // TCP ¿¬°á ¼ÒÄÏÀÌ¸é
+				else  // TCP ì—°ê²° ì†Œì¼“ì´ë©´
 				{					
-					// Ã³¸®ÇÒ Å¬¶óÀÌ¾ğÆ®
+					// ì²˜ë¦¬í•  í´ë¼ì´ì–¸íŠ¸
 					shared_ptr<PlayerClient> remoteClient;
 					remoteClient = PlayerClient::PlayerClients[(PlayerClient*)readEvent.lpCompletionKey];
 					if (remoteClient)
 					{
-						// ÀÌ¹Ì ¼ö½ÅµÈ »óÅÂÀÌ´Ù. ¼ö½Å ¿Ï·áµÈ °ÍÀ» ±×³É ²¨³» ¾²ÀÚ.
+						// ì´ë¯¸ ìˆ˜ì‹ ëœ ìƒíƒœì´ë‹¤. ìˆ˜ì‹  ì™„ë£Œëœ ê²ƒì„ ê·¸ëƒ¥ êº¼ë‚´ ì“°ì.
 						remoteClient->tcpConnection.m_isReadOverlapped = false;
 						int recv_buf_length = readEvent.dwNumberOfBytesTransferred;
 
 						if (recv_buf_length <= 0)
 						{
-							// ÀĞÀº °á°ú°¡ 0 Áï TCP ¿¬°áÀÌ ³¡³µ´Ù...
-							// È¤Àº À½¼ö Áï ¹º°¡ ¿¡·¯°¡ ³­ »óÅÂÀÌ´Ù...
+							// ì½ì€ ê²°ê³¼ê°€ 0 ì¦‰ TCP ì—°ê²°ì´ ëë‚¬ë‹¤...
+							// í˜¹ì€ ìŒìˆ˜ ì¦‰ ë­”ê°€ ì—ëŸ¬ê°€ ë‚œ ìƒíƒœì´ë‹¤...
 							ProcessClientLeave(remoteClient);
 						}
 						else
 						{
-							// ÀÌ¹Ì ¼ö½ÅµÈ »óÅÂÀÌ´Ù. ¼ö½Å ¿Ï·áµÈ °ÍÀ» ±×³É ²¨³» ¾²ÀÚ.
+							// ì´ë¯¸ ìˆ˜ì‹ ëœ ìƒíƒœì´ë‹¤. ìˆ˜ì‹  ì™„ë£Œëœ ê²ƒì„ ê·¸ëƒ¥ êº¼ë‚´ ì“°ì.
 							char* recv_buf = remoteClient->tcpConnection.m_recv_over.send_buf;
 
-							// ÆĞÅ¶ ÀçÁ¶¸³
+							// íŒ¨í‚· ì¬ì¡°ë¦½
 							int remain_data = recv_buf_length + remoteClient->tcpConnection.m_prev_remain;
 							while (remain_data > 0) {
 								int packet_size = recv_buf[0];
@@ -257,7 +255,7 @@ void worker_thread()
 							if (remain_data > 0)
 								memcpy(remoteClient->tcpConnection.m_recv_over.send_buf, recv_buf, remain_data);
 
-							// ´Ù½Ã ¼ö½ÅÀ» ¹ŞÀ¸·Á¸é overlapped I/O¸¦ °É¾î¾ß ÇÑ´Ù.
+							// ë‹¤ì‹œ ìˆ˜ì‹ ì„ ë°›ìœ¼ë ¤ë©´ overlapped I/Oë¥¼ ê±¸ì–´ì•¼ í•œë‹¤.
 							if (remoteClient->tcpConnection.ReceiveOverlapped() != 0
 								&& WSAGetLastError() != ERROR_IO_PENDING)
 							{
@@ -265,7 +263,7 @@ void worker_thread()
 							}
 							else
 							{
-								// I/O¸¦ °É¾ú´Ù. ¿Ï·á¸¦ ´ë±âÇÏ´Â Áß »óÅÂ·Î ¹Ù²ÙÀÚ.
+								// I/Oë¥¼ ê±¸ì—ˆë‹¤. ì™„ë£Œë¥¼ ëŒ€ê¸°í•˜ëŠ” ì¤‘ ìƒíƒœë¡œ ë°”ê¾¸ì.
 								remoteClient->tcpConnection.m_isReadOverlapped = true;
 							}
 						}
@@ -289,11 +287,11 @@ void ProcessPacket(shared_ptr<PlayerClient>& client, char* packet)
 		XMMATRIX xmmtxLightRotate = XMMatrixRotationZ(XMConvertToRadians(time_accumulator));
 		XMVECTOR xmvCurrentLightDirection = XMVector3TransformNormal(xmvBaseLightDirection, xmmtxLightRotate);
 
-		if (XMVectorGetY(xmvCurrentLightDirection) < 0.0f) // ºûÀÌ ¾Æ·¡¸¦ ÇâÇÏ¸é ³·
+		if (XMVectorGetY(xmvCurrentLightDirection) < 0.0f) // ë¹›ì´ ì•„ë˜ë¥¼ í–¥í•˜ë©´ ë‚®
 		{
 			time_accumulator = 180.f;
 		}
-		else // ºûÀÌ À§¸¦ ÇâÇÏ¸é ¹ã
+		else // ë¹›ì´ ìœ„ë¥¼ í–¥í•˜ë©´ ë°¤
 		{
 			time_accumulator = 0.f;
 		}
@@ -312,7 +310,7 @@ void ProcessPacket(shared_ptr<PlayerClient>& client, char* packet)
 	case E_PACKET::E_O_SETOBB:
 	{
 		OBJ_OBB_PACKET* r_packet = reinterpret_cast<OBJ_OBB_PACKET*>(packet);
-		if (r_packet->oid < 0) { // ÇØ´ç Å¬¶óÀÇ ÇÃ·¹ÀÌ¾î obb
+		if (r_packet->oid < 0) { // í•´ë‹¹ í´ë¼ì˜ í”Œë ˆì´ì–´ obb
 			if (OBB_Manager::obb_list.find(OBJECT_TYPE::OB_PLAYER) != OBB_Manager::obb_list.end()) {
 				client->local_obb = *OBB_Manager::obb_list[OBJECT_TYPE::OB_PLAYER];
 			}
@@ -379,7 +377,7 @@ void ProcessPacket(shared_ptr<PlayerClient>& client, char* packet)
 	case E_PACKET::E_O_HIT:
 	{
 		OBJ_HIT_PACKET* r_packet = reinterpret_cast<OBJ_HIT_PACKET*>(packet);
-		if (GameObject::gameObjects.size() < r_packet->oid) return; // Àß¸øµÈ id
+		if (GameObject::gameObjects.size() < r_packet->oid) return; // ì˜ëª»ëœ id
 		auto& obj = GameObject::gameObjects[r_packet->oid];
 		obj->Decreasehp(r_packet->damage); // hp--
 		if (obj->GetType() == OBJECT_TYPE::OB_PIG || obj->GetType() == OBJECT_TYPE::OB_COW) {
@@ -398,18 +396,18 @@ void ProcessPacket(shared_ptr<PlayerClient>& client, char* packet)
 				}
 				else if (bosshp <= (obj->_fMaxHp / 2) && !obj->_bUsedSpecialAttack) {
 					obj->SetInvincible(5.332f * 1000);
-					obj->_bUsedSpecialAttack = true; // ÇÃ·¡±×¸¦ true·Î ¼³Á¤
-					obj->ChangeState(std::make_shared<BossSpecialAttackStartState>()); // º°µµÀÇ Æ¯¼ö °ø°İ »óÅÂ
+					obj->_bUsedSpecialAttack = true; // í”Œë˜ê·¸ë¥¼ trueë¡œ ì„¤ì •
+					obj->ChangeState(std::make_shared<BossSpecialAttackStartState>()); // ë³„ë„ì˜ íŠ¹ìˆ˜ ê³µê²© ìƒíƒœ
 				}
 				else if (bosshp <= obj->_fMaxHp * 0.33f && !obj->_bTriggered33Percent) {
 					obj->SetInvincible();
-					obj->_bTriggered33Percent = true; // ÇÃ·¡±×¸¦ true·Î ¼³Á¤ÇØ ´Ù½Ã´Â ½ÇÇàµÇÁö ¾Êµµ·Ï ÇÔ
+					obj->_bTriggered33Percent = true; // í”Œë˜ê·¸ë¥¼ trueë¡œ ì„¤ì •í•´ ë‹¤ì‹œëŠ” ì‹¤í–‰ë˜ì§€ ì•Šë„ë¡ í•¨
 					obj->ChangeState(std::make_shared<BossHitState>());
 				}
-				// 3. Ã¼·Â 66% ÀÌÇÏ·Î 'Ã³À½' ¶³¾îÁ³À» ¶§
+				// 3. ì²´ë ¥ 66% ì´í•˜ë¡œ 'ì²˜ìŒ' ë–¨ì–´ì¡Œì„ ë•Œ
 				else if (bosshp <= obj->_fMaxHp * 0.66f && !obj->_bTriggered66Percent) {
 					obj->SetInvincible();
-					obj->_bTriggered66Percent = true; // ÇÃ·¡±×¸¦ true·Î ¼³Á¤
+					obj->_bTriggered66Percent = true; // í”Œë˜ê·¸ë¥¼ trueë¡œ ì„¤ì •
 					obj->ChangeState(std::make_shared<BossHitState>());
 				}
 				else
@@ -433,7 +431,7 @@ void ProcessPacket(shared_ptr<PlayerClient>& client, char* packet)
 	case E_PACKET::E_O_SETHP:
 	{
 		OBJ_HP_PACKET* r_packet = reinterpret_cast<OBJ_HP_PACKET*>(packet);
-		if (GameObject::gameObjects.size() < r_packet->oid) return; // Àß¸øµÈ id
+		if (GameObject::gameObjects.size() < r_packet->oid) return; // ì˜ëª»ëœ id
 		auto& obj = GameObject::gameObjects[r_packet->oid];
 		obj->Sethp(r_packet->hp);
 		for (auto& cl : PlayerClient::PlayerClients) {
@@ -446,7 +444,7 @@ void ProcessPacket(shared_ptr<PlayerClient>& client, char* packet)
 	case E_PACKET::E_P_SETHP:
 	{
 		SET_HP_HIT_OBJ_PACKET* r_packet = reinterpret_cast<SET_HP_HIT_OBJ_PACKET*>(packet);
-		if(r_packet->hit_obj_id < 0) return; // Àß¸øµÈ id
+		if(r_packet->hit_obj_id < 0) return; // ì˜ëª»ëœ id
 		auto o_type = GameObject::gameObjects[r_packet->hit_obj_id]->GetType();
 		client->Playerhp -= GameObject::gameObjects[r_packet->hit_obj_id]->_atk;
 		if (client->Playerhp.load() < 0) {
@@ -464,7 +462,7 @@ void ProcessPacket(shared_ptr<PlayerClient>& client, char* packet)
 		s_packet.value = client->Playerhp.load();
 		client->tcpConnection.SendOverlapped(reinterpret_cast<char*>(&s_packet));
 
-		// ÇÇ°İ ¾Ö´Ï¸ŞÀÌ¼Ç Àü¼Û
+		// í”¼ê²© ì• ë‹ˆë©”ì´ì…˜ ì „ì†¡
 		PlayerInput pi;
 		pi.Hit = true;
 		client->BroadCastHitPacket(pi);
@@ -538,7 +536,7 @@ void ProcessPacket(shared_ptr<PlayerClient>& client, char* packet)
 			{
 				auto& player = cl.second;
 				cl.second->ResetState();
-				std::vector<tree_obj*> results; // ½Ã¾ß ¹üÀ§ ³» °´Ã¼ Ã£±â
+				std::vector<tree_obj*> results; // ì‹œì•¼ ë²”ìœ„ ë‚´ ê°ì²´ ì°¾ê¸°
 				tree_obj p_obj{ -1,player->GetPosition() };
 				Octree::GameObjectOctree.query(p_obj, oct_distance, results);
 				std::unordered_set<int> new_vl;
@@ -604,7 +602,7 @@ void event_thread()
 								}
 
 								if (it.second->Playerhp.compare_exchange_weak(hp, desiredHp)) {
-									// ÆĞÅ¶Àü¼Û
+									// íŒ¨í‚·ì „ì†¡
 									CHANGE_STAT_PACKET s_packet;
 									s_packet.size = sizeof(CHANGE_STAT_PACKET);
 									s_packet.type = static_cast<char>(E_PACKET::E_P_CHANGE_STAT);
@@ -615,7 +613,7 @@ void event_thread()
 								}
 							}
 
-							EVENT::add_timer(ev, 1500); // 1.5ÃÊ ÈÄ ´Ù½Ã hp È¸º¹
+							EVENT::add_timer(ev, 1500); // 1.5ì´ˆ í›„ ë‹¤ì‹œ hp íšŒë³µ
 							break;
 						}
 					}
@@ -637,7 +635,7 @@ void event_thread()
 								}
 
 								if (it.second->Playerstamina.compare_exchange_weak(stamina, desiredstamina)) {
-									// ÆĞÅ¶Àü¼Û
+									// íŒ¨í‚·ì „ì†¡
 									CHANGE_STAT_PACKET s_packet;
 									s_packet.size = sizeof(CHANGE_STAT_PACKET);
 									s_packet.type = static_cast<char>(E_PACKET::E_P_CHANGE_STAT);
@@ -647,7 +645,7 @@ void event_thread()
 									break;
 								}
 							}
-							EVENT::add_timer(ev, 750); // 0.75ÃÊ ÈÄ ´Ù½Ã stamina È¸º¹
+							EVENT::add_timer(ev, 750); // 0.75ì´ˆ í›„ ë‹¤ì‹œ stamina íšŒë³µ
 							break;
 						}
 					}
@@ -669,7 +667,7 @@ void event_thread()
 								}
 
 								if (it.second->PlayerHunger.compare_exchange_weak(expectedHunger, desiredHunger)) {
-									// ÆĞÅ¶Àü¼Û
+									// íŒ¨í‚·ì „ì†¡
 									CHANGE_STAT_PACKET s_packet;
 									s_packet.size = sizeof(CHANGE_STAT_PACKET);
 									s_packet.type = static_cast<char>(E_PACKET::E_P_CHANGE_STAT);
@@ -679,7 +677,7 @@ void event_thread()
 									break;
 								}
 							}
-							EVENT::add_timer(ev, 5000); // 5ÃÊ¸¶´Ù Çã±â ¼Ò¸ğ						
+							EVENT::add_timer(ev, 5000); // 5ì´ˆë§ˆë‹¤ í—ˆê¸° ì†Œëª¨						
 							break;
 						}
 						
@@ -704,7 +702,7 @@ void event_thread()
 									desiredThirst = 0.0f;
 								}
 								if (it.second->PlayerThirst.compare_exchange_weak(expectedThirst, desiredThirst)) {
-									// ÆĞÅ¶Àü¼Û
+									// íŒ¨í‚·ì „ì†¡
 									CHANGE_STAT_PACKET s_packet;
 									s_packet.size = sizeof(CHANGE_STAT_PACKET);
 									s_packet.type = static_cast<char>(E_PACKET::E_P_CHANGE_STAT);
@@ -714,7 +712,7 @@ void event_thread()
 									break;
 								}
 							}
-							EVENT::add_timer(ev, 4000); // 4ÃÊ¸¶´Ù °¥Áõ ¼Ò¸ğ
+							EVENT::add_timer(ev, 4000); // 4ì´ˆë§ˆë‹¤ ê°ˆì¦ ì†Œëª¨
 							break;
 						}
 					}
@@ -734,7 +732,7 @@ void event_thread()
 								}
 
 								if (it.second->Playerhp.compare_exchange_weak(hp, desiredHp)) {
-									// ÆĞÅ¶Àü¼Û
+									// íŒ¨í‚·ì „ì†¡
 									CHANGE_STAT_PACKET s_packet;
 									s_packet.size = sizeof(CHANGE_STAT_PACKET);
 									s_packet.type = static_cast<char>(E_PACKET::E_P_CHANGE_STAT);
@@ -745,7 +743,7 @@ void event_thread()
 								}
 							}
 
-							EVENT::add_timer(ev, 1000); // 1.0ÃÊ ÈÄ ´Ù½Ã ÃâÇ÷
+							EVENT::add_timer(ev, 1000); // 1.0ì´ˆ í›„ ë‹¤ì‹œ ì¶œí˜ˆ
 							break;
 						}
 					}
@@ -765,7 +763,7 @@ void event_thread()
 								}
 
 								if (it.second->Playerstamina.compare_exchange_weak(stamina, desiredstamina)) {
-									// ÆĞÅ¶Àü¼Û
+									// íŒ¨í‚·ì „ì†¡
 									CHANGE_STAT_PACKET s_packet;
 									s_packet.size = sizeof(CHANGE_STAT_PACKET);
 									s_packet.type = static_cast<char>(E_PACKET::E_P_CHANGE_STAT);
@@ -776,7 +774,7 @@ void event_thread()
 								}
 							}
 
-							EVENT::add_timer(ev, 500); // 1.0ÃÊ ÈÄ ´Ù½Ã ÃâÇ÷
+							EVENT::add_timer(ev, 500); // 1.0ì´ˆ í›„ ë‹¤ì‹œ ì¶œí˜ˆ
 							break;
 						}
 					}
@@ -815,7 +813,7 @@ int main(int argc, char* argv[])
 {
 	SetConsoleTitle(L"GameServer");
 	if (!SetConsoleCtrlHandler(ConsoleHandler, TRUE)) {
-		std::cerr << "¿À·ù: ÄÜ¼Ö Á¦¾î ÇÚµé·¯¸¦ µî·ÏÇÒ ¼ö ¾ø½À´Ï´Ù." << std::endl;
+		std::cerr << "ì˜¤ë¥˜: ì½˜ì†” ì œì–´ í•¸ë“¤ëŸ¬ë¥¼ ë“±ë¡í•  ìˆ˜ ì—†ìŠµë‹ˆë‹¤." << std::endl;
 		return 1;
 	}
 
@@ -864,13 +862,13 @@ int main(int argc, char* argv[])
 			XMMATRIX xmmtxLightRotate = XMMatrixRotationZ(XMConvertToRadians(time_accumulator));
 			XMVECTOR xmvCurrentLightDirection = XMVector3TransformNormal(xmvBaseLightDirection, xmmtxLightRotate);
 
-			if (XMVectorGetY(xmvCurrentLightDirection) < 0.0f) // ºûÀÌ ¾Æ·¡¸¦ ÇâÇÏ¸é ³·
+			if (XMVectorGetY(xmvCurrentLightDirection) < 0.0f) // ë¹›ì´ ì•„ë˜ë¥¼ í–¥í•˜ë©´ ë‚®
 			{
 				if (g_is_night.load()) {
 					g_is_night.store(false);
 				}
 			}
-			else // ºûÀÌ À§¸¦ ÇâÇÏ¸é ¹ã
+			else // ë¹›ì´ ìœ„ë¥¼ í–¥í•˜ë©´ ë°¤
 			{
 				if (!g_is_night.load()) {
 					g_is_night.store(true);
@@ -904,7 +902,7 @@ int main(int argc, char* argv[])
 	{
 		cout << "Exception! " << e.what() << endl;
 		if (!g_is_shutting_down) {
-			g_is_shutting_down = true; // ÇÃ·¡±× ¼³Á¤ ÈÄ Á¤¸®
+			g_is_shutting_down = true; // í”Œë˜ê·¸ ì„¤ì • í›„ ì •ë¦¬
 		}
 
 	}
@@ -916,33 +914,33 @@ int main(int argc, char* argv[])
 void ProcessAccept()
 {
 	g_l_socket->m_isReadOverlapped = false;
-	// ÀÌ¹Ì acceptÀº ¿Ï·áµÇ¾ú´Ù. ±ÍÂúÁö¸¸, Win32 AcceptEx »ç¿ë¹ı¿¡ µû¸£´Â ¸¶¹«¸® ÀÛ¾÷À» ÇÏÀÚ. 
+	// ì´ë¯¸ acceptì€ ì™„ë£Œë˜ì—ˆë‹¤. ê·€ì°®ì§€ë§Œ, Win32 AcceptEx ì‚¬ìš©ë²•ì— ë”°ë¥´ëŠ” ë§ˆë¬´ë¦¬ ì‘ì—…ì„ í•˜ì. 
 	if (remoteClientCandidate->tcpConnection.UpdateAcceptContext(*g_l_socket) != 0)
 	{
-		//¸®½¼¼ÒÄÏÀ» ´İ¾Ò´øÁö ÇÏ¸é ¿©±â¼­ ¿¡·¯³¯°Å´Ù. ±×·¯¸é ¸®½¼¼ÒÄÏ ºÒ´É»óÅÂ·Î ¸¸µéÀÚ.
+		//ë¦¬ìŠ¨ì†Œì¼“ì„ ë‹«ì•˜ë˜ì§€ í•˜ë©´ ì—¬ê¸°ì„œ ì—ëŸ¬ë‚ ê±°ë‹¤. ê·¸ëŸ¬ë©´ ë¦¬ìŠ¨ì†Œì¼“ ë¶ˆëŠ¥ìƒíƒœë¡œ ë§Œë“¤ì.
 		g_l_socket->Close();
 	}
-	else // Àß Ã³¸®ÇÔ
+	else // ì˜ ì²˜ë¦¬í•¨
 	{
 		shared_ptr<PlayerClient> remoteClient = remoteClientCandidate;
 		cout << "accept - key: " << remoteClient.get() << endl;
 
-		// »õ TCP ¼ÒÄÏµµ IOCP¿¡ Ãß°¡ÇÑ´Ù.
+		// ìƒˆ TCP ì†Œì¼“ë„ IOCPì— ì¶”ê°€í•œë‹¤.
 		iocp.Add(remoteClient->tcpConnection, remoteClient.get());
 
-		// overlapped ¼ö½ÅÀ» ¹ŞÀ» ¼ö ÀÖ¾î¾ß ÇÏ¹Ç·Î ¿©±â¼­ I/O ¼ö½Å ¿äÃ»À» °É¾îµĞ´Ù.
+		// overlapped ìˆ˜ì‹ ì„ ë°›ì„ ìˆ˜ ìˆì–´ì•¼ í•˜ë¯€ë¡œ ì—¬ê¸°ì„œ I/O ìˆ˜ì‹  ìš”ì²­ì„ ê±¸ì–´ë‘”ë‹¤.
 		if (remoteClient->tcpConnection.ReceiveOverlapped() != 0
 			&& WSAGetLastError() != ERROR_IO_PENDING)
 		{
-			// ¿¡·¯. ¼ÒÄÏÀ» Á¤¸®ÇÏÀÚ. ±×¸®°í ±×³É ¹ö¸®ÀÚ.
+			// ì—ëŸ¬. ì†Œì¼“ì„ ì •ë¦¬í•˜ì. ê·¸ë¦¬ê³  ê·¸ëƒ¥ ë²„ë¦¬ì.
 			remoteClient->tcpConnection.Close();
 		}
 		else
 		{
-			// I/O¸¦ °É¾ú´Ù. ¿Ï·á¸¦ ´ë±âÇÏ´Â Áß »óÅÂ·Î ¹Ù²ÙÀÚ.
+			// I/Oë¥¼ ê±¸ì—ˆë‹¤. ì™„ë£Œë¥¼ ëŒ€ê¸°í•˜ëŠ” ì¤‘ ìƒíƒœë¡œ ë°”ê¾¸ì.
 			remoteClient->tcpConnection.m_isReadOverlapped = true;
 
-			// »õ Å¬¶óÀÌ¾ğÆ®¸¦ ¸ñ·Ï¿¡ Ãß°¡.
+			// ìƒˆ í´ë¼ì´ì–¸íŠ¸ë¥¼ ëª©ë¡ì— ì¶”ê°€.
 			remoteClient->m_id = reinterpret_cast<unsigned long long>(remoteClient.get());
 			PlayerClient::PlayerClients.insert({ remoteClient.get(), remoteClient });
 			cout << "Client joined. There are " << PlayerClient::PlayerClients.size() << " connections.\n";
@@ -959,7 +957,7 @@ void ProcessAccept()
 			s_packet.size = sizeof(LOGIN_PACKET);
 			s_packet.type = static_cast<char>(E_PACKET::E_P_LOGIN);
 			s_packet.uid = remoteClient->m_id;
-			// ³» Á¤º¸ º¸³»±â
+			// ë‚´ ì •ë³´ ë³´ë‚´ê¸°
 			remoteClient->tcpConnection.SendOverlapped(reinterpret_cast<char*>(&s_packet));
 
 			POSITION_PACKET s_pospacket;
@@ -973,60 +971,30 @@ void ProcessAccept()
 
 			remoteClient->tcpConnection.SendOverlapped(reinterpret_cast<char*>(&s_pospacket));
 
-			// ³ª¿¡°Ô Á¢¼ÓÁßÀÎ ÇÃ·¹ÀÌ¾î Á¤º¸ º¸³»±â
+			// ë‚˜ì—ê²Œ ì ‘ì†ì¤‘ì¸ í”Œë ˆì´ì–´ ì •ë³´ ë³´ë‚´ê¸°
 			for (auto& cl : PlayerClient::PlayerClients) {
-				if(cl.second.get() == remoteClient.get()) continue; // ³ª ÀÚ½ÅÀº Á¦¿ÜÇÑ´Ù.
+				if(cl.second.get() == remoteClient.get()) continue; // ë‚˜ ìì‹ ì€ ì œì™¸í•œë‹¤.
 				LOGIN_PACKET s_a_packet;
 				s_a_packet.size = sizeof(LOGIN_PACKET);
 				s_a_packet.type = static_cast<char>(E_PACKET::E_P_LOGIN);
 				s_a_packet.uid = cl.second->m_id;
 				remoteClient->tcpConnection.SendOverlapped(reinterpret_cast<char*>(&s_a_packet));
-
-				//// À§Ä¡µµ Àü¼ÛÇÏÀÚ
-				//POSITION_PACKET s_p_packet;
-				//s_p_packet.size = sizeof(POSITION_PACKET);
-				//s_p_packet.type = static_cast<unsigned char>(E_PACKET::E_P_POSITION);
-				//s_p_packet.uid = cl.second->m_id;
-				//auto& pos = cl.second->GetPosition();
-				//s_p_packet.position.x = pos.x;
-				//s_p_packet.position.y = pos.y;
-				//s_p_packet.position.z = pos.z;
-				//remoteClient->tcpConnection.SendOverlapped(reinterpret_cast<char*>(&s_p_packet));
-
-				//// È¸Àü Á¤º¸µµ Àü¼ÛÇÏÀÚ
-				//ROTATE_PACKET s_r_packet;
-				//s_r_packet.size = sizeof(ROTATE_PACKET);
-				//s_r_packet.type = static_cast<unsigned char>(E_PACKET::E_P_ROTATE);
-				//s_r_packet.uid = cl.second->m_id;
-				//auto& right = cl.second->GetRight();
-				//auto& up = cl.second->GetUp();
-				//auto& look = cl.second->GetLook();
-				//s_r_packet.right.x = right.x;
-				//s_r_packet.right.y = right.y;
-				//s_r_packet.right.z = right.z;
-				//s_r_packet.up.x = up.x;
-				//s_r_packet.up.y = up.y;
-				//s_r_packet.up.z = up.z;
-				//s_r_packet.look.x = look.x;
-				//s_r_packet.look.y = look.y;
-				//s_r_packet.look.z = look.z;
-				//remoteClient->tcpConnection.SendOverlapped(reinterpret_cast<char*>(&s_r_packet));
 			}
 
-			// ³ªÀÇ Á¤º¸ º¸³»±â
+			// ë‚˜ì˜ ì •ë³´ ë³´ë‚´ê¸°
 			for (auto& cl : PlayerClient::PlayerClients) {
-				if (cl.second.get() == remoteClient.get()) continue; // ³ª ÀÚ½ÅÀº Á¦¿ÜÇÑ´Ù.
+				if (cl.second.get() == remoteClient.get()) continue; // ë‚˜ ìì‹ ì€ ì œì™¸í•œë‹¤.
 				cl.second->tcpConnection.SendOverlapped(reinterpret_cast<char*>(&s_packet));
 			}
 
-			// ÇöÀç ¼­¹ö ½Ã°£ µ¿±âÈ­
+			// í˜„ì¬ ì„œë²„ ì‹œê°„ ë™ê¸°í™”
 			remoteClient->SendTimePacket(time_accumulator);
 
 		}
 
-		// ÀÎ°ÔÀÓ °´Ã¼ ´Ù º¸³»±â (³ªÁß¿¡ ¿ÁÆ®¸® ÀÌµ¿ ½Ã ºä¸®½ºÆ® Àû¿ë)
+		// ì¸ê²Œì„ ê°ì²´ ë‹¤ ë³´ë‚´ê¸° (ë‚˜ì¤‘ì— ì˜¥íŠ¸ë¦¬ ì´ë™ ì‹œ ë·°ë¦¬ìŠ¤íŠ¸ ì ìš©)
 		{
-			std::vector<tree_obj*> results; // ½Ã¾ß ¹üÀ§ ³» °´Ã¼ Ã£±â
+			std::vector<tree_obj*> results; // ì‹œì•¼ ë²”ìœ„ ë‚´ ê°ì²´ ì°¾ê¸°
 			tree_obj p_obj{ -1,remoteClient->GetPosition() };
 			Octree::GameObjectOctree.query(p_obj, oct_distance, results);
 			std::unordered_set<int> new_vl;
@@ -1052,27 +1020,27 @@ void ProcessAccept()
 
 		{
 			EVENT ev(EVENT_TYPE::E_P_REGENERATE_HP, remoteClient->m_id, -1);
-			EVENT::add_timer(ev, 1000); // 1ÃÊ ÈÄ hp È¸º¹
+			EVENT::add_timer(ev, 1000); // 1ì´ˆ í›„ hp íšŒë³µ
 			ev.e_type = EVENT_TYPE::E_P_REGENERATE_STAMINA;
-			EVENT::add_timer(ev, 500); // 0.5ÃÊ ÈÄ stamina È¸º¹
+			EVENT::add_timer(ev, 500); // 0.5ì´ˆ í›„ stamina íšŒë³µ
 			ev.e_type = EVENT_TYPE::E_P_CONSUME_HUNGER;
-			EVENT::add_timer(ev, 5000); // 5ÃÊ¸¶´Ù Çã±â ¼Ò¸ğ
+			EVENT::add_timer(ev, 5000); // 5ì´ˆë§ˆë‹¤ í—ˆê¸° ì†Œëª¨
 			ev.e_type = EVENT_TYPE::E_P_CONSUME_THIRST;
-			EVENT::add_timer(ev, 4000); // 4ÃÊ¸¶´Ù °¥Áõ ¼Ò¸ğ
+			EVENT::add_timer(ev, 4000); // 4ì´ˆë§ˆë‹¤ ê°ˆì¦ ì†Œëª¨
 		}
 
-		// °è¼ÓÇØ¼­ ¼ÒÄÏ ¹Ş±â¸¦ ÇØ¾ß ÇÏ¹Ç·Î ¸®½¼¼ÒÄÏµµ overlapped I/O¸¦ °ÉÀÚ.
+		// ê³„ì†í•´ì„œ ì†Œì¼“ ë°›ê¸°ë¥¼ í•´ì•¼ í•˜ë¯€ë¡œ ë¦¬ìŠ¨ì†Œì¼“ë„ overlapped I/Oë¥¼ ê±¸ì.
 		remoteClientCandidate = make_shared<PlayerClient>(SocketType::Tcp);
 		string errorText;
 		if (!g_l_socket->AcceptOverlapped(remoteClientCandidate->tcpConnection, errorText)
 			&& WSAGetLastError() != ERROR_IO_PENDING)
 		{
-			// ¿¡·¯³ª¸é ¸®½¼¼ÒÄÏ ºÒ´É »óÅÂ·Î ³²±âÀÚ. 
+			// ì—ëŸ¬ë‚˜ë©´ ë¦¬ìŠ¨ì†Œì¼“ ë¶ˆëŠ¥ ìƒíƒœë¡œ ë‚¨ê¸°ì. 
 			g_l_socket->Close();
 		}
 		else
 		{
-			// ¸®½¼¼ÒÄÏÀº ¿¬°áÀÌ µé¾î¿ÈÀ» ±â´Ù¸®´Â »óÅÂ°¡ µÇ¾ú´Ù.
+			// ë¦¬ìŠ¨ì†Œì¼“ì€ ì—°ê²°ì´ ë“¤ì–´ì˜´ì„ ê¸°ë‹¤ë¦¬ëŠ” ìƒíƒœê°€ ë˜ì—ˆë‹¤.
 			g_l_socket->m_isReadOverlapped = true;
 		}
 	}
@@ -1351,13 +1319,12 @@ void ReleaseObject()
 	GameObject::gameObjects.clear();
 	GameObject::ConstructObjects.clear();
 	Octree::GameObjectOctree.clear();
-	//Octree::PlayerOctree.clear();
 }
 
 
 void CloseServer()
 {
-	cout << "¼­¹öÀÇ ¸ğµç ¸®¼Ò½º¸¦ Á¤¸®ÇÏ°í Á¾·áÇÕ´Ï´Ù." << endl;
+	cout << "ì„œë²„ì˜ ëª¨ë“  ë¦¬ì†ŒìŠ¤ë¥¼ ì •ë¦¬í•˜ê³  ì¢…ë£Œí•©ë‹ˆë‹¤." << endl;
 
 	cout << "Waking up all worker threads..." << endl;
 	for (int i = 0; i < iocpcount; ++i) {
@@ -1388,7 +1355,7 @@ void CloseServer()
 			client_pair.second->tcpConnection.Close();
 		}
 	}
-	PlayerClient::PlayerClients.clear(); // Å¬¶óÀÌ¾ğÆ® ¸ñ·Ï ºñ¿ì±â
+	PlayerClient::PlayerClients.clear(); // í´ë¼ì´ì–¸íŠ¸ ëª©ë¡ ë¹„ìš°ê¸°
 
-	cout << "¼­¹ö°¡ ¼º°øÀûÀ¸·Î Á¾·áµÇ¾ú½À´Ï´Ù." << endl;
+	cout << "ì„œë²„ê°€ ì„±ê³µì ìœ¼ë¡œ ì¢…ë£Œë˜ì—ˆìŠµë‹ˆë‹¤." << endl;
 }
