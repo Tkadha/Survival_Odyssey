@@ -183,9 +183,11 @@ void worker_thread()
 					Octree::PlayerOctree.update(Client->m_id, Client->GetPosition());
 					Client->UpdateTransform();
 
-					Client->vl_mu.lock();
-					std::unordered_set<int> before_vl = Client->viewlist;
-					Client->vl_mu.unlock();
+					std::unordered_set<int> before_vl;
+					{
+						std::lock_guard<std::mutex> vl_lock(Client->vl_mu);
+						before_vl = Client->viewlist;
+					}
 
 					std::unordered_set<int> new_vl;
 					std::vector<tree_obj*> results; // find obj
@@ -210,9 +212,10 @@ void worker_thread()
 							Client->SendAddPacket(GameObject::gameObjects[o_id]);
 						}
 					}
-					Client->vl_mu.lock();
-					Client->viewlist = new_vl;
-					Client->vl_mu.unlock();
+					{
+						std::lock_guard<std::mutex> vl_lock(Client->vl_mu);
+						Client->viewlist = new_vl;
+					}
 
 					delete p_read_over;
 				}
@@ -549,9 +552,10 @@ void ProcessPacket(shared_ptr<PlayerClient>& client, char* packet)
 				for (auto& obj : GameObject::ConstructObjects) {
 					player->SendStructPacket(obj);
 				}
-				player->vl_mu.lock();
-				player->viewlist = new_vl;
-				player->vl_mu.unlock();
+				{
+					std::lock_guard<std::mutex> vl_lock(player->vl_mu);
+					player->viewlist = new_vl;
+				}
 
 				player->SendTimePacket(time_accumulator);
 
@@ -885,9 +889,9 @@ int main(int argc, char* argv[])
 					PostQueuedCompletionStatus(iocp.m_hIocp, 0, (ULONG_PTR)obj.get(), &p_over->over);
 				}
 			}
-			g_clients_mutex.lock();
-			for (auto& cl : PlayerClient::PlayerClients) {
-				{
+			{
+				std::lock_guard<std::mutex> lock(g_clients_mutex);
+				for (auto& cl : PlayerClient::PlayerClients) {
 					auto& client = cl.second;
 					if (client->state != PC_INGAME) continue;
 					OVER_EXP* p_over = new OVER_EXP();
@@ -895,7 +899,6 @@ int main(int argc, char* argv[])
 					PostQueuedCompletionStatus(iocp.m_hIocp, 0, (ULONG_PTR)client.get(), &p_over->over);
 				}
 			}
-			g_clients_mutex.unlock();
 		}
 	}
 	catch (Exception& e)
@@ -1007,9 +1010,10 @@ void ProcessAccept()
 			for (auto& obj : GameObject::ConstructObjects) {
 				remoteClient->SendStructPacket(obj);
 			}
-			remoteClient->vl_mu.lock();
-			remoteClient->viewlist = new_vl;
-			remoteClient->vl_mu.unlock();
+			{
+				std::lock_guard<std::mutex> vl_lock(remoteClient->vl_mu);
+				remoteClient->viewlist = new_vl;
+			}
 		}
 		auto p_obj = std::make_unique<tree_obj>(remoteClient->m_id, remoteClient->GetPosition());
 		Octree::PlayerOctree.insert(std::move(p_obj));

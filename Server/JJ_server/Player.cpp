@@ -171,7 +171,7 @@ void PlayerClient::Change_Stat(E_STAT stat, float value)
         Maxhp.store(value);
 		break;
 	case E_STAT::SPEED:
-        Speed_stat = value; // ÀÌµ¿ ¼Óµµ
+        Speed_stat = value; // ï¿½Ìµï¿½ ï¿½Óµï¿½
 		break;
 	default:
 		break;
@@ -188,48 +188,48 @@ void PlayerClient::Update_test(float deltaTime)
 {
     if (this->state != PC_INGAME) return;
     PlayerInput currentInput = m_lastReceivedInput;
-    // °ø°Ý »óÅÂ Ã³¸®
-    static float attackTimer = 0.0f; // ½ÇÁ¦·Î´Â ¸â¹ö º¯¼ö·Î °ü¸®
+    // ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ Ã³ï¿½ï¿½
+    static float attackTimer = 0.0f; // ï¿½ï¿½ï¿½ï¿½ï¿½Î´ï¿½ ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
     if (m_currentState == ServerPlayerState::Attacking) {
         attackTimer -= deltaTime;
         if (attackTimer <= 0.0f) {
-            m_currentState = ServerPlayerState::Idle; // °ø°Ý ³¡³ª¸é Idle·Î
+            m_currentState = ServerPlayerState::Idle; // ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ Idleï¿½ï¿½
         }
     }
 
-    // »óÅÂÀüÈ¯
+    // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½È¯
     bool isGrounded = CheckIfGrounded();
-    if (m_currentState != ServerPlayerState::Attacking) { // °ø°Ý Áß ¾Æ´Ò ¶§¸¸
+    if (m_currentState != ServerPlayerState::Attacking) { // ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½Æ´ï¿½ ï¿½ï¿½ï¿½ï¿½
         if (currentInput.Attack) {
             m_currentState = ServerPlayerState::Attacking;
-            attackTimer = 0.8f; // °ø°Ý Áö¼Ó ½Ã°£
-            m_Velocity.x = m_Velocity.z = 0; // °ø°Ý Áß ÀÌµ¿ ºÒ°¡
+            attackTimer = 0.8f; // ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½Ã°ï¿½
+            m_Velocity.x = m_Velocity.z = 0; // ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½Ìµï¿½ ï¿½Ò°ï¿½
         }
         else if (currentInput.Jump && isGrounded) {
             m_currentState = ServerPlayerState::Jumping;
-            m_Velocity.y = 100.0f; // Á¡ÇÁ ÃÊ±â ¼Óµµ
+            m_Velocity.y = 100.0f; // ï¿½ï¿½ï¿½ï¿½ ï¿½Ê±ï¿½ ï¿½Óµï¿½
         }
-        else if (isGrounded && m_currentState == ServerPlayerState::Falling) { // ÂøÁö
-            m_currentState = ServerPlayerState::Idle; // ÂøÁöÇÏ¸é Idle
+        else if (isGrounded && m_currentState == ServerPlayerState::Falling) { // ï¿½ï¿½ï¿½ï¿½
+            m_currentState = ServerPlayerState::Idle; // ï¿½ï¿½ï¿½ï¿½ï¿½Ï¸ï¿½ Idle
             m_Velocity.y = 0; 
         }
-        else if (m_Velocity.y < -1.0f && !isGrounded && m_currentState != ServerPlayerState::Jumping) { // ¶³¾îÁö´Â Áß 
+        else if (m_Velocity.y < -1.0f && !isGrounded && m_currentState != ServerPlayerState::Jumping) { // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ 
             m_currentState = ServerPlayerState::Falling;
         }
         else if (isGrounded && (currentInput.MoveForward || currentInput.MoveBackward || currentInput.WalkLeft || currentInput.WalkRight)) {
-            // ¶¥¿¡ ÀÖ°í ÀÌµ¿ ÀÔ·ÂÀÌ ÀÖÀ¸¸é Walking ¶Ç´Â Running
+            // ï¿½ï¿½ï¿½ï¿½ ï¿½Ö°ï¿½ ï¿½Ìµï¿½ ï¿½Ô·ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ Walking ï¿½Ç´ï¿½ Running
             if (currentInput.Run) m_currentState = ServerPlayerState::Running;
             else m_currentState = ServerPlayerState::Walking;
            // m_currentState = (currentInput.Run && currentInput.MoveForward) ? ServerPlayerState::Running : ServerPlayerState::Walking;
         }
         else if (isGrounded) {
-            // ¶¥¿¡ ÀÖ°í ´Ù¸¥ Á¶°Ç ¾øÀ¸¸é Idle
+            // ï¿½ï¿½ï¿½ï¿½ ï¿½Ö°ï¿½ ï¿½Ù¸ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ Idle
             m_currentState = ServerPlayerState::Idle;
         }
     }
 
 
-    // ¼Óµµ °è»ê
+    // ï¿½Óµï¿½ ï¿½ï¿½ï¿½
     XMFLOAT3 targetVelocityXZ = { 0.0f, 0.0f, 0.0f };
     if (m_currentState == ServerPlayerState::Walking || m_currentState == ServerPlayerState::Running || m_currentState == ServerPlayerState::Falling || m_currentState == ServerPlayerState::Jumping) { 
         XMFLOAT3 moveVector = { 0.0f, 0.0f, 0.0f };
@@ -255,27 +255,27 @@ void PlayerClient::Update_test(float deltaTime)
         }
         if (isMovingInput) {
             moveVector = Vector3::Normalize(moveVector);
-            float currentSpeed = (m_currentState == ServerPlayerState::Running) ? m_runSpeed : m_walkSpeed; // »óÅÂº° ¼Óµµ
+            float currentSpeed = (m_currentState == ServerPlayerState::Running) ? m_runSpeed : m_walkSpeed; // ï¿½ï¿½ï¿½Âºï¿½ ï¿½Óµï¿½
             targetVelocityXZ = Vector3::ScalarProduct(moveVector, currentSpeed);
         }
     }
 
-    // ¼Óµµ ¼³Á¤
+    // ï¿½Óµï¿½ ï¿½ï¿½ï¿½ï¿½
     m_Velocity.x = targetVelocityXZ.x;
     m_Velocity.z = targetVelocityXZ.z;
 
-    // Áß·Â Àû¿ë
+    // ï¿½ß·ï¿½ ï¿½ï¿½ï¿½ï¿½
     if (!isGrounded || m_currentState == ServerPlayerState::Jumping) {
-        m_Velocity.y += m_Gravity.y * deltaTime; // m_gravity.y´Â À½¼ö¿©¾ß ÇÔ
+        m_Velocity.y += m_Gravity.y * deltaTime; // m_gravity.yï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½
     }
 
-    // ¸¶Âû Àû¿ë
-    if (isGrounded && m_currentState != ServerPlayerState::Running && m_currentState != ServerPlayerState::Walking) { // Idle ¿¡¼­¸¸
+    // ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
+    if (isGrounded && m_currentState != ServerPlayerState::Running && m_currentState != ServerPlayerState::Walking) { // Idle ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
         m_Velocity.x *= (1.0f - m_fFriction * deltaTime);
         m_Velocity.z *= (1.0f - m_fFriction * deltaTime);
     }
 
-    // ¼Óµµ Á¦ÇÑ
+    // ï¿½Óµï¿½ ï¿½ï¿½ï¿½ï¿½
     float fLength = sqrtf(m_Velocity.x * m_Velocity.x + m_Velocity.z * m_Velocity.z);
     float fMaxVelocityXZ = m_fMaxVelocityXZ;
     if (fLength > m_fMaxVelocityXZ)
@@ -288,10 +288,10 @@ void PlayerClient::Update_test(float deltaTime)
     if (fLength > m_fMaxVelocityY) m_Velocity.y *= (fMaxVelocityY / fLength);
 
 
-    // ÀÌµ¿ ¹× Ãæµ¹ Ã³¸®
+    // ï¿½Ìµï¿½ ï¿½ï¿½ ï¿½æµ¹ Ã³ï¿½ï¿½
     //XMFLOAT3 deltaPos = Vector3::ScalarProduct(m_Velocity, deltaTime);
     XMFLOAT3 deltaVel = Vector3::ScalarProduct(m_Velocity, 0.35f);
-   // XMFLOAT3 deltaVel = Vector3::ScalarProduct(m_Velocity, 0.55f); // test¿ë ÀÌ¼Ó Áõ°¡
+   // XMFLOAT3 deltaVel = Vector3::ScalarProduct(m_Velocity, 0.55f); // testï¿½ï¿½ ï¿½Ì¼ï¿½ ï¿½ï¿½ï¿½ï¿½
 
     if (currentInput.WalkLeft || currentInput.WalkRight) {
         deltaVel.x /= 1.3f;
@@ -303,21 +303,21 @@ void PlayerClient::Update_test(float deltaTime)
         deltaVel.z *= (1.f + 0.03f * Speed_stat);
     }
 
-    // ·±´× ÆÇÁ¤
+    // ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
     if (m_currentState == ServerPlayerState::Running)
     {
         deltaVel.x *= 1.6f;
         deltaVel.z *= 1.6f;
 
     }
-    // ½½·Î¿ì È¿°ú È®ÀÎ
+    // ï¿½ï¿½ï¿½Î¿ï¿½ È¿ï¿½ï¿½ È®ï¿½ï¿½
     if (b_slow)
     {
         deltaVel.x /= 1.6f;
         deltaVel.z /= 1.6f;
     }
 
-    // ¹Ð¸² Ã³¸®
+    // ï¿½Ð¸ï¿½ Ã³ï¿½ï¿½
     {
         BoundingOrientedBox myCurrentOBB = world_obb;
         std::vector<tree_obj*> presults;
@@ -349,10 +349,10 @@ void PlayerClient::Update_test(float deltaTime)
             }
         }
 
-        // ´Ù¸¥ °ÔÀÓ ¿ÀºêÁ§Æ®¿Í °ãÄ§ È®ÀÎ
+        // ï¿½Ù¸ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ®ï¿½ï¿½ ï¿½ï¿½Ä§ È®ï¿½ï¿½
         for (auto& o_obj : oresults)
         {
-            // ºñÈ°¼º/Á×Àº °´Ã¼ Á¦¿Ü (±âÁ¸ ÄÚµå¿Í µ¿ÀÏ)
+            // ï¿½ï¿½È°ï¿½ï¿½/ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½Ã¼ ï¿½ï¿½ï¿½ï¿½ (ï¿½ï¿½ï¿½ï¿½ ï¿½Úµï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½)
             auto& other_obj = GameObject::gameObjects[o_obj->u_id];
             if (!other_obj || !other_obj->is_alive || other_obj->Gethp() <= 0) continue;
             if (!other_obj->IsRenderObj()) continue;
@@ -367,7 +367,7 @@ void PlayerClient::Update_test(float deltaTime)
             }
         }
 
-        // °Ç¼³µÈ ¿ÀºêÁ§Æ®¿Í °ãÄ§ È®ÀÎ
+        // ï¿½Ç¼ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ®ï¿½ï¿½ ï¿½ï¿½Ä§ È®ï¿½ï¿½
         for (auto& c_obj : GameObject::ConstructObjects)
         {
             if (myCurrentOBB.Intersects(c_obj->world_obb))
@@ -380,13 +380,13 @@ void PlayerClient::Update_test(float deltaTime)
                 collisionCount++;
             }
         }
-        // 4. °è»êµÈ ¹æÇâÀ¸·Î À§Ä¡¸¦ º¸Á¤ÇÕ´Ï´Ù.
+        // 4. ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½Ä¡ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Õ´Ï´ï¿½.
         if (collisionCount > 0)
         {
-            // ¿©·¯ °´Ã¼¿Í °ãÃÆÀ» °æ¿ì¸¦ ´ëºñÇØ Æò±Õ ¹Ð¾î³»±â ¹æÇâÀ» °è»ê
+            // ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½Ã¼ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ì¸¦ ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ ï¿½Ð¾î³»ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½
             totalPushOutVector = XMVector3Normalize(totalPushOutVector);
 
-            // ¹Ð¾î³»´Â ÈûÀÇ Å©±â (ÀÌ °ªÀº ½ÇÇèÀ» ÅëÇØ ÀûÀýÈ÷ Á¶ÀýÇØ¾ß ÇÕ´Ï´Ù)
+            // ï¿½Ð¾î³»ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ Å©ï¿½ï¿½ (ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ø¾ï¿½ ï¿½Õ´Ï´ï¿½)
             float pushMagnitude = 0.5f;
 
             XMVECTOR currentPosVec = XMLoadFloat3(&m_Position);
@@ -395,14 +395,14 @@ void PlayerClient::Update_test(float deltaTime)
             XMFLOAT3 newPos;
             XMStoreFloat3(&newPos, newPosVec);
             newPos.y = Terrain::terrain->GetHeight(newPos.x, newPos.z);
-            // º¸Á¤µÈ À§Ä¡¸¦ Áï½Ã Àû¿ëÇÕ´Ï´Ù.
-            // SetPositionÀ» »ç¿ëÇÏ°Å³ª ¸â¹ö º¯¼ö m_PositionÀ» Á÷Á¢ ¼öÁ¤ÇÕ´Ï´Ù.
+            // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½Ä¡ï¿½ï¿½ ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Õ´Ï´ï¿½.
+            // SetPositionï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½Ï°Å³ï¿½ ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ m_Positionï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Õ´Ï´ï¿½.
             SetPosition(newPos); 
         }
     }
-    /* Ãæµ¹ Ã³¸®*/
-    // ÀÌµ¿ Ãæµ¹Ã³¸® Àû¿ë
-    // XÃà ÀÌµ¿ ½Ãµµ
+    /* ï¿½æµ¹ Ã³ï¿½ï¿½*/
+    // ï¿½Ìµï¿½ ï¿½æµ¹Ã³ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
+    // Xï¿½ï¿½ ï¿½Ìµï¿½ ï¿½Ãµï¿½
     XMFLOAT3 moving_pos = m_Position;
     moving_pos.x += deltaVel.x;
     BoundingOrientedBox testOBBX;
@@ -414,7 +414,7 @@ void PlayerClient::Update_test(float deltaTime)
     local_obb.Transform(testOBBX, matX);
     testOBBX.Orientation.w = 1.f;
 
-    // octree Àû¿ëÇØ¼­ ¹üÀ§ ÁÙÀÌ±â
+    // octree ï¿½ï¿½ï¿½ï¿½ï¿½Ø¼ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Ì±ï¿½
     std::vector<tree_obj*> presults;
     std::vector<tree_obj*> oresults;
     {
@@ -453,7 +453,7 @@ void PlayerClient::Update_test(float deltaTime)
         }
     }
 
-    // ZÃà ÀÌµ¿ ½Ãµµ
+    // Zï¿½ï¿½ ï¿½Ìµï¿½ ï¿½Ãµï¿½
     moving_pos.z += deltaVel.z;
     BoundingOrientedBox testOBBZ;
     XMMATRIX matZ;
@@ -509,7 +509,7 @@ void PlayerClient::Update_test(float deltaTime)
         moving_pos.y += deltaVel.y;
 
     SetPosition(moving_pos);
-    // ¶¥ Â¤±â
+    // ï¿½ï¿½ Â¤ï¿½ï¿½
     SnapToGround();
 }
 
@@ -543,7 +543,7 @@ void PlayerClient::SnapToGround()
         xmf3PlayerPosition.y = fHeight;
         SetPosition(xmf3PlayerPosition);
     }
-    // °ÇÃà¹°ÀÌ »ý±æ ½Ã Á¦°ÅÈÄ ·ÎÁ÷ º¯°æÇÏ±â
+    // ï¿½ï¿½ï¿½à¹°ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ï±ï¿½
     if (m_currentState != ServerPlayerState::Jumping) {
         xmf3PlayerPosition.y = fHeight;
         SetPosition(xmf3PlayerPosition);
@@ -558,7 +558,7 @@ void PlayerClient::SetEffect(OBJECT_TYPE obj_type)
     {
         SetSlow(true);
         EVENT ev{ EVENT_TYPE::E_P_SLOW_END, m_id, -1 };
-        EVENT::add_timer(ev, 5000); // 5ÃÊ ÈÄ¿¡ ½½·Î¿ì È¿°ú Á¦°Å
+        EVENT::add_timer(ev, 5000); // 5ï¿½ï¿½ ï¿½Ä¿ï¿½ ï¿½ï¿½ï¿½Î¿ï¿½ È¿ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
     }
     break;
     case OBJECT_TYPE::OB_SPIDER:
@@ -608,7 +608,7 @@ void PlayerClient::BroadCastRotatePacket()
     s_packet.uid = m_id;
     for (auto& cl : PlayerClient::PlayerClients) {
         if (cl.second->state != PC_INGAME) continue;
-        if (cl.second->m_id == m_id) continue; // ³ª ÀÚ½ÅÀº Á¦¿ÜÇÑ´Ù.
+        if (cl.second->m_id == m_id) continue; // ï¿½ï¿½ ï¿½Ú½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ñ´ï¿½.
         cl.second->tcpConnection.SendOverlapped(reinterpret_cast<char*>(&s_packet));
     }
 }
@@ -622,7 +622,7 @@ void PlayerClient::BroadCastInputPacket()
     s_packet.uid = m_id;
     for (auto& cl : PlayerClient::PlayerClients) {
         if (cl.second->state != PC_INGAME) continue;
-        if (cl.second->m_id == m_id) continue; // ³ª ÀÚ½ÅÀº Á¦¿ÜÇÑ´Ù.
+        if (cl.second->m_id == m_id) continue; // ï¿½ï¿½ ï¿½Ú½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ñ´ï¿½.
         cl.second->tcpConnection.SendOverlapped(reinterpret_cast<char*>(&s_packet));
     }
 }
@@ -633,7 +633,7 @@ void PlayerClient::BroadCastWeaponPacket(WEAPON_CHANGE_PACKET p)
     s_packet.uid = m_id;
     for (auto& cl : PlayerClient::PlayerClients) {
         if (cl.second->state != PC_INGAME) continue;
-        if (cl.second->m_id == m_id) continue; // ³ª ÀÚ½ÅÀº Á¦¿ÜÇÑ´Ù.
+        if (cl.second->m_id == m_id) continue; // ï¿½ï¿½ ï¿½Ú½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ñ´ï¿½.
         cl.second->tcpConnection.SendOverlapped(reinterpret_cast<char*>(&s_packet));
     }
 }
@@ -647,7 +647,7 @@ void PlayerClient::BroadCastHitPacket(PlayerInput pi)
     s_packet.uid = m_id;
     for (auto& cl : PlayerClient::PlayerClients) {
         if (cl.second->state != PC_INGAME) continue;
-        if (cl.second->m_id == m_id) continue; // ³ª ÀÚ½ÅÀº Á¦¿ÜÇÑ´Ù.
+        if (cl.second->m_id == m_id) continue; // ï¿½ï¿½ ï¿½Ú½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ñ´ï¿½.
         cl.second->tcpConnection.SendOverlapped(reinterpret_cast<char*>(&s_packet));
     }
 }
@@ -674,7 +674,7 @@ void PlayerClient::SendInvinciblePacket(int oid, bool invin_type)
 
 void PlayerClient::SendAddPacket(shared_ptr<GameObject> obj)
 {
-    if (false == obj->is_alive) return; // ¸®½ºÆù Áß »óÅÂ¶ó¸é
+    if (false == obj->is_alive) return; // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½Â¶ï¿½ï¿½
     ADD_PACKET s_packet;
     s_packet.size = sizeof(ADD_PACKET);
     s_packet.type = static_cast<char>(E_PACKET::E_O_ADD);
@@ -699,14 +699,13 @@ void PlayerClient::SendAddPacket(shared_ptr<GameObject> obj)
 
 void PlayerClient::SendRemovePacket(shared_ptr<GameObject> obj)
 {
-    vl_mu.lock();
-    if (viewlist.count(obj->GetID()) == 1)
-        viewlist.erase(obj->GetID());
-    else {
-        vl_mu.unlock();
-		return; 
+    {
+        std::lock_guard<std::mutex> vl_lock(vl_mu);
+        if (viewlist.count(obj->GetID()) == 1)
+            viewlist.erase(obj->GetID());
+        else
+            return;
     }
-    vl_mu.unlock();
 
     REMOVE_PACKET s_packet;
     s_packet.size = sizeof(REMOVE_PACKET);

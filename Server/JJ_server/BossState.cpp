@@ -7,7 +7,7 @@
 #include "Octree.h"
 
 #include <iostream>
-#include <cmath> // sqrt, pow ÇÔ¼ö »ç¿ë
+#include <cmath> // sqrt, pow ï¿½Ô¼ï¿½ ï¿½ï¿½ï¿½
 #include <random>
 
 constexpr float pi_f = 3.1415927f;
@@ -16,7 +16,7 @@ constexpr float pi_f = 3.1415927f;
 void BossStandingState::Enter(std::shared_ptr<GameObject> npc)
 {
 	starttime = std::chrono::system_clock::now();
-	duration_time = rand_time(dre) * 1500; // ·£´ýÇÑ ½Ã°£(1~3ÃÊ)À» ¹Ð¸®ÃÊ·Î º¯È¯
+	duration_time = rand_time(dre) * 1500; // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ã°ï¿½(1~3ï¿½ï¿½)ï¿½ï¿½ ï¿½Ð¸ï¿½ï¿½Ê·ï¿½ ï¿½ï¿½È¯
 	npc->SetAnimationType(ANIMATION_TYPE::IDLE);
 
 	std::vector<tree_obj*> results;
@@ -39,14 +39,16 @@ void BossStandingState::Execute(std::shared_ptr<GameObject> npc)
 	auto exec_ms = std::chrono::duration_cast<std::chrono::milliseconds>(exectime).count();
 	if (exec_ms > duration_time)
 	{
-		// »óÅÂ ÀüÈ¯
+		// ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½È¯
 		npc->FSM_manager->ChangeState(std::make_shared<BossMoveState>());
 		return;
 	}
 
-	//ÁÖº¯¿¡ ÇÃ·¹ÀÌ¾î°¡ ÀÖ´ÂÁö È®ÀÎ
-	//ÇÃ·¹ÀÌ¾î°¡ ÀÖÀ¸¸é Chase·Î º¯°æ
-	g_clients_mutex.lock();
+	//ï¿½Öºï¿½ï¿½ï¿½ ï¿½Ã·ï¿½ï¿½Ì¾î°¡ ï¿½Ö´ï¿½ï¿½ï¿½ È®ï¿½ï¿½
+	//ï¿½Ã·ï¿½ï¿½Ì¾î°¡ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ Chaseï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
+	bool detected = false;
+	{
+	std::lock_guard<std::mutex> lock(g_clients_mutex);
 	for (auto& pl : PlayerClient::PlayerClients) {
 		if (pl.second->state != PC_INGAME) continue;
 		auto playerInfo = pl.second;
@@ -55,24 +57,28 @@ void BossStandingState::Execute(std::shared_ptr<GameObject> npc)
 			XMFLOAT3 playerPos = playerInfo->GetPosition();
 			XMFLOAT3 npcPos = npc->GetPosition();
 
-			// µÎ À§Ä¡ »çÀÌÀÇ 3D °Å¸® °è»ê
+			// ï¿½ï¿½ ï¿½ï¿½Ä¡ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ 3D ï¿½Å¸ï¿½ ï¿½ï¿½ï¿½
 			float distance = sqrt(
 				pow(playerPos.x - npcPos.x, 2) +
 				pow(playerPos.y - npcPos.y, 2) +
 				pow(playerPos.z - npcPos.z, 2)
 			);
 
-			// 300 ¹üÀ§ ³»¿¡ ÀÖ´Ù¸é Chase »óÅÂ·Î ÀüÈ¯
+			// 300 ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½Ö´Ù¸ï¿½ Chase ï¿½ï¿½ï¿½Â·ï¿½ ï¿½ï¿½È¯
 			float detectionRange = 200.f;
 			if (distance < detectionRange)
 			{
-				g_clients_mutex.unlock();
-				npc->FSM_manager->ChangeState(std::make_shared<BossChaseState>());
-				return;
+				detected = true;
+				break;
 			}
 		}
 	}
-	g_clients_mutex.unlock();
+	}
+	if (detected)
+	{
+		npc->FSM_manager->ChangeState(std::make_shared<BossChaseState>());
+		return;
+	}
 
 }
 
@@ -84,9 +90,9 @@ void BossStandingState::Exit(std::shared_ptr<GameObject> npc)
 void BossMoveState::Enter(std::shared_ptr<GameObject> npc)
 {
 	starttime = std::chrono::system_clock::now();
-	duration_time = rand_time(dre) * 1000; // ·£´ýÇÑ ½Ã°£(1~3ÃÊ)À» ¹Ð¸®ÃÊ·Î º¯È¯
-	move_type = rand_type(dre); // ·£´ýÇÑ ÀÌµ¿ Å¸ÀÔ(0~2)
-	rotate_type = rand_type(dre) % 2; // ·£´ýÇÑ È¸Àü Å¸ÀÔ(0~1)
+	duration_time = rand_time(dre) * 1000; // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ã°ï¿½(1~3ï¿½ï¿½)ï¿½ï¿½ ï¿½Ð¸ï¿½ï¿½Ê·ï¿½ ï¿½ï¿½È¯
+	move_type = rand_type(dre); // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ìµï¿½ Å¸ï¿½ï¿½(0~2)
+	rotate_type = rand_type(dre) % 2; // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ È¸ï¿½ï¿½ Å¸ï¿½ï¿½(0~1)
 	npc->SetAnimationType(ANIMATION_TYPE::WALK);
 
 	std::vector<tree_obj*> results;
@@ -105,29 +111,29 @@ void BossMoveState::Enter(std::shared_ptr<GameObject> npc)
 
 void BossMoveState::Execute(std::shared_ptr<GameObject> npc)
 {
-	// ¾ÕÀ¸·Î ÀÌµ¿
+	// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ìµï¿½
 	endtime = std::chrono::system_clock::now();
 	auto exectime = endtime - starttime;
 	auto exec_ms = std::chrono::duration_cast<std::chrono::milliseconds>(exectime).count();
 	if (exec_ms > duration_time)
 	{
-		// »óÅÂ ÀüÈ¯
+		// ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½È¯
 		npc->FSM_manager->ChangeState(std::make_shared<BossStandingState>());
 		return;
 	}
 	switch (move_type)
 	{
 	case 0:
-		// ÀüÁø
+		// ï¿½ï¿½ï¿½ï¿½
 		npc->MoveForward(0.15f);
 		break;
 	case 1:
-		// È¸ÀüÇÏ¸é¼­ ÀüÁø
+		// È¸ï¿½ï¿½ï¿½Ï¸é¼­ ï¿½ï¿½ï¿½ï¿½
 		npc->Rotate(0.f, 0.5f, 0.f);
 		npc->MoveForward(0.1f);
 		break;
 	case 2:
-		// È¸Àü
+		// È¸ï¿½ï¿½
 		npc->Rotate(0.f, 0.25f, 0.f);
 		break;
 	}
@@ -146,9 +152,11 @@ void BossMoveState::Execute(std::shared_ptr<GameObject> npc)
 		}
 	}
 
-	//ÁÖº¯¿¡ ÇÃ·¹ÀÌ¾î°¡ ÀÖ´ÂÁö È®ÀÎ
-	//ÇÃ·¹ÀÌ¾î°¡ ÀÖÀ¸¸é Chase·Î º¯°æ
-	g_clients_mutex.lock();
+	//ï¿½Öºï¿½ï¿½ï¿½ ï¿½Ã·ï¿½ï¿½Ì¾î°¡ ï¿½Ö´ï¿½ï¿½ï¿½ È®ï¿½ï¿½
+	//ï¿½Ã·ï¿½ï¿½Ì¾î°¡ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ Chaseï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
+	bool detected = false;
+	{
+	std::lock_guard<std::mutex> lock(g_clients_mutex);
 	for (auto& pl : PlayerClient::PlayerClients) {
 		if (pl.second->state != PC_INGAME) continue;
 		auto playerInfo = pl.second;
@@ -157,24 +165,28 @@ void BossMoveState::Execute(std::shared_ptr<GameObject> npc)
 			XMFLOAT3 playerPos = playerInfo->GetPosition();
 			XMFLOAT3 npcPos = npc->GetPosition();
 
-			// µÎ À§Ä¡ »çÀÌÀÇ 3D °Å¸® °è»ê
+			// ï¿½ï¿½ ï¿½ï¿½Ä¡ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ 3D ï¿½Å¸ï¿½ ï¿½ï¿½ï¿½
 			float distance = sqrt(
 				pow(playerPos.x - npcPos.x, 2) +
 				pow(playerPos.y - npcPos.y, 2) +
 				pow(playerPos.z - npcPos.z, 2)
 			);
 
-			// 300 ¹üÀ§ ³»¿¡ ÀÖ´Ù¸é Chase »óÅÂ·Î ÀüÈ¯
+			// 300 ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½Ö´Ù¸ï¿½ Chase ï¿½ï¿½ï¿½Â·ï¿½ ï¿½ï¿½È¯
 			float detectionRange = 200.f;
 			if (distance < detectionRange)
 			{
-				g_clients_mutex.unlock();
-				npc->FSM_manager->ChangeState(std::make_shared<BossChaseState>());
-				return;
+				detected = true;
+				break;
 			}
 		}
 	}
-	g_clients_mutex.unlock();
+	}
+	if (detected)
+	{
+		npc->FSM_manager->ChangeState(std::make_shared<BossChaseState>());
+		return;
+	}
 }
 
 void BossMoveState::Exit(std::shared_ptr<GameObject> npc)
@@ -225,22 +237,24 @@ void BossChaseState::Execute(std::shared_ptr<GameObject> npc)
 	}
 
 
-	g_clients_mutex.lock();
+	int transition = 0; // 0 = none, 1 = attack, 2 = standing
+	{
+	std::lock_guard<std::mutex> lock(g_clients_mutex);
 	for (auto& cl : PlayerClient::PlayerClients) {
 		if (cl.second->m_id != aggro_player_id) continue;
 		auto& player = cl.second;
 		XMFLOAT3 playerPos = player->GetPosition();
 		XMFLOAT3 npcPos = npc->GetPosition();
-		// ÇÃ·¹ÀÌ¾î ¹æÇâ º¤ÅÍ °è»ê
+		// ï¿½Ã·ï¿½ï¿½Ì¾ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½
 		XMVECTOR targetDirectionVec = XMVector3Normalize(XMVectorSet(playerPos.x - npcPos.x, 0.0f, playerPos.z - npcPos.z, 0.0f));
 		XMFLOAT3 targetDirection;
 		XMStoreFloat3(&targetDirection, targetDirectionVec);
 
 
-		// NPCÀÇ Look º¤ÅÍ °¡Á®¿À±â
+		// NPCï¿½ï¿½ Look ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 		XMVECTOR npcLookVec = XMLoadFloat3(&npc->GetLook());
 		XMFLOAT3 npcLookNorm;
-		XMStoreFloat3(&npcLookNorm, XMVector3Normalize(npcLookVec)); // Look º¤ÅÍµµ Á¤±ÔÈ­
+		XMStoreFloat3(&npcLookNorm, XMVector3Normalize(npcLookVec)); // Look ï¿½ï¿½ï¿½Íµï¿½ ï¿½ï¿½ï¿½ï¿½È­
 		XMVECTOR npcLookVecXZ = XMVector3Normalize(XMVectorSet(npcLookNorm.x, 0.0f, npcLookNorm.z, 0.0f));
 
 		float targetYaw = atan2f(targetDirection.x, targetDirection.z);
@@ -250,7 +264,7 @@ void BossChaseState::Execute(std::shared_ptr<GameObject> npc)
 		if (deltaYaw > pi_f) deltaYaw -= 2 * pi_f;
 		else if (deltaYaw < -pi_f) deltaYaw += 2 * pi_f;
 
-		// ¸ñÇ¥ ¹æÇâÀ¸·Î È¸Àü
+		// ï¿½ï¿½Ç¥ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ È¸ï¿½ï¿½
 		npc->Rotate(0.0f, deltaYaw * 2.f, 0.0f);
 
 		float attackRange = 100.0f;
@@ -263,15 +277,15 @@ void BossChaseState::Execute(std::shared_ptr<GameObject> npc)
 		{
 			const float BOSS_FOV_DEGREES = 90.0f;
 
-			// º¸½º¿¡¼­ ÇÃ·¹ÀÌ¾î·Î ÇâÇÏ´Â ¹æÇâ º¤ÅÍ (Á¤±ÔÈ­)
+			// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ã·ï¿½ï¿½Ì¾ï¿½ï¿½ ï¿½ï¿½ï¿½Ï´ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ (ï¿½ï¿½ï¿½ï¿½È­)
 			XMVECTOR toPlayerVec = XMVector3Normalize(XMVectorSet(playerPos.x - npcPos.x, playerPos.y - npcPos.y, playerPos.z - npcPos.z, 0.0f));
-			// º¸½ºÀÇ Á¤¸é ¹æÇâ º¤ÅÍ (Á¤±ÔÈ­)
+			// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ (ï¿½ï¿½ï¿½ï¿½È­)
 			XMVECTOR normalizedNpcLookVec = XMVector3Normalize(npcLookVec);
 
-			// µÎ º¤ÅÍÀÇ ³»Àû(dot product) °è»ê
+			// ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½(dot product) ï¿½ï¿½ï¿½
 			float dot = XMVectorGetX(XMVector3Dot(normalizedNpcLookVec, toPlayerVec));
 
-			// ½Ã¾ß°¢ÀÇ Àý¹Ý(half-angle)ÀÇ ÄÚ»çÀÎ °ª °è»ê
+			// ï¿½Ã¾ß°ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½(half-angle)ï¿½ï¿½ ï¿½Ú»ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½
 			float cosHalfFov = cosf(XMConvertToRadians(BOSS_FOV_DEGREES / 2.0f));
 
 			std::vector<tree_obj*> results;
@@ -288,12 +302,9 @@ void BossChaseState::Execute(std::shared_ptr<GameObject> npc)
 
 			if (dot >= cosHalfFov)
 			{
-				g_clients_mutex.unlock();
-				if (npc->FSM_manager->GetAtkDelay() == false) {
-					npc->FSM_manager->ChangeState(std::make_shared<BossAttackState>());
-				}
-				// °ø°Ý »óÅÂ·Î ÀüÈ¯ÇÏ´õ¶óµµ ¾Æ·¡ ·ÎÁ÷Àº ½ÇÇàÇÏÁö ¾ÊÀ¸¹Ç·Î ¿©±â¼­ return
-				return;
+				transition = 1;
+				break;
+				// ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Â·ï¿½ ï¿½ï¿½È¯ï¿½Ï´ï¿½ï¿½ï¿½ ï¿½Æ·ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ç·ï¿½ ï¿½ï¿½ï¿½â¼­ return
 			}
 		}
 
@@ -311,17 +322,27 @@ void BossChaseState::Execute(std::shared_ptr<GameObject> npc)
 				cl.second->SendMovePacket(npc);
 			}
 		}
-		// Ãß°Ý Áß ¸ØÃã Á¶°Ç (¿¹: ÇÃ·¹ÀÌ¾î°¡ ³Ê¹« ¸Ö¸® ¹þ¾î³²)
+		// ï¿½ß°ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ (ï¿½ï¿½: ï¿½Ã·ï¿½ï¿½Ì¾î°¡ ï¿½Ê¹ï¿½ ï¿½Ö¸ï¿½ ï¿½ï¿½ï¿½î³²)
 		float loseRange = 400.f;
 		if (distanceToPlayer > loseRange)
 		{
-			g_clients_mutex.unlock();
-			npc->FSM_manager->ChangeState(std::make_shared<BossStandingState>());
-			return;
+			transition = 2;
+			break;
 		}
 		break;
 	}
-	g_clients_mutex.unlock();
+	}
+	if (transition == 1)
+	{
+		if (npc->FSM_manager->GetAtkDelay() == false)
+			npc->FSM_manager->ChangeState(std::make_shared<BossAttackState>());
+		return;
+	}
+	if (transition == 2)
+	{
+		npc->FSM_manager->ChangeState(std::make_shared<BossStandingState>());
+		return;
+	}
 }
 
 void BossChaseState::Exit(std::shared_ptr<GameObject> npc)
@@ -333,7 +354,7 @@ void BossChaseState::Exit(std::shared_ptr<GameObject> npc)
 void BossDieState::Enter(std::shared_ptr<GameObject> npc)
 {
 	starttime = std::chrono::system_clock::now();
-	duration_time = 25 * 1000; // 25ÃÊ°£ Á×¾îÀÖÀ½
+	duration_time = 25 * 1000; // 25ï¿½Ê°ï¿½ ï¿½×¾ï¿½ï¿½ï¿½ï¿½ï¿½
 
 	npc->SetAnimationType(ANIMATION_TYPE::DIE);
 	std::vector<tree_obj*> results;
@@ -356,7 +377,7 @@ void BossDieState::Execute(std::shared_ptr<GameObject> npc)
 	auto exec_ms = std::chrono::duration_cast<std::chrono::milliseconds>(exectime).count();
 	if (exec_ms > duration_time)
 	{
-		// »óÅÂ ÀüÈ¯
+		// ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½È¯
 		npc->FSM_manager->ChangeState(std::make_shared<BossRespawnState>());
 		return;
 	}
@@ -373,7 +394,7 @@ void BossRespawnState::Enter(std::shared_ptr<GameObject> npc)
 {
 	npc->is_alive = false;
 	starttime = std::chrono::system_clock::now();
-	duration_time = 300 * 1000; // 5ºÐ°£ ¾Èº¸ÀÌµµ·Ï
+	duration_time = 300 * 1000; // 5ï¿½Ð°ï¿½ ï¿½Èºï¿½ï¿½Ìµï¿½ï¿½ï¿½
 
 
 	std::vector<tree_obj*> results;
@@ -397,7 +418,7 @@ void BossRespawnState::Execute(std::shared_ptr<GameObject> npc)
 	auto exec_ms = std::chrono::duration_cast<std::chrono::milliseconds>(exectime).count();
 	if (exec_ms > duration_time)
 	{
-		// ·£´ý À§Ä¡¿¡ »ý¼º
+		// ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½Ä¡ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
 		npc->Sethp(20);
 
 		std::pair<float, float> randompos = genRandom::generateRandomXZ(gen, 1000.f, 2000.f, 1000.f, 2000.f);
@@ -413,7 +434,7 @@ void BossRespawnState::Execute(std::shared_ptr<GameObject> npc)
 
 		Octree::GameObjectOctree.update(npc->GetID(), npc->GetPosition());
 
-		// »óÅÂ ÀüÈ¯
+		// ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½È¯
 		npc->FSM_manager->ChangeState(std::make_shared<BossStandingState>());
 		return;
 	}
@@ -435,12 +456,12 @@ int BossAttackState::Sp_atk_counter = 0;
 void BossAttackState::Enter(std::shared_ptr<GameObject> npc)
 {
 	starttime = std::chrono::system_clock::now();
-	duration_time = 2.65f * 1000; // 1ÃÊ°£
+	duration_time = 2.65f * 1000; // 1ï¿½Ê°ï¿½
 	Sp_atk_counter++;
 	if (Sp_atk_counter > 5) {
 		Sp_atk_counter = 0;
 		npc->SetAnimationType(ANIMATION_TYPE::SPECIAL_ATTACK);
-		duration_time = 2.f * 1000; // ½ºÆä¼È °ø°ÝÀº 2ÃÊ°£
+		duration_time = 2.f * 1000; // ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ 2ï¿½Ê°ï¿½
 	}
 	else {
 		npc->SetAnimationType(ANIMATION_TYPE::ATTACK);
@@ -460,7 +481,7 @@ void BossAttackState::Enter(std::shared_ptr<GameObject> npc)
 
 void BossAttackState::Execute(std::shared_ptr<GameObject> npc)
 {
-	// °ø°Ý¸ð¼Ç ½Ã°£ Ã¼Å© ÈÄ ´Ù½Ã ÃßÀûÇÏ°Ô
+	// ï¿½ï¿½ï¿½Ý¸ï¿½ï¿½ ï¿½Ã°ï¿½ Ã¼Å© ï¿½ï¿½ ï¿½Ù½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ï°ï¿½
 	endtime = std::chrono::system_clock::now();
 	auto exectime = endtime - starttime;
 	auto exec_ms = std::chrono::duration_cast<std::chrono::milliseconds>(exectime).count();
@@ -495,13 +516,13 @@ void BossAttackState::Exit(std::shared_ptr<GameObject> npc)
 	npc->FSM_manager->SetAtkDelay();
 }
 
-//=====================================Hit(¸Â¾ÒÀ» °æ¿ì)=================================================
+//=====================================Hit(ï¿½Â¾ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½)=================================================
 
 void BossHitState::Enter(std::shared_ptr<GameObject> npc)
 {
 	npc->SetAnimationType(ANIMATION_TYPE::HIT);
 	starttime = std::chrono::system_clock::now();
-	duration_time = 1.5f * 1000; // 1ÃÊ°£ ÁøÇà
+	duration_time = 1.5f * 1000; // 1ï¿½Ê°ï¿½ ï¿½ï¿½ï¿½ï¿½
 	std::vector<tree_obj*> results;
 	tree_obj n_obj{ npc->GetID(),npc->GetPosition() };
 	Octree::PlayerOctree.query(n_obj, oct_distance, results);
