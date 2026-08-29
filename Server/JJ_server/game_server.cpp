@@ -41,9 +41,9 @@ recursive_mutex mx_accept;
 shared_ptr<Socket> g_l_socket; // listensocket
 shared_ptr<Socket> g_c_socket; // clientsocket
 shared_ptr<PlayerClient>remoteClientCandidate;
-vector<shared_ptr<thread>> worker_threads;
+vector<thread> worker_threads;
 
-shared_ptr<thread> g_event_thread;
+thread g_event_thread;
 Timer g_timer;
 
 std::atomic<bool> g_is_shutting_down{ false };
@@ -842,10 +842,11 @@ int main(int argc, char* argv[])
 		BuildObject();
 		std::cout<<"BuildObject complete!"<< std::endl;
 
+		worker_threads.reserve(iocpcount);
 		for (int i{}; i < iocpcount; ++i)
-			worker_threads.emplace_back(make_shared<thread>(worker_thread));
+			worker_threads.emplace_back(worker_thread);
 
-		g_event_thread = make_shared<thread>(event_thread);
+		g_event_thread = thread(event_thread);
 
 		g_timer.Start();
 		while (!g_is_shutting_down) {
@@ -1337,15 +1338,15 @@ void CloseServer()
 
 	cout << "Waiting for worker threads to join..." << endl;
 	for (auto& th : worker_threads) {
-		if (th->joinable()) {
-			th->join();
+		if (th.joinable()) {
+			th.join();
 		}
 	}
 	cout << "All worker threads have been joined." << endl;
 
 	cout << "Waiting for event thread to join..." << endl;
-	if (g_event_thread->joinable()) {
-		g_event_thread->join();
+	if (g_event_thread.joinable()) {
+		g_event_thread.join();
 	}
 	cout << "Event thread has been joined." << endl;
 
