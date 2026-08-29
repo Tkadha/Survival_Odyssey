@@ -9,9 +9,9 @@
 #include "../Global.h"
 
 #ifdef _DEBUG
-#pragma comment(lib,"../x64/Debug/serverlib.lib")
+#pragma comment(lib, "../x64/Debug/serverlib.lib")
 #else
-#pragma comment(lib,"../x64/Release/serverlib.lib")
+#pragma comment(lib, "../x64/Release/serverlib.lib")
 #endif
 #include "../JJ_server/ServerLib/ServerHeader.h"
 
@@ -42,6 +42,7 @@ private:
 	NetworkMGR(NetworkMGR&&) = delete;
 	NetworkMGR& operator=(NetworkMGR&&) = delete;
 	~NetworkMGR() = default;
+
 public:
 	static NetworkMGR& GetInstance();
 	void Initialize();

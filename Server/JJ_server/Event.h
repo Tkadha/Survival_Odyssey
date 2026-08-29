@@ -21,19 +21,20 @@ public:
 	EVENT_TYPE e_type;
 	unsigned long long player_id;
 	int obj_id;
+
 public:
 	std::chrono::system_clock::time_point end_time;
+
 public:
 	EVENT() = default;
 	~EVENT() = default;
 	EVENT(EVENT_TYPE type, unsigned long long p_id, int o_id)
-		: e_type(type), player_id(p_id), obj_id(o_id)
-	{ }
-	static void add_timer(EVENT& ev, int ms) {
+		: e_type(type), player_id(p_id), obj_id(o_id) {}
+	static void add_timer(EVENT& ev, int ms)
+	{
 		ev.wakeup_time = std::chrono::system_clock::now() + std::chrono::milliseconds(ms);
 		event_queue.push(ev);
 	}
-
 
 
 public:
@@ -44,4 +45,3 @@ public:
 		return wakeup_time > other.wakeup_time;
 	}
 };
-

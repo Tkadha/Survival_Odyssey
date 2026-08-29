@@ -37,7 +37,7 @@ void CALLBACK recv_callback(DWORD err, DWORD num_bytes, LPWSAOVERLAPPED recv_ove
 	}
 
 	memset(netWorkMGR.tcpSocket->m_recv_over.send_buf + netWorkMGR.tcpSocket->m_prev_remain, 0,
-		sizeof(netWorkMGR.tcpSocket->m_recv_over.send_buf) - netWorkMGR.tcpSocket->m_prev_remain);
+		   sizeof(netWorkMGR.tcpSocket->m_recv_over.send_buf) - netWorkMGR.tcpSocket->m_prev_remain);
 	memset(&netWorkMGR.tcpSocket->m_recv_over.over, 0, sizeof(netWorkMGR.tcpSocket->m_recv_over.over));
 	netWorkMGR.do_recv();
 }
@@ -72,16 +72,17 @@ void NetworkMGR::Initialize()
 	// ����
 	//
 
-	std::cout << std::endl << " ======== Login ======== " << std::endl << std::endl;
+	std::cout << std::endl
+			  << " ======== Login ======== " << std::endl
+			  << std::endl;
 
-	std::cout << std::endl << "서버 주소 입력(ex 197.xxx.xxx.xxx) : " << std::endl;
+	std::cout << std::endl
+			  << "서버 주소 입력(ex 197.xxx.xxx.xxx) : " << std::endl;
 	std::string server_s;
 	std::cin >> server_s;
 	SERVERIP = new char[server_s.size() + 1];
 	SERVERIP[server_s.size()] = '\0';
 	strcpy(SERVERIP, server_s.c_str());
-
-
 
 
 	tcpSocket->Bind(Endpoint::Any);
@@ -94,11 +95,13 @@ void NetworkMGR::Update()
 	NetworkMGR::do_recv();
 }
 
-void NetworkMGR::do_connetion() {
+void NetworkMGR::do_connetion()
+{
 	tcpSocket->Connect(Endpoint(SERVERIP, PORT));
 }
 
-void NetworkMGR::do_recv() {
+void NetworkMGR::do_recv()
+{
 	tcpSocket->m_readFlags = 0;
 	ZeroMemory(&tcpSocket->m_recv_over.over, sizeof(tcpSocket->m_recv_over.over));
 	tcpSocket->m_recv_over.wsabuf.len = BUFSIZE - tcpSocket->m_prev_remain;
@@ -107,7 +110,8 @@ void NetworkMGR::do_recv() {
 	WSARecv(tcpSocket->m_fd, &(tcpSocket->m_recv_over.wsabuf), 1, 0, &tcpSocket->m_readFlags, &(tcpSocket->m_recv_over.over), recv_callback);
 }
 
-void NetworkMGR::do_send(const char* buf, short buf_size) {
+void NetworkMGR::do_send(const char* buf, short buf_size)
+{
 	OVER_EXP* send_over = new OVER_EXP(buf, buf_size);
 	WSASend(tcpSocket->m_fd, &send_over->wsabuf, 1, 0, 0, &send_over->over, send_callback);
 }
@@ -124,8 +128,7 @@ void NetworkMGR::send_chat_packet(string str)
 void NetworkMGR::Process_Packet(char* p_Packet)
 {
 	E_PACKET type = static_cast<E_PACKET>(p_Packet[1]);
-	switch (type)
-	{
+	switch (type) {
 	case E_PACKET::E_P_CHAT:
 		CHAT_PACKET* recvPacket = reinterpret_cast<CHAT_PACKET*>(p_Packet);
 

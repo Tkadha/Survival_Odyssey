@@ -1,9 +1,9 @@
 ﻿#include "stdafx.h"
 #include <iostream>
 #ifdef _DEBUG
-#pragma comment(lib,"../x64/Debug/serverlib.lib")
+#pragma comment(lib, "../x64/Debug/serverlib.lib")
 #else
-#pragma comment(lib,"../x64/Release/serverlib.lib")
+#pragma comment(lib, "../x64/Release/serverlib.lib")
 #endif
 #include "../ServerLib/ServerHeader.h"
 #include "../Global.h"
@@ -23,16 +23,16 @@ using namespace std;
 
 #define PORT 9000
 
-#define MIN_HEIGHT                  1055.f      
+#define MIN_HEIGHT 1055.f
 //-----------------------------------------------
-// 
+//
 //				game server
-// 
+//
 //-----------------------------------------------
 
 
 #define IOCPCOUNT 5
-const unsigned int iocpcount{ std::thread::hardware_concurrency() - 2 };
+const unsigned int iocpcount{std::thread::hardware_concurrency() - 2};
 
 Iocp iocp(iocpcount);
 
@@ -40,19 +40,20 @@ recursive_mutex mx_accept;
 
 shared_ptr<Socket> g_l_socket; // listensocket
 shared_ptr<Socket> g_c_socket; // clientsocket
-shared_ptr<PlayerClient>remoteClientCandidate;
+shared_ptr<PlayerClient> remoteClientCandidate;
 vector<thread> worker_threads;
 
 thread g_event_thread;
 Timer g_timer;
 
-std::atomic<bool> g_is_shutting_down{ false };
-std::atomic<bool> g_is_start_game{ false };
+std::atomic<bool> g_is_shutting_down{false};
+std::atomic<bool> g_is_start_game{false};
 
 static float time_accumulator = 0.f;
 static int play_day = 0;
 
-BOOL WINAPI ConsoleHandler(DWORD dwCtrlType) {
+BOOL WINAPI ConsoleHandler(DWORD dwCtrlType)
+{
 	if (dwCtrlType == CTRL_C_EVENT) {
 		std::cout << "\nINFO: Ctrl+C 신호 감지. 서버 종료 절차를 시작합니다..." << std::endl;
 		// 전역 플래그를 true로 설정하여 모든 루프를 중단시킴
@@ -72,13 +73,13 @@ bool InHeilpad(float x, float z)
 void ProcessClientLeave(shared_ptr<PlayerClient> remoteClient)
 {
 	// 에러 혹은 소켓 종료이다.
-	// 해당 소켓은 제거해버리자. 
+	// 해당 소켓은 제거해버리자.
 	std::lock_guard<std::mutex> lock(remoteClient->c_mu);
 	remoteClient->state = PC_FREE;
 	Octree::PlayerOctree.remove(remoteClient->m_id);
 
 	// 로그아웃 정보 보내기
-	for(auto& cl : PlayerClient::PlayerClients) {
+	for (auto& cl : PlayerClient::PlayerClients) {
 		LOGOUT_PACKET s_packet;
 		s_packet.size = sizeof(LOGOUT_PACKET);
 		s_packet.type = static_cast<char>(E_PACKET::E_P_LOGOUT);
@@ -99,15 +100,13 @@ void ReleaseObject();
 void worker_thread()
 {
 	try {
-		while (!g_is_shutting_down)
-		{
+		while (!g_is_shutting_down) {
 			// I/O 완료 이벤트가 있을 때까지 기다립니다.
 			IocpEvents readEvents;
 			iocp.Wait(readEvents, 100);
 
 			// 받은 이벤트 각각을 처리합니다.
-			for (int i = 0; i < readEvents.m_eventCount; i++)
-			{
+			for (int i = 0; i < readEvents.m_eventCount; i++) {
 				auto& readEvent = readEvents.m_events[i];
 				auto p_read_over = (OVER_EXP*)readEvent.lpOverlapped;
 
@@ -118,14 +117,12 @@ void worker_thread()
 
 				if (readEvent.lpCompletionKey == (ULONG_PTR)g_l_socket.get()) // 리슨소켓이면
 				{
-					ProcessAccept();				
-				}
-				else if (COMP_TYPE::OP_SEND == p_read_over->comp_type) {
+					ProcessAccept();
+				} else if (COMP_TYPE::OP_SEND == p_read_over->comp_type) {
 
 					p_read_over->m_isReadOverlapped = false;
 					delete p_read_over; // 보냈다면 delete해주기
-				}
-				else if (COMP_TYPE::OP_FSM_UPDATE == p_read_over->comp_type) // FSM 업데이트 요청이면
+				} else if (COMP_TYPE::OP_FSM_UPDATE == p_read_over->comp_type) // FSM 업데이트 요청이면
 				{
 					if (g_is_start_game) {
 						auto obj = GameObject::gameObjects[p_read_over->obj_id];
@@ -134,8 +131,7 @@ void worker_thread()
 						}
 					}
 					delete p_read_over;
-				}
-				else if (COMP_TYPE::OP_PLAYER_UPDATE == p_read_over->comp_type) {
+				} else if (COMP_TYPE::OP_PLAYER_UPDATE == p_read_over->comp_type) {
 					if (!g_is_start_game) {
 						delete p_read_over;
 						continue;
@@ -144,8 +140,7 @@ void worker_thread()
 					auto it = PlayerClient::PlayerClients.find((PlayerClient*)readEvent.lpCompletionKey);
 					if (it != PlayerClient::PlayerClients.end()) {
 						Client = it->second;
-					}
-					else {
+					} else {
 						delete p_read_over;
 						continue;
 					}
@@ -156,8 +151,7 @@ void worker_thread()
 					if (Client->Playerstamina.load() > 0)
 						Client->Update_test(deltaTime);
 					auto& pos = Client->GetPosition();
-					if (beforepos.x != pos.x || beforepos.y != pos.y || beforepos.z != pos.z)
-					{
+					if (beforepos.x != pos.x || beforepos.y != pos.y || beforepos.z != pos.z) {
 						Client->BroadCastPosPacket();
 						int stamina = Client->Playerstamina.load();
 						if (stamina > 0 && Client->GetCurrentState() == ServerPlayerState::Running) {
@@ -191,15 +185,14 @@ void worker_thread()
 
 					std::unordered_set<int> new_vl;
 					std::vector<tree_obj*> results; // find obj
-					tree_obj p_obj{ -1,pos };
+					tree_obj p_obj{-1, pos};
 					Octree::GameObjectOctree.query(p_obj, oct_distance, results);
 					for (auto& obj : results) new_vl.insert(obj->u_id);
 
 					for (auto o_id : before_vl) {
-						if (0 == new_vl.count(o_id)) {	// before에만 있다면 제거 패킷
+						if (0 == new_vl.count(o_id)) { // before에만 있다면 제거 패킷
 							Client->SendRemovePacket(GameObject::gameObjects[o_id]);
-						}
-						else if (1 == new_vl.count(o_id)) {
+						} else if (1 == new_vl.count(o_id)) {
 							if (GameObject::gameObjects[o_id]->is_alive == true) continue;
 							if (GameObject::gameObjects[o_id]->Gethp() > 0) continue;
 							Client->SendRemovePacket(GameObject::gameObjects[o_id]);
@@ -218,26 +211,21 @@ void worker_thread()
 					}
 
 					delete p_read_over;
-				}
-				else  // TCP 연결 소켓이면
-				{					
+				} else // TCP 연결 소켓이면
+				{
 					// 처리할 클라이언트
 					shared_ptr<PlayerClient> remoteClient;
 					remoteClient = PlayerClient::PlayerClients[(PlayerClient*)readEvent.lpCompletionKey];
-					if (remoteClient)
-					{
+					if (remoteClient) {
 						// 이미 수신된 상태이다. 수신 완료된 것을 그냥 꺼내 쓰자.
 						remoteClient->tcpConnection.m_isReadOverlapped = false;
 						int recv_buf_length = readEvent.dwNumberOfBytesTransferred;
 
-						if (recv_buf_length <= 0)
-						{
+						if (recv_buf_length <= 0) {
 							// 읽은 결과가 0 즉 TCP 연결이 끝났다...
 							// 혹은 음수 즉 뭔가 에러가 난 상태이다...
 							ProcessClientLeave(remoteClient);
-						}
-						else
-						{
+						} else {
 							// 이미 수신된 상태이다. 수신 완료된 것을 그냥 꺼내 쓰자.
 							char* recv_buf = remoteClient->tcpConnection.m_recv_over.send_buf;
 
@@ -259,13 +247,9 @@ void worker_thread()
 								memcpy(remoteClient->tcpConnection.m_recv_over.send_buf, recv_buf, remain_data);
 
 							// 다시 수신을 받으려면 overlapped I/O를 걸어야 한다.
-							if (remoteClient->tcpConnection.ReceiveOverlapped() != 0
-								&& WSAGetLastError() != ERROR_IO_PENDING)
-							{
+							if (remoteClient->tcpConnection.ReceiveOverlapped() != 0 && WSAGetLastError() != ERROR_IO_PENDING) {
 								ProcessClientLeave(remoteClient);
-							}
-							else
-							{
+							} else {
 								// I/O를 걸었다. 완료를 대기하는 중 상태로 바꾸자.
 								remoteClient->tcpConnection.m_isReadOverlapped = true;
 							}
@@ -274,18 +258,15 @@ void worker_thread()
 				}
 			}
 		}
-	}
-	catch (Exception& e) {
+	} catch (Exception& e) {
 		cout << "Exception! " << e.what() << endl;
 	}
 }
 void ProcessPacket(shared_ptr<PlayerClient>& client, char* packet)
 {
 	E_PACKET type = static_cast<E_PACKET>(packet[1]);
-	switch (type)
-	{
-	case E_PACKET::E_CHANGE_TIME:
-	{
+	switch (type) {
+	case E_PACKET::E_CHANGE_TIME: {
 		XMVECTOR xmvBaseLightDirection = XMVectorSet(0.0f, -1.0f, 0.0f, 0.0f);
 		XMMATRIX xmmtxLightRotate = XMMatrixRotationZ(XMConvertToRadians(time_accumulator));
 		XMVECTOR xmvCurrentLightDirection = XMVector3TransformNormal(xmvBaseLightDirection, xmmtxLightRotate);
@@ -293,8 +274,7 @@ void ProcessPacket(shared_ptr<PlayerClient>& client, char* packet)
 		if (XMVectorGetY(xmvCurrentLightDirection) < 0.0f) // 빛이 아래를 향하면 낮
 		{
 			time_accumulator = 180.f;
-		}
-		else // 빛이 위를 향하면 밤
+		} else // 빛이 위를 향하면 밤
 		{
 			time_accumulator = 0.f;
 		}
@@ -302,66 +282,54 @@ void ProcessPacket(shared_ptr<PlayerClient>& client, char* packet)
 			if (cl.second->state != PC_INGAME) continue;
 			cl.second->SendTimePacket(time_accumulator);
 		}
-	}
-		break;
-	case E_PACKET::E_P_WEAPON_CHANGE: 
-	{
+	} break;
+	case E_PACKET::E_P_WEAPON_CHANGE: {
 		WEAPON_CHANGE_PACKET* r_packet = reinterpret_cast<WEAPON_CHANGE_PACKET*>(packet);
 		client->BroadCastWeaponPacket(*r_packet);
-	}
-	break;
-	case E_PACKET::E_O_SETOBB:
-	{
+	} break;
+	case E_PACKET::E_O_SETOBB: {
 		OBJ_OBB_PACKET* r_packet = reinterpret_cast<OBJ_OBB_PACKET*>(packet);
 		if (r_packet->oid < 0) { // 해당 클라의 플레이어 obb
 			if (OBB_Manager::obb_list.find(OBJECT_TYPE::OB_PLAYER) != OBB_Manager::obb_list.end()) {
 				client->local_obb = *OBB_Manager::obb_list[OBJECT_TYPE::OB_PLAYER];
-			}
-			else {
+			} else {
 				BoundingOrientedBox bb;
-				bb.Center = XMFLOAT3{ r_packet->Center.x, r_packet->Center.y, r_packet->Center.z };
-				bb.Extents = XMFLOAT3{ r_packet->Extents.x, r_packet->Extents.y, r_packet->Extents.z };
-				bb.Orientation = XMFLOAT4{ r_packet->Orientation.x, r_packet->Orientation.y, r_packet->Orientation.z, r_packet->Orientation.w };
+				bb.Center = XMFLOAT3{r_packet->Center.x, r_packet->Center.y, r_packet->Center.z};
+				bb.Extents = XMFLOAT3{r_packet->Extents.x, r_packet->Extents.y, r_packet->Extents.z};
+				bb.Orientation = XMFLOAT4{r_packet->Orientation.x, r_packet->Orientation.y, r_packet->Orientation.z, r_packet->Orientation.w};
 				OBB_Manager::AddOBB(OBJECT_TYPE::OB_PLAYER, bb);
 				client->local_obb = *OBB_Manager::obb_list[OBJECT_TYPE::OB_PLAYER];
 			}
-		}
-		else {
+		} else {
 			OBJECT_TYPE type = GameObject::gameObjects[r_packet->oid]->GetType();
 			if (OBB_Manager::obb_list.find(type) != OBB_Manager::obb_list.end()) break;
 			BoundingOrientedBox bb;
-			bb.Center = XMFLOAT3{ r_packet->Center.x, r_packet->Center.y, r_packet->Center.z };
-			bb.Extents = XMFLOAT3{ r_packet->Extents.x, r_packet->Extents.y, r_packet->Extents.z };
-			bb.Orientation = XMFLOAT4{ r_packet->Orientation.x, r_packet->Orientation.y, r_packet->Orientation.z, r_packet->Orientation.w };
+			bb.Center = XMFLOAT3{r_packet->Center.x, r_packet->Center.y, r_packet->Center.z};
+			bb.Extents = XMFLOAT3{r_packet->Extents.x, r_packet->Extents.y, r_packet->Extents.z};
+			bb.Orientation = XMFLOAT4{r_packet->Orientation.x, r_packet->Orientation.y, r_packet->Orientation.z, r_packet->Orientation.w};
 			OBB_Manager::AddOBB(type, bb);
 			for (auto& obj : GameObject::gameObjects) {
 				if (obj->GetType() == type) {
 					obj->local_obb = *OBB_Manager::obb_list[type];
 					obj->UpdateTransform();
 				}
-			}	
+			}
 		}
-	}
-	break;
-	case E_PACKET::E_P_POSITION:
-	{
+	} break;
+	case E_PACKET::E_P_POSITION: {
 		POSITION_PACKET* r_packet = reinterpret_cast<POSITION_PACKET*>(packet);
-		client->SetPosition(XMFLOAT3{ r_packet->position.x, r_packet->position.y, r_packet->position.z });
+		client->SetPosition(XMFLOAT3{r_packet->position.x, r_packet->position.y, r_packet->position.z});
 		client->BroadCastPosPacket();
-	}
-	break;
-	case E_PACKET::E_P_ROTATE:
-	{
+	} break;
+	case E_PACKET::E_P_ROTATE: {
 		ROTATE_PACKET* r_packet = reinterpret_cast<ROTATE_PACKET*>(packet);
-		client->SetRight(XMFLOAT3{ r_packet->right.x,r_packet->right.y,r_packet->right.z });
-		client->SetUp(XMFLOAT3{ r_packet->up.x,r_packet->up.y,r_packet->up.z });
-		client->SetLook(XMFLOAT3{ r_packet->look.x,r_packet->look.y,r_packet->look.z });
+		client->SetRight(XMFLOAT3{r_packet->right.x, r_packet->right.y, r_packet->right.z});
+		client->SetUp(XMFLOAT3{r_packet->up.x, r_packet->up.y, r_packet->up.z});
+		client->SetLook(XMFLOAT3{r_packet->look.x, r_packet->look.y, r_packet->look.z});
 
 		client->BroadCastRotatePacket();
-	}
-	break;
-	case E_PACKET::E_P_INPUT:
-	{
+	} break;
+	case E_PACKET::E_P_INPUT: {
 		INPUT_PACKET* r_packet = reinterpret_cast<INPUT_PACKET*>(packet);
 		client->processInput(r_packet->inputData);
 		if (r_packet->inputData.Attack) {
@@ -375,10 +343,8 @@ void ProcessPacket(shared_ptr<PlayerClient>& client, char* packet)
 			client->tcpConnection.SendOverlapped(reinterpret_cast<char*>(&s_packet));
 		}
 		client->BroadCastInputPacket();
-	}
-	break;
-	case E_PACKET::E_O_HIT:
-	{
+	} break;
+	case E_PACKET::E_O_HIT: {
 		OBJ_HIT_PACKET* r_packet = reinterpret_cast<OBJ_HIT_PACKET*>(packet);
 		if (GameObject::gameObjects.size() < r_packet->oid) return; // 잘못된 id
 		auto& obj = GameObject::gameObjects[r_packet->oid];
@@ -386,23 +352,22 @@ void ProcessPacket(shared_ptr<PlayerClient>& client, char* packet)
 		if (obj->GetType() == OBJECT_TYPE::OB_PIG || obj->GetType() == OBJECT_TYPE::OB_COW) {
 			if (obj->FSM_manager) {
 				obj->SetInvincible();
-				if (obj->Gethp() <= 0) obj->ChangeState(std::make_shared<NonAtkNPCDieState>());
-				else obj->ChangeState(std::make_shared<NonAtkNPCRunAwayState>());
+				if (obj->Gethp() <= 0)
+					obj->ChangeState(std::make_shared<NonAtkNPCDieState>());
+				else
+					obj->ChangeState(std::make_shared<NonAtkNPCRunAwayState>());
 			}
-		}
-		else if (obj->GetType() == OBJECT_TYPE::OB_GOLEM) {
+		} else if (obj->GetType() == OBJECT_TYPE::OB_GOLEM) {
 			if (obj->FSM_manager) {
 				auto bosshp = obj->Gethp();
 				if (bosshp <= 0) {
 					obj->SetInvincible();
 					obj->ChangeState(std::make_shared<BossDieState>());
-				}
-				else if (bosshp <= (obj->_fMaxHp / 2) && !obj->_bUsedSpecialAttack) {
+				} else if (bosshp <= (obj->_fMaxHp / 2) && !obj->_bUsedSpecialAttack) {
 					obj->SetInvincible(5.332f * 1000);
 					obj->_bUsedSpecialAttack = true; // 플래그를 true로 설정
 					obj->ChangeState(std::make_shared<BossSpecialAttackStartState>()); // 별도의 특수 공격 상태
-				}
-				else if (bosshp <= obj->_fMaxHp * 0.33f && !obj->_bTriggered33Percent) {
+				} else if (bosshp <= obj->_fMaxHp * 0.33f && !obj->_bTriggered33Percent) {
 					obj->SetInvincible();
 					obj->_bTriggered33Percent = true; // 플래그를 true로 설정해 다시는 실행되지 않도록 함
 					obj->ChangeState(std::make_shared<BossHitState>());
@@ -412,27 +377,25 @@ void ProcessPacket(shared_ptr<PlayerClient>& client, char* packet)
 					obj->SetInvincible();
 					obj->_bTriggered66Percent = true; // 플래그를 true로 설정
 					obj->ChangeState(std::make_shared<BossHitState>());
-				}
-				else
+				} else
 					obj->SetInvincible();
 			}
-		}
-		else {
+		} else {
 			if (obj->FSM_manager) {
 				obj->SetInvincible();
-				if (obj->Gethp() <= 0) obj->ChangeState(std::make_shared<AtkNPCDieState>());
-				else obj->ChangeState(std::make_shared<AtkNPCHitState>());
+				if (obj->Gethp() <= 0)
+					obj->ChangeState(std::make_shared<AtkNPCDieState>());
+				else
+					obj->ChangeState(std::make_shared<AtkNPCHitState>());
 			}
 		}
-		for(auto& cl : PlayerClient::PlayerClients) {
+		for (auto& cl : PlayerClient::PlayerClients) {
 			if (cl.second->state != PC_INGAME) continue;
 			cl.second->SendHpPacket(r_packet->oid, obj->Gethp());
 			cl.second->SendInvinciblePacket(r_packet->oid, true);
-		}		
-	}
-	break;
-	case E_PACKET::E_O_SETHP:
-	{
+		}
+	} break;
+	case E_PACKET::E_O_SETHP: {
 		OBJ_HP_PACKET* r_packet = reinterpret_cast<OBJ_HP_PACKET*>(packet);
 		if (GameObject::gameObjects.size() < r_packet->oid) return; // 잘못된 id
 		auto& obj = GameObject::gameObjects[r_packet->oid];
@@ -442,12 +405,10 @@ void ProcessPacket(shared_ptr<PlayerClient>& client, char* packet)
 			if (cl.second->m_id == client->m_id) continue;
 			cl.second->SendHpPacket(obj->GetID(), obj->Gethp());
 		}
-	}
-	break;
-	case E_PACKET::E_P_SETHP:
-	{
+	} break;
+	case E_PACKET::E_P_SETHP: {
 		SET_HP_HIT_OBJ_PACKET* r_packet = reinterpret_cast<SET_HP_HIT_OBJ_PACKET*>(packet);
-		if(r_packet->hit_obj_id < 0) return; // 잘못된 id
+		if (r_packet->hit_obj_id < 0) return; // 잘못된 id
 		auto o_type = GameObject::gameObjects[r_packet->hit_obj_id]->GetType();
 		client->Playerhp -= GameObject::gameObjects[r_packet->hit_obj_id]->_atk;
 		if (client->Playerhp.load() < 0) {
@@ -470,27 +431,23 @@ void ProcessPacket(shared_ptr<PlayerClient>& client, char* packet)
 		pi.Hit = true;
 		client->BroadCastHitPacket(pi);
 		client->SetEffect(o_type);
-	}
-	break;
-	case E_PACKET::E_P_CHANGE_STAT:
-	{
+	} break;
+	case E_PACKET::E_P_CHANGE_STAT: {
 		CHANGE_STAT_PACKET* r_packet = reinterpret_cast<CHANGE_STAT_PACKET*>(packet);
 		client->Change_Stat(r_packet->stat, r_packet->value);
-	}
-	break;
-	case E_PACKET::E_STRUCT_OBJ:
-	{
+	} break;
+	case E_PACKET::E_STRUCT_OBJ: {
 		STRUCT_OBJ_PACKET* r_packet = reinterpret_cast<STRUCT_OBJ_PACKET*>(packet);
 		std::shared_ptr<GameObject> obj = std::make_shared<GameObject>();
 		BoundingOrientedBox bb;
-		bb.Center = XMFLOAT3{ r_packet->Center.x, r_packet->Center.y, r_packet->Center.z };
-		bb.Extents = XMFLOAT3{ r_packet->Extents.x, r_packet->Extents.y, r_packet->Extents.z };
-		bb.Orientation = XMFLOAT4{ r_packet->Orientation.x, r_packet->Orientation.y, r_packet->Orientation.z, r_packet->Orientation.w };
+		bb.Center = XMFLOAT3{r_packet->Center.x, r_packet->Center.y, r_packet->Center.z};
+		bb.Extents = XMFLOAT3{r_packet->Extents.x, r_packet->Extents.y, r_packet->Extents.z};
+		bb.Orientation = XMFLOAT4{r_packet->Orientation.x, r_packet->Orientation.y, r_packet->Orientation.z, r_packet->Orientation.w};
 		obj->local_obb = bb;
-		obj->SetRight(XMFLOAT3{ r_packet->right.x, r_packet->right.y, r_packet->right.z });
-		obj->SetUp(XMFLOAT3{ r_packet->up.x, r_packet->up.y, r_packet->up.z });
-		obj->SetLook(XMFLOAT3{ r_packet->look.x, r_packet->look.y, r_packet->look.z });
-		obj->SetPosition(XMFLOAT3{ r_packet->position.x, r_packet->position.y, r_packet->position.z });
+		obj->SetRight(XMFLOAT3{r_packet->right.x, r_packet->right.y, r_packet->right.z});
+		obj->SetUp(XMFLOAT3{r_packet->up.x, r_packet->up.y, r_packet->up.z});
+		obj->SetLook(XMFLOAT3{r_packet->look.x, r_packet->look.y, r_packet->look.z});
+		obj->SetPosition(XMFLOAT3{r_packet->position.x, r_packet->position.y, r_packet->position.z});
 		obj->SetType(r_packet->o_type);
 		GameObject::ConstructObjects.push_back(obj);
 
@@ -499,10 +456,8 @@ void ProcessPacket(shared_ptr<PlayerClient>& client, char* packet)
 			if (cl.second->m_id == client->m_id) continue;
 			cl.second->SendStructPacket(obj);
 		}
-	}
-	break;
-	case E_PACKET::E_GAME_START:
-	{
+	} break;
+	case E_PACKET::E_GAME_START: {
 		for (auto& cl : PlayerClient::PlayerClients) {
 			if (cl.second->state != PC_INGAME) continue;
 			cl.second->SendStartGamePacket();
@@ -510,10 +465,8 @@ void ProcessPacket(shared_ptr<PlayerClient>& client, char* packet)
 		}
 		std::cout << "start game" << std::endl;
 		g_is_start_game.store(true);
-	}
-	break;
-	case E_PACKET::E_GAME_END:
-	{
+	} break;
+	case E_PACKET::E_GAME_END: {
 		if (g_is_start_game.load()) {
 			for (auto& cl : PlayerClient::PlayerClients) {
 				if (cl.second->state != PC_INGAME) continue;
@@ -521,26 +474,22 @@ void ProcessPacket(shared_ptr<PlayerClient>& client, char* packet)
 			}
 			std::cout << "end game" << std::endl;
 			g_is_start_game.store(false);
-			EVENT ev{ EVENT_TYPE::E_REBUILD_OBJ,0,-1 };
+			EVENT ev{EVENT_TYPE::E_REBUILD_OBJ, 0, -1};
 			EVENT::add_timer(ev, 1000);
 		}
-	}
-	break;
-	case E_PACKET::E_GAME_NEW:
-	{
-		if (!g_is_start_game.load()) {	
+	} break;
+	case E_PACKET::E_GAME_NEW: {
+		if (!g_is_start_game.load()) {
 
-			for (auto& cl : PlayerClient::PlayerClients)
-			{
+			for (auto& cl : PlayerClient::PlayerClients) {
 				auto& player = cl.second;
 				player->SendNewGamePacket();
 			}
-			for (auto& cl : PlayerClient::PlayerClients)
-			{
+			for (auto& cl : PlayerClient::PlayerClients) {
 				auto& player = cl.second;
 				cl.second->ResetState();
 				std::vector<tree_obj*> results; // 시야 범위 내 객체 찾기
-				tree_obj p_obj{ -1,player->GetPosition() };
+				tree_obj p_obj{-1, player->GetPosition()};
 				Octree::GameObjectOctree.query(p_obj, oct_distance, results);
 				std::unordered_set<int> new_vl;
 				for (auto& obj : results) new_vl.insert(obj->u_id);
@@ -562,8 +511,7 @@ void ProcessPacket(shared_ptr<PlayerClient>& client, char* packet)
 				player->BroadCastPosPacket();
 			}
 		}
-	}
-	break;
+	} break;
 	default:
 		break;
 	}
@@ -571,15 +519,12 @@ void ProcessPacket(shared_ptr<PlayerClient>& client, char* packet)
 
 void event_thread()
 {
-	while (!g_is_shutting_down)
-	{
+	while (!g_is_shutting_down) {
 		if (!EVENT::event_queue.empty()) {
 			EVENT ev;
-			if(EVENT::event_queue.try_pop(ev)) {
-				if (ev.wakeup_time < std::chrono::system_clock::now())
-				{
-					switch (ev.e_type)
-					{
+			if (EVENT::event_queue.try_pop(ev)) {
+				if (ev.wakeup_time < std::chrono::system_clock::now()) {
+					switch (ev.e_type) {
 					case EVENT_TYPE::E_P_SLOW_END: {
 						auto uid = ev.player_id;
 						for (auto it : PlayerClient::PlayerClients) {
@@ -587,8 +532,7 @@ void event_thread()
 							it.second->SetSlow(false);
 							break;
 						}
-					}
-					break;
+					} break;
 					case EVENT_TYPE::E_P_REGENERATE_HP: {
 						if (!g_is_start_game.load()) {
 							EVENT::add_timer(ev, 1500);
@@ -620,8 +564,7 @@ void event_thread()
 							EVENT::add_timer(ev, 1500); // 1.5초 후 다시 hp 회복
 							break;
 						}
-					}
-						break;
+					} break;
 					case EVENT_TYPE::E_P_REGENERATE_STAMINA: {
 						if (!g_is_start_game.load()) {
 							EVENT::add_timer(ev, 750);
@@ -652,8 +595,7 @@ void event_thread()
 							EVENT::add_timer(ev, 750); // 0.75초 후 다시 stamina 회복
 							break;
 						}
-					}
-						break;
+					} break;
 					case EVENT_TYPE::E_P_CONSUME_HUNGER: {
 						if (!g_is_start_game.load()) {
 							EVENT::add_timer(ev, 5000);
@@ -681,12 +623,11 @@ void event_thread()
 									break;
 								}
 							}
-							EVENT::add_timer(ev, 5000); // 5초마다 허기 소모						
+							EVENT::add_timer(ev, 5000); // 5초마다 허기 소모
 							break;
 						}
-						
-					}
-						break;
+
+					} break;
 					case EVENT_TYPE::E_P_CONSUME_THIRST: {
 						if (!g_is_start_game.load()) {
 							EVENT::add_timer(ev, 4000);
@@ -719,8 +660,7 @@ void event_thread()
 							EVENT::add_timer(ev, 4000); // 4초마다 갈증 소모
 							break;
 						}
-					}
-						break;
+					} break;
 					case EVENT_TYPE::E_P_BLEEDING: {
 						if (!g_is_start_game.load()) break;
 						if (ev.end_time < std::chrono::system_clock::now()) break;
@@ -750,10 +690,9 @@ void event_thread()
 							EVENT::add_timer(ev, 1000); // 1.0초 후 다시 출혈
 							break;
 						}
-					}
-						break;
+					} break;
 					case EVENT_TYPE::E_P_POISON: {
-						if (!g_is_start_game.load()) break;						
+						if (!g_is_start_game.load()) break;
 						if (ev.end_time < std::chrono::system_clock::now()) break;
 						auto uid = ev.player_id;
 						for (auto it : PlayerClient::PlayerClients) {
@@ -781,35 +720,31 @@ void event_thread()
 							EVENT::add_timer(ev, 500); // 1.0초 후 다시 출혈
 							break;
 						}
-					}
-						break;
+					} break;
 					case EVENT_TYPE::E_END_GAME: {
 						for (auto& cl : PlayerClient::PlayerClients) {
 							cl.second->SendEndGamePacket();
 						}
 						g_is_start_game.store(false);
-					}
-						break;
-					case EVENT_TYPE::E_REBUILD_OBJ:
-					{
+					} break;
+					case EVENT_TYPE::E_REBUILD_OBJ: {
 						g_is_start_game.store(false);
 						ReleaseObject();
 						std::cout << "Release all obj" << std::endl;
 						BuildObject();
 						time_accumulator = 0;
 						std::cout << "Build obj" << std::endl;
-					}
-						break;
+					} break;
 					default:
 						break;
 					}
 
-				}
-				else EVENT::event_queue.push(ev);
-			}
-			else this_thread::sleep_for(chrono::milliseconds(1));
-		}
-		else this_thread::sleep_for(chrono::milliseconds(1));
+				} else
+					EVENT::event_queue.push(ev);
+			} else
+				this_thread::sleep_for(chrono::milliseconds(1));
+		} else
+			this_thread::sleep_for(chrono::milliseconds(1));
 	}
 }
 
@@ -821,8 +756,7 @@ int main(int argc, char* argv[])
 		return 1;
 	}
 
-	try
-	{
+	try {
 		g_l_socket = make_shared<Socket>(SocketType::Tcp);
 		g_l_socket->Bind(Endpoint("0.0.0.0", PORT));
 		g_l_socket->Listen();
@@ -832,15 +766,14 @@ int main(int argc, char* argv[])
 		remoteClientCandidate = make_shared<PlayerClient>(SocketType::Tcp);
 
 		string errorText;
-		if (!g_l_socket->AcceptOverlapped(remoteClientCandidate->tcpConnection, errorText)
-			&& WSAGetLastError() != ERROR_IO_PENDING) {
+		if (!g_l_socket->AcceptOverlapped(remoteClientCandidate->tcpConnection, errorText) && WSAGetLastError() != ERROR_IO_PENDING) {
 			throw Exception("Overlapped AcceptEx failed."s);
 		}
 		g_l_socket->m_isReadOverlapped = true;
 
 
 		BuildObject();
-		std::cout<<"BuildObject complete!"<< std::endl;
+		std::cout << "BuildObject complete!" << std::endl;
 
 		worker_threads.reserve(iocpcount);
 		for (int i{}; i < iocpcount; ++i)
@@ -872,8 +805,7 @@ int main(int argc, char* argv[])
 				if (g_is_night.load()) {
 					g_is_night.store(false);
 				}
-			}
-			else // 빛이 위를 향하면 밤
+			} else // 빛이 위를 향하면 밤
 			{
 				if (!g_is_night.load()) {
 					g_is_night.store(true);
@@ -881,7 +813,7 @@ int main(int argc, char* argv[])
 			}
 			for (auto& obj : GameObject::gameObjects) {
 				std::vector<tree_obj*> results;
-				tree_obj t_obj{ -1, obj->GetPosition() };
+				tree_obj t_obj{-1, obj->GetPosition()};
 				Octree::PlayerOctree.query(t_obj, oct_distance, results);
 				if (results.size() > 0 && obj->FSM_manager) {
 					OVER_EXP* p_over = new OVER_EXP();
@@ -901,14 +833,11 @@ int main(int argc, char* argv[])
 				}
 			}
 		}
-	}
-	catch (Exception& e)
-	{
+	} catch (Exception& e) {
 		cout << "Exception! " << e.what() << endl;
 		if (!g_is_shutting_down) {
 			g_is_shutting_down = true; // 플래그 설정 후 정리
 		}
-
 	}
 	CloseServer();
 	return 0;
@@ -918,13 +847,11 @@ int main(int argc, char* argv[])
 void ProcessAccept()
 {
 	g_l_socket->m_isReadOverlapped = false;
-	// 이미 accept은 완료되었다. 귀찮지만, Win32 AcceptEx 사용법에 따르는 마무리 작업을 하자. 
-	if (remoteClientCandidate->tcpConnection.UpdateAcceptContext(*g_l_socket) != 0)
-	{
+	// 이미 accept은 완료되었다. 귀찮지만, Win32 AcceptEx 사용법에 따르는 마무리 작업을 하자.
+	if (remoteClientCandidate->tcpConnection.UpdateAcceptContext(*g_l_socket) != 0) {
 		//리슨소켓을 닫았던지 하면 여기서 에러날거다. 그러면 리슨소켓 불능상태로 만들자.
 		g_l_socket->Close();
-	}
-	else // 잘 처리함
+	} else // 잘 처리함
 	{
 		shared_ptr<PlayerClient> remoteClient = remoteClientCandidate;
 		cout << "accept - key: " << remoteClient.get() << endl;
@@ -933,22 +860,18 @@ void ProcessAccept()
 		iocp.Add(remoteClient->tcpConnection, remoteClient.get());
 
 		// overlapped 수신을 받을 수 있어야 하므로 여기서 I/O 수신 요청을 걸어둔다.
-		if (remoteClient->tcpConnection.ReceiveOverlapped() != 0
-			&& WSAGetLastError() != ERROR_IO_PENDING)
-		{
+		if (remoteClient->tcpConnection.ReceiveOverlapped() != 0 && WSAGetLastError() != ERROR_IO_PENDING) {
 			// 에러. 소켓을 정리하자. 그리고 그냥 버리자.
 			remoteClient->tcpConnection.Close();
-		}
-		else
-		{
+		} else {
 			// I/O를 걸었다. 완료를 대기하는 중 상태로 바꾸자.
 			remoteClient->tcpConnection.m_isReadOverlapped = true;
 
 			// 새 클라이언트를 목록에 추가.
 			remoteClient->m_id = reinterpret_cast<unsigned long long>(remoteClient.get());
-			PlayerClient::PlayerClients.insert({ remoteClient.get(), remoteClient });
+			PlayerClient::PlayerClients.insert({remoteClient.get(), remoteClient});
 			cout << "Client joined. There are " << PlayerClient::PlayerClients.size() << " connections.\n";
-			cout <<" Client id: "<< remoteClient->m_id << endl;
+			cout << " Client id: " << remoteClient->m_id << endl;
 
 			XMFLOAT3 p_pos;
 			p_pos.x = 8000.f + static_cast<float>(rand() % 150);
@@ -977,7 +900,7 @@ void ProcessAccept()
 
 			// 나에게 접속중인 플레이어 정보 보내기
 			for (auto& cl : PlayerClient::PlayerClients) {
-				if(cl.second.get() == remoteClient.get()) continue; // 나 자신은 제외한다.
+				if (cl.second.get() == remoteClient.get()) continue; // 나 자신은 제외한다.
 				LOGIN_PACKET s_a_packet;
 				s_a_packet.size = sizeof(LOGIN_PACKET);
 				s_a_packet.type = static_cast<char>(E_PACKET::E_P_LOGIN);
@@ -993,13 +916,12 @@ void ProcessAccept()
 
 			// 현재 서버 시간 동기화
 			remoteClient->SendTimePacket(time_accumulator);
-
 		}
 
 		// 인게임 객체 다 보내기 (나중에 옥트리 이동 시 뷰리스트 적용)
 		{
 			std::vector<tree_obj*> results; // 시야 범위 내 객체 찾기
-			tree_obj p_obj{ -1,remoteClient->GetPosition() };
+			tree_obj p_obj{-1, remoteClient->GetPosition()};
 			Octree::GameObjectOctree.query(p_obj, oct_distance, results);
 			std::unordered_set<int> new_vl;
 			for (auto& obj : results) new_vl.insert(obj->u_id);
@@ -1007,7 +929,7 @@ void ProcessAccept()
 				if (GameObject::gameObjects[obj->u_id]->is_alive == false) continue;
 				if (GameObject::gameObjects[obj->u_id]->Gethp() <= 0) continue;
 				remoteClient->SendAddPacket(GameObject::gameObjects[obj->u_id]);
-			}	
+			}
 			for (auto& obj : GameObject::ConstructObjects) {
 				remoteClient->SendStructPacket(obj);
 			}
@@ -1037,14 +959,10 @@ void ProcessAccept()
 		// 계속해서 소켓 받기를 해야 하므로 리슨소켓도 overlapped I/O를 걸자.
 		remoteClientCandidate = make_shared<PlayerClient>(SocketType::Tcp);
 		string errorText;
-		if (!g_l_socket->AcceptOverlapped(remoteClientCandidate->tcpConnection, errorText)
-			&& WSAGetLastError() != ERROR_IO_PENDING)
-		{
-			// 에러나면 리슨소켓 불능 상태로 남기자. 
+		if (!g_l_socket->AcceptOverlapped(remoteClientCandidate->tcpConnection, errorText) && WSAGetLastError() != ERROR_IO_PENDING) {
+			// 에러나면 리슨소켓 불능 상태로 남기자.
 			g_l_socket->Close();
-		}
-		else
-		{
+		} else {
 			// 리슨소켓은 연결이 들어옴을 기다리는 상태가 되었다.
 			g_l_socket->m_isReadOverlapped = true;
 		}
@@ -1308,7 +1226,6 @@ void BuildObject()
 
 		auto t_obj = std::make_unique<tree_obj>(obj->GetID(), obj->GetPosition());
 		Octree::GameObjectOctree.insert(std::move(t_obj));
-
 	}
 
 	for (auto& obj : GameObject::gameObjects) {
@@ -1354,8 +1271,7 @@ void CloseServer()
 	if (g_l_socket) {
 		g_l_socket->Close();
 	}
-	for (auto& client_pair : PlayerClient::PlayerClients)
-	{
+	for (auto& client_pair : PlayerClient::PlayerClients) {
 		if (client_pair.second) {
 			client_pair.second->tcpConnection.Close();
 		}

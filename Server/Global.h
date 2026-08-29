@@ -97,7 +97,8 @@ const int MAX_BUF_SIZE = 1024; // 버퍼 최대 크기
 
 #pragma pack(push, 1) // 1byte alignment
 
-struct PlayerInput {
+struct PlayerInput
+{
 	char MoveForward = false;
 	char MoveBackward = false;
 	char WalkLeft = false;
@@ -115,9 +116,9 @@ struct PlayerInput {
 		WalkLeft = false;
 		WalkRight = false;
 		Jump = false;
-		Attack = false; 
+		Attack = false;
 		Interact = false;
-		Run = false; 
+		Run = false;
 	}
 };
 
@@ -126,14 +127,16 @@ class FLOAT3
 public:
 	float x, y, z;
 	FLOAT3() = default;
-	FLOAT3(float x, float y, float z) : x(x), y(y), z(z) {}
+	FLOAT3(float x, float y, float z)
+		: x(x), y(y), z(z) {}
 };
 class FLOAT4
 {
 public:
 	float x, y, z, w;
 	FLOAT4() = default;
-	FLOAT4(float x, float y, float z, float w) : x(x), y(y), z(z), w(w) {}
+	FLOAT4(float x, float y, float z, float w)
+		: x(x), y(y), z(z), w(w) {}
 };
 
 class PACKET
@@ -141,14 +144,16 @@ class PACKET
 public:
 	unsigned char size;
 	char type;
-	PACKET() : size(sizeof(PACKET)), type(static_cast<char>(E_PACKET::E_P_UNKNOWN)) {}
+	PACKET()
+		: size(sizeof(PACKET)), type(static_cast<char>(E_PACKET::E_P_UNKNOWN)) {}
 };
 
 class CHAT_PACKET : public PACKET
 {
 public:
 	char chat[20];
-	CHAT_PACKET() {
+	CHAT_PACKET()
+	{
 		size = sizeof(CHAT_PACKET);
 		type = static_cast<char>(E_PACKET::E_P_CHAT);
 	}
@@ -157,7 +162,8 @@ public:
 class INGAME_PACKET : public PACKET
 {
 public:
-	INGAME_PACKET() {
+	INGAME_PACKET()
+	{
 		size = sizeof(INGAME_PACKET);
 		type = static_cast<char>(E_PACKET::E_P_INGAME);
 	}
@@ -167,8 +173,9 @@ class CHANGEPORT_PACKET : public PACKET
 {
 public:
 	short port;
-	char addr[15] {};
-	CHANGEPORT_PACKET() {
+	char addr[15]{};
+	CHANGEPORT_PACKET()
+	{
 		port = -1;
 		size = sizeof(CHANGEPORT_PACKET);
 		type = static_cast<char>(E_PACKET::E_P_CHANGEPORT);
@@ -178,9 +185,10 @@ public:
 class INPUT_PACKET : public PACKET
 {
 public:
-	PlayerInput inputData {};
+	PlayerInput inputData{};
 	unsigned long long uid;
-	INPUT_PACKET() {
+	INPUT_PACKET()
+	{
 		inputData.clear();
 		uid = -1;
 		size = sizeof(INPUT_PACKET);
@@ -191,11 +199,12 @@ public:
 class ROTATE_PACKET : public PACKET
 {
 public:
-	FLOAT3 right {};
-	FLOAT3 up {};
-	FLOAT3 look {};
+	FLOAT3 right{};
+	FLOAT3 up{};
+	FLOAT3 look{};
 	unsigned long long uid;
-	ROTATE_PACKET() {
+	ROTATE_PACKET()
+	{
 		uid = -1;
 		size = sizeof(ROTATE_PACKET);
 		type = static_cast<char>(E_PACKET::E_P_ROTATE);
@@ -204,9 +213,10 @@ public:
 class POSITION_PACKET : public PACKET
 {
 public:
-	FLOAT3 position {};
+	FLOAT3 position{};
 	unsigned long long uid;
-	POSITION_PACKET() {
+	POSITION_PACKET()
+	{
 		uid = -1;
 		size = sizeof(POSITION_PACKET);
 		type = static_cast<char>(E_PACKET::E_P_POSITION);
@@ -218,7 +228,8 @@ class SET_HP_HIT_OBJ_PACKET : public PACKET
 public:
 	int hit_obj_id;
 	int hp;
-	SET_HP_HIT_OBJ_PACKET() {
+	SET_HP_HIT_OBJ_PACKET()
+	{
 		hit_obj_id = -1;
 		hp = 0;
 		size = sizeof(SET_HP_HIT_OBJ_PACKET);
@@ -232,7 +243,8 @@ public:
 	int oid; // 객체 ID
 	E_STAT stat; // 상태 (예: 0: 일반, 1: 공격, 2: 방어 등)
 	float value;
-	CHANGE_STAT_PACKET() {
+	CHANGE_STAT_PACKET()
+	{
 		oid = -1;
 		stat = E_STAT::NONE;
 		value = -1;
@@ -241,7 +253,7 @@ public:
 	}
 };
 
-class ADD_PACKET : public PACKET 
+class ADD_PACKET : public PACKET
 {
 public:
 	FLOAT3 right{};
@@ -252,7 +264,8 @@ public:
 	int hp;
 	OBJECT_TYPE o_type;
 	ANIMATION_TYPE a_type;
-	ADD_PACKET() {
+	ADD_PACKET()
+	{
 		id = -1;
 		hp = -1;
 		o_type = OBJECT_TYPE::OB_UNKNOWN;
@@ -265,7 +278,8 @@ class REMOVE_PACKET : public PACKET
 {
 public:
 	int id;
-	REMOVE_PACKET() {
+	REMOVE_PACKET()
+	{
 		id = -1;
 		size = sizeof(REMOVE_PACKET);
 		type = static_cast<char>(E_PACKET::E_O_REMOVE);
@@ -276,7 +290,8 @@ class CHANGEANIMATION_PACKET : public PACKET
 public:
 	int oid;
 	ANIMATION_TYPE a_type;
-	CHANGEANIMATION_PACKET() {
+	CHANGEANIMATION_PACKET()
+	{
 		a_type = ANIMATION_TYPE::UNKNOWN;
 		size = sizeof(CHANGEANIMATION_PACKET);
 		type = static_cast<char>(E_PACKET::E_O_CHANGEANIMATION);
@@ -290,7 +305,8 @@ public:
 	FLOAT3 look{};
 	FLOAT3 position{};
 	int id;
-	MOVE_PACKET() {
+	MOVE_PACKET()
+	{
 		size = sizeof(MOVE_PACKET);
 		type = static_cast<char>(E_PACKET::E_O_MOVE);
 	}
@@ -301,7 +317,8 @@ class OBJ_HIT_PACKET : public PACKET
 public:
 	int oid;
 	int damage;
-	OBJ_HIT_PACKET() {
+	OBJ_HIT_PACKET()
+	{
 		oid = -1;
 		damage = 0;
 		size = sizeof(OBJ_HIT_PACKET);
@@ -314,7 +331,8 @@ class OBJ_HP_PACKET : public PACKET
 public:
 	int oid;
 	int hp;
-	OBJ_HP_PACKET() {
+	OBJ_HP_PACKET()
+	{
 		oid = -1;
 		hp = 0;
 		size = sizeof(OBJ_HP_PACKET);
@@ -324,10 +342,11 @@ public:
 
 class OBJ_INVINCIBLE_PACKET : public PACKET
 {
-	public:
+public:
 	int oid;
 	char invincible; // 1: 무적, 0: 무적 해제
-	OBJ_INVINCIBLE_PACKET() {
+	OBJ_INVINCIBLE_PACKET()
+	{
 		oid = -1;
 		invincible = 0;
 		size = sizeof(OBJ_INVINCIBLE_PACKET);
@@ -342,7 +361,8 @@ public:
 	FLOAT3 Center{};
 	FLOAT3 Extents{};
 	FLOAT4 Orientation{};
-	OBJ_OBB_PACKET() {
+	OBJ_OBB_PACKET()
+	{
 		oid = -1;
 		size = sizeof(OBJ_OBB_PACKET);
 		type = static_cast<char>(E_PACKET::E_O_SETOBB);
@@ -361,7 +381,8 @@ public:
 	FLOAT3 up{};
 	FLOAT3 look{};
 	FLOAT3 position{};
-	STRUCT_OBJ_PACKET() {
+	STRUCT_OBJ_PACKET()
+	{
 		o_type = OBJECT_TYPE::OB_UNKNOWN;
 		size = sizeof(STRUCT_OBJ_PACKET);
 		type = static_cast<char>(E_PACKET::E_STRUCT_OBJ);
@@ -372,33 +393,37 @@ class TIME_SYNC_PACKET : public PACKET
 {
 public:
 	float serverTime;
-	TIME_SYNC_PACKET() {
+	TIME_SYNC_PACKET()
+	{
 		serverTime = 0.0f;
 		size = sizeof(TIME_SYNC_PACKET);
 		type = static_cast<char>(E_PACKET::E_SYNC_TIME); // 시간 동기화는 별도의 타입으로 정의할 수 있음
 	}
 };
 
-class GAME_START_PACKET:public PACKET
+class GAME_START_PACKET : public PACKET
 {
 public:
-	GAME_START_PACKET() {
+	GAME_START_PACKET()
+	{
 		type = static_cast<char>(E_PACKET::E_GAME_START);
 		size = sizeof(GAME_START_PACKET);
 	}
 };
-class GAME_END_PACKET :public PACKET
+class GAME_END_PACKET : public PACKET
 {
 public:
-	GAME_END_PACKET() {
+	GAME_END_PACKET()
+	{
 		type = static_cast<char>(E_PACKET::E_GAME_END);
 		size = sizeof(GAME_END_PACKET);
 	}
 };
-class NEW_GAME_PACKET :public PACKET
+class NEW_GAME_PACKET : public PACKET
 {
 public:
-	NEW_GAME_PACKET() {
+	NEW_GAME_PACKET()
+	{
 		type = static_cast<char>(E_PACKET::E_GAME_NEW);
 		size = sizeof(NEW_GAME_PACKET);
 	}
@@ -407,18 +432,21 @@ public:
 class PLAYER_RESPAWN_PACKET : public PACKET
 {
 public:
-	PLAYER_RESPAWN_PACKET() {
+	PLAYER_RESPAWN_PACKET()
+	{
 		type = static_cast<char>(E_PACKET::E_P_RESPAWN);
 		size = sizeof(PLAYER_RESPAWN_PACKET);
 	}
 };
 
-class WEAPON_CHANGE_PACKET : public PACKET {
+class WEAPON_CHANGE_PACKET : public PACKET
+{
 public:
-	char weapon_type;	// 1 sword 2 axe 3 pickaxe 4 hammer
-	char material_type; // 1 wood 2 stone 3 iron 
+	char weapon_type; // 1 sword 2 axe 3 pickaxe 4 hammer
+	char material_type; // 1 wood 2 stone 3 iron
 	unsigned long long uid;
-	WEAPON_CHANGE_PACKET() {
+	WEAPON_CHANGE_PACKET()
+	{
 		uid = 0;
 		weapon_type = -1;
 		material_type = -1;
@@ -427,9 +455,11 @@ public:
 	}
 };
 
-class CHANGE_TIME_PACKET :public PACKET {
+class CHANGE_TIME_PACKET : public PACKET
+{
 public:
-	CHANGE_TIME_PACKET() {
+	CHANGE_TIME_PACKET()
+	{
 		type = static_cast<char>(E_PACKET::E_CHANGE_TIME);
 		size = sizeof(CHANGE_TIME_PACKET);
 	}
@@ -439,7 +469,8 @@ class LOGIN_PACKET : public PACKET
 {
 public:
 	unsigned long long uid;
-	LOGIN_PACKET() {
+	LOGIN_PACKET()
+	{
 		uid = -1;
 		size = sizeof(LOGIN_PACKET);
 		type = static_cast<char>(E_PACKET::E_P_LOGIN);
@@ -449,7 +480,8 @@ class LOGOUT_PACKET : public PACKET
 {
 public:
 	unsigned long long uid;
-	LOGOUT_PACKET() {
+	LOGOUT_PACKET()
+	{
 		uid = -1;
 		size = sizeof(LOGOUT_PACKET);
 		type = static_cast<char>(E_PACKET::E_P_LOGOUT);
@@ -461,7 +493,8 @@ public:
 	char id[20]{};
 	char pw[20]{};
 	unsigned long long uid;
-	DB_REGISTER_PACKET() {
+	DB_REGISTER_PACKET()
+	{
 		uid = -1;
 		size = sizeof(DB_REGISTER_PACKET);
 		type = static_cast<char>(E_PACKET::E_DB_REGISTER);
@@ -473,7 +506,8 @@ public:
 	char id[20]{};
 	char pw[20]{};
 	unsigned long long uid;
-	DB_LOGIN_PACKET() {
+	DB_LOGIN_PACKET()
+	{
 		uid = -1;
 		size = sizeof(DB_LOGIN_PACKET);
 		type = static_cast<char>(E_PACKET::E_DB_LOGIN);
@@ -482,10 +516,11 @@ public:
 class DB_SUCCESS_FAIL_PACKET : public PACKET
 {
 public:
-	char kind{};	// E_DB_REGISTER, E_DB_LOGIN
-	char result{};	//1: 성공, 0: 실패
+	char kind{}; // E_DB_REGISTER, E_DB_LOGIN
+	char result{}; //1: 성공, 0: 실패
 	unsigned long long uid;
-	DB_SUCCESS_FAIL_PACKET() {
+	DB_SUCCESS_FAIL_PACKET()
+	{
 		uid = -1;
 		size = sizeof(DB_SUCCESS_FAIL_PACKET);
 		type = static_cast<char>(E_PACKET::E_DB_SUCCESS_FAIL);

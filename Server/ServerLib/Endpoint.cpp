@@ -6,7 +6,6 @@ Endpoint::Endpoint()
 {
 	memset(&m_ipv4Endpoint, 0, sizeof(m_ipv4Endpoint));
 	m_ipv4Endpoint.sin_family = AF_INET;
-
 }
 
 Endpoint::Endpoint(const char* address, int port)
@@ -14,7 +13,7 @@ Endpoint::Endpoint(const char* address, int port)
 	memset(&m_ipv4Endpoint, 0, sizeof(m_ipv4Endpoint));
 	m_ipv4Endpoint.sin_family = AF_INET;
 	inet_pton(AF_INET, address, &m_ipv4Endpoint.sin_addr);
-	m_ipv4Endpoint.sin_port = htons((uint16_t)port); 
+	m_ipv4Endpoint.sin_port = htons((uint16_t)port);
 }
 
 Endpoint::~Endpoint()

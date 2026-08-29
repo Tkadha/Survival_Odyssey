@@ -17,4 +17,3 @@ public:
 	virtual void SetAtkDelay() {}
 	virtual bool GetAtkDelay() const { return false; }
 };
-

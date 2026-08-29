@@ -11,12 +11,12 @@ public:
 	// 1회의 GetQueuedCompletionStatus이 최대한 꺼내올 수 있는 일의 갯수
 	static const int MaxEventCount = 1000;
 	static const int MaxLobbyEventCount = 100;
-	
+
 	Iocp(int threadCount);
 	~Iocp();
 
 	void Add(Socket& socket, void* userPtr);
-	
+
 	HANDLE m_hIocp;
 	int m_threadCount;
 	void Wait(IocpEvents& output, int timeoutMs);

@@ -19,12 +19,12 @@ void AtkNPCStandingState::Enter(std::shared_ptr<GameObject> npc)
 	npc->SetAnimationType(ANIMATION_TYPE::IDLE);
 
 	std::vector<tree_obj*> results;
-	tree_obj n_obj{ npc->GetID(),npc->GetPosition() };
+	tree_obj n_obj{npc->GetID(), npc->GetPosition()};
 	Octree::PlayerOctree.query(n_obj, oct_distance, results);
 	for (auto& p_obj : results) {
 		std::lock_guard<std::mutex> lock(g_clients_mutex);
 		for (auto& cl : PlayerClient::PlayerClients) {
-			if (cl.second->state != PC_INGAME)continue;
+			if (cl.second->state != PC_INGAME) continue;
 			if (cl.second->m_id != p_obj->u_id) continue;
 			cl.second->SendAnimationPacket(npc);
 		}
@@ -36,8 +36,7 @@ void AtkNPCStandingState::Execute(std::shared_ptr<GameObject> npc)
 	endtime = std::chrono::system_clock::now();
 	auto exectime = endtime - starttime;
 	auto exec_ms = std::chrono::duration_cast<std::chrono::milliseconds>(exectime).count();
-	if (exec_ms > duration_time)
-	{
+	if (exec_ms > duration_time) {
 		// ���� ��ȯ
 		npc->FSM_manager->ChangeState(std::make_shared<AtkNPCMoveState>());
 		return;
@@ -47,34 +46,30 @@ void AtkNPCStandingState::Execute(std::shared_ptr<GameObject> npc)
 	//�÷��̾ ������ Chase�� ����
 	bool detected = false;
 	{
-	std::lock_guard<std::mutex> lock(g_clients_mutex);
-	for (auto& pl : PlayerClient::PlayerClients) {
-		if (pl.second->state != PC_INGAME) continue;
-		auto playerInfo = pl.second;
-		if (playerInfo)
-		{
-			XMFLOAT3 playerPos = playerInfo->GetPosition();
-			XMFLOAT3 npcPos = npc->GetPosition();
+		std::lock_guard<std::mutex> lock(g_clients_mutex);
+		for (auto& pl : PlayerClient::PlayerClients) {
+			if (pl.second->state != PC_INGAME) continue;
+			auto playerInfo = pl.second;
+			if (playerInfo) {
+				XMFLOAT3 playerPos = playerInfo->GetPosition();
+				XMFLOAT3 npcPos = npc->GetPosition();
 
-			// �� ��ġ ������ 3D �Ÿ� ���
-			float distance = sqrt(
-				pow(playerPos.x - npcPos.x, 2) +
-				pow(playerPos.y - npcPos.y, 2) +
-				pow(playerPos.z - npcPos.z, 2)
-			);
+				// �� ��ġ ������ 3D �Ÿ� ���
+				float distance = sqrt(
+					pow(playerPos.x - npcPos.x, 2) +
+					pow(playerPos.y - npcPos.y, 2) +
+					pow(playerPos.z - npcPos.z, 2));
 
-			// 300 ���� ���� �ִٸ� Chase ���·� ��ȯ
-			float detectionRange = 200.f;
-			if (distance < detectionRange)
-			{
-				detected = true;
-				break;
+				// 300 ���� ���� �ִٸ� Chase ���·� ��ȯ
+				float detectionRange = 200.f;
+				if (distance < detectionRange) {
+					detected = true;
+					break;
+				}
 			}
 		}
 	}
-	}
-	if (detected)
-	{
+	if (detected) {
 		npc->FSM_manager->ChangeState(std::make_shared<AtkNPCChaseState>());
 		return;
 	}
@@ -83,8 +78,6 @@ void AtkNPCStandingState::Execute(std::shared_ptr<GameObject> npc)
 void AtkNPCStandingState::Exit(std::shared_ptr<GameObject> npc)
 {
 }
-
-
 
 
 //=====================================Move=================================================
@@ -98,17 +91,16 @@ void AtkNPCMoveState::Enter(std::shared_ptr<GameObject> npc)
 	npc->SetAnimationType(ANIMATION_TYPE::WALK);
 
 	std::vector<tree_obj*> results;
-	tree_obj n_obj{ npc->GetID(),npc->GetPosition() };
+	tree_obj n_obj{npc->GetID(), npc->GetPosition()};
 	Octree::PlayerOctree.query(n_obj, oct_distance, results);
 	for (auto& p_obj : results) {
 		std::lock_guard<std::mutex> lock(g_clients_mutex);
 		for (auto& cl : PlayerClient::PlayerClients) {
-			if (cl.second->state != PC_INGAME)continue;
+			if (cl.second->state != PC_INGAME) continue;
 			if (cl.second->m_id != p_obj->u_id) continue;
 			cl.second->SendAnimationPacket(npc);
 		}
 	}
-
 }
 
 void AtkNPCMoveState::Execute(std::shared_ptr<GameObject> npc)
@@ -117,14 +109,12 @@ void AtkNPCMoveState::Execute(std::shared_ptr<GameObject> npc)
 	endtime = std::chrono::system_clock::now();
 	auto exectime = endtime - starttime;
 	auto exec_ms = std::chrono::duration_cast<std::chrono::milliseconds>(exectime).count();
-	if (exec_ms > duration_time)
-	{
+	if (exec_ms > duration_time) {
 		// ���� ��ȯ
 		npc->FSM_manager->ChangeState(std::make_shared<AtkNPCStandingState>());
 		return;
 	}
-	switch (move_type)
-	{
+	switch (move_type) {
 	case 0:
 		// ����
 		npc->MoveForward(0.2f);
@@ -142,12 +132,12 @@ void AtkNPCMoveState::Execute(std::shared_ptr<GameObject> npc)
 	Octree::GameObjectOctree.update(npc->GetID(), npc->GetPosition());
 
 	std::vector<tree_obj*> results;
-	tree_obj n_obj{ npc->GetID(),npc->GetPosition() };
+	tree_obj n_obj{npc->GetID(), npc->GetPosition()};
 	Octree::PlayerOctree.query(n_obj, oct_distance, results);
 	for (auto& p_obj : results) {
 		std::lock_guard<std::mutex> lock(g_clients_mutex);
 		for (auto& cl : PlayerClient::PlayerClients) {
-			if (cl.second->state != PC_INGAME)continue;
+			if (cl.second->state != PC_INGAME) continue;
 			if (cl.second->m_id != p_obj->u_id) continue;
 			cl.second->SendMovePacket(npc);
 		}
@@ -157,34 +147,30 @@ void AtkNPCMoveState::Execute(std::shared_ptr<GameObject> npc)
 	//�÷��̾ ������ Chase�� ����
 	bool detected = false;
 	{
-	std::lock_guard<std::mutex> lock(g_clients_mutex);
-	for (auto& pl : PlayerClient::PlayerClients) {
-		if (pl.second->state != PC_INGAME) continue;
-		auto playerInfo = pl.second;
-		if (playerInfo)
-		{
-			XMFLOAT3 playerPos = playerInfo->GetPosition();
-			XMFLOAT3 npcPos = npc->GetPosition();
+		std::lock_guard<std::mutex> lock(g_clients_mutex);
+		for (auto& pl : PlayerClient::PlayerClients) {
+			if (pl.second->state != PC_INGAME) continue;
+			auto playerInfo = pl.second;
+			if (playerInfo) {
+				XMFLOAT3 playerPos = playerInfo->GetPosition();
+				XMFLOAT3 npcPos = npc->GetPosition();
 
-			// �� ��ġ ������ 3D �Ÿ� ���
-			float distance = sqrt(
-				pow(playerPos.x - npcPos.x, 2) +
-				pow(playerPos.y - npcPos.y, 2) +
-				pow(playerPos.z - npcPos.z, 2)
-			);
+				// �� ��ġ ������ 3D �Ÿ� ���
+				float distance = sqrt(
+					pow(playerPos.x - npcPos.x, 2) +
+					pow(playerPos.y - npcPos.y, 2) +
+					pow(playerPos.z - npcPos.z, 2));
 
-			// 300 ���� ���� �ִٸ� Chase ���·� ��ȯ
-			float detectionRange = 200.f;
-			if (distance < detectionRange)
-			{
-				detected = true;
-				break;
+				// 300 ���� ���� �ִٸ� Chase ���·� ��ȯ
+				float detectionRange = 200.f;
+				if (distance < detectionRange) {
+					detected = true;
+					break;
+				}
 			}
 		}
 	}
-	}
-	if (detected)
-	{
+	if (detected) {
 		npc->FSM_manager->ChangeState(std::make_shared<AtkNPCChaseState>());
 		return;
 	}
@@ -192,17 +178,16 @@ void AtkNPCMoveState::Execute(std::shared_ptr<GameObject> npc)
 
 void AtkNPCMoveState::Exit(std::shared_ptr<GameObject> npc)
 {
-	
 }
 
 //=====================================Chase=================================================
 
 void AtkNPCChaseState::Enter(std::shared_ptr<GameObject> npc)
 {
-	if (npc->GetType() == OBJECT_TYPE::OB_BAT)	npc->fly_height = 13.f;
+	if (npc->GetType() == OBJECT_TYPE::OB_BAT) npc->fly_height = 13.f;
 	npc->SetAnimationType(ANIMATION_TYPE::WALK);
 	std::vector<tree_obj*> results;
-	tree_obj n_obj{ npc->GetID(),npc->GetPosition() };
+	tree_obj n_obj{npc->GetID(), npc->GetPosition()};
 	Octree::PlayerOctree.query(n_obj, oct_distance, results);
 	for (auto& p_obj : results) {
 		std::lock_guard<std::mutex> lock(g_clients_mutex);
@@ -216,14 +201,13 @@ void AtkNPCChaseState::Enter(std::shared_ptr<GameObject> npc)
 void AtkNPCChaseState::Execute(std::shared_ptr<GameObject> npc)
 {
 	std::vector<tree_obj*> results;
-	tree_obj n_obj{ npc->GetID(),npc->GetPosition() };
-	Octree::PlayerOctree.query(n_obj, XMFLOAT3{ 500,1000,500 }, results);
-	if (results.size() <= 0)
-	{
+	tree_obj n_obj{npc->GetID(), npc->GetPosition()};
+	Octree::PlayerOctree.query(n_obj, XMFLOAT3{500, 1000, 500}, results);
+	if (results.size() <= 0) {
 		npc->FSM_manager->ChangeState(std::make_shared<AtkNPCStandingState>());
 		return;
 	}
-	long long near_player_id{ 0 };
+	long long near_player_id{0};
 	float near_player_distance{1000.f};
 	for (auto& t_obj : results) {
 		XMFLOAT3 playerPos = t_obj->position;
@@ -231,8 +215,7 @@ void AtkNPCChaseState::Execute(std::shared_ptr<GameObject> npc)
 		float distance = sqrt(
 			pow(playerPos.x - npcPos.x, 2) +
 			pow(playerPos.y - npcPos.y, 2) +
-			pow(playerPos.z - npcPos.z, 2)
-		);
+			pow(playerPos.z - npcPos.z, 2));
 		if (distance < near_player_distance) {
 			near_player_distance = distance;
 			near_player_id = t_obj->u_id;
@@ -242,99 +225,91 @@ void AtkNPCChaseState::Execute(std::shared_ptr<GameObject> npc)
 
 	int transition = 0; // 0 = none, 1 = attack, 2 = standing
 	{
-	std::lock_guard<std::mutex> lock(g_clients_mutex);
-	for (auto& cl : PlayerClient::PlayerClients) {
-		if (cl.second->m_id != near_player_id) continue;
+		std::lock_guard<std::mutex> lock(g_clients_mutex);
+		for (auto& cl : PlayerClient::PlayerClients) {
+			if (cl.second->m_id != near_player_id) continue;
 
-		XMFLOAT3 playerPos = cl.second->GetPosition();
-		XMFLOAT3 npcPos = npc->GetPosition();
-		// �÷��̾� ���� ���� ���
-		XMVECTOR targetDirectionVec = XMVector3Normalize(XMVectorSet(playerPos.x - npcPos.x, 0.0f, playerPos.z - npcPos.z, 0.0f));
-		XMFLOAT3 targetDirection;
-		XMStoreFloat3(&targetDirection, targetDirectionVec);
-
-
-		// NPC�� Look ���� ��������
-		XMFLOAT3 npcLook = npc->GetLook();
-		XMVECTOR npcLookVec = XMLoadFloat3(&npcLook);
-		XMFLOAT3 npcLookNorm;
-		XMStoreFloat3(&npcLookNorm, XMVector3Normalize(npcLookVec)); // Look ���͵� ����ȭ
-
-		// ����鿡���� NPC Look ���� (Y ���� 0���� ���� �� ����ȭ)
-		XMVECTOR npcLookVecXZ = XMVector3Normalize(XMVectorSet(npcLookNorm.x, 0.0f, npcLookNorm.z, 0.0f));
-
-		// ��ǥ Yaw �� ��� (���� ���� ���� ���)
-		float targetYaw = atan2f(targetDirection.x, targetDirection.z);
-
-		// ���� NPC�� Yaw �� ��� (���� Look ���� ���)
-		float currentYaw = atan2f(npcLookNorm.x, npcLookNorm.z);
-
-		float deltaYaw = targetYaw - currentYaw;
-
-		if (deltaYaw > pi_f)
-		{
-			deltaYaw -= 2 * pi_f;
-		}
-		else if (deltaYaw < -pi_f)
-		{
-			deltaYaw += 2 * pi_f;
-		}
-		// ��ǥ �������� ȸ��
-		npc->Rotate(0.0f, deltaYaw * 2, 0.0f);
+			XMFLOAT3 playerPos = cl.second->GetPosition();
+			XMFLOAT3 npcPos = npc->GetPosition();
+			// �÷��̾� ���� ���� ���
+			XMVECTOR targetDirectionVec = XMVector3Normalize(XMVectorSet(playerPos.x - npcPos.x, 0.0f, playerPos.z - npcPos.z, 0.0f));
+			XMFLOAT3 targetDirection;
+			XMStoreFloat3(&targetDirection, targetDirectionVec);
 
 
+			// NPC�� Look ���� ��������
+			XMFLOAT3 npcLook = npc->GetLook();
+			XMVECTOR npcLookVec = XMLoadFloat3(&npcLook);
+			XMFLOAT3 npcLookNorm;
+			XMStoreFloat3(&npcLookNorm, XMVector3Normalize(npcLookVec)); // Look ���͵� ����ȭ
 
-		float attackRange = 30.0f;
-		float distanceToPlayer = sqrt(pow(playerPos.x - npcPos.x, 2) + pow(playerPos.y - npcPos.y, 2) + pow(playerPos.z - npcPos.z, 2));
+			// ����鿡���� NPC Look ���� (Y ���� 0���� ���� �� ����ȭ)
+			XMVECTOR npcLookVecXZ = XMVector3Normalize(XMVectorSet(npcLookNorm.x, 0.0f, npcLookNorm.z, 0.0f));
 
-		if (distanceToPlayer < attackRange)
-		{
+			// ��ǥ Yaw �� ��� (���� ���� ���� ���)
+			float targetYaw = atan2f(targetDirection.x, targetDirection.z);
+
+			// ���� NPC�� Yaw �� ��� (���� Look ���� ���)
+			float currentYaw = atan2f(npcLookNorm.x, npcLookNorm.z);
+
+			float deltaYaw = targetYaw - currentYaw;
+
+			if (deltaYaw > pi_f) {
+				deltaYaw -= 2 * pi_f;
+			} else if (deltaYaw < -pi_f) {
+				deltaYaw += 2 * pi_f;
+			}
+			// ��ǥ �������� ȸ��
+			npc->Rotate(0.0f, deltaYaw * 2, 0.0f);
+
+
+			float attackRange = 30.0f;
+			float distanceToPlayer = sqrt(pow(playerPos.x - npcPos.x, 2) + pow(playerPos.y - npcPos.y, 2) + pow(playerPos.z - npcPos.z, 2));
+
+			if (distanceToPlayer < attackRange) {
+				std::vector<tree_obj*> results;
+				tree_obj n_obj{npc->GetID(), npc->GetPosition()};
+				Octree::PlayerOctree.query(n_obj, oct_distance, results);
+				for (auto& p_obj : results) {
+					for (auto& cl : PlayerClient::PlayerClients) {
+						if (cl.second->state != PC_INGAME) continue;
+						if (cl.second->m_id != p_obj->u_id) continue;
+						cl.second->SendMovePacket(npc);
+					}
+				}
+				auto obj = dynamic_cast<GameObject*>(npc.get());
+				if (obj->FSM_manager->GetAtkDelay() == false) {
+					transition = 1;
+					break;
+				}
+			}
+			if (distanceToPlayer > attackRange)
+				npc->MoveForward(0.2f);
+			Octree::GameObjectOctree.update(npc->GetID(), npc->GetPosition());
 			std::vector<tree_obj*> results;
-			tree_obj n_obj{ npc->GetID(),npc->GetPosition() };
+			tree_obj n_obj{npc->GetID(), npc->GetPosition()};
 			Octree::PlayerOctree.query(n_obj, oct_distance, results);
 			for (auto& p_obj : results) {
 				for (auto& cl : PlayerClient::PlayerClients) {
-					if (cl.second->state != PC_INGAME)continue;
+					if (cl.second->state != PC_INGAME) continue;
 					if (cl.second->m_id != p_obj->u_id) continue;
 					cl.second->SendMovePacket(npc);
 				}
 			}
-			auto obj = dynamic_cast<GameObject*> (npc.get());
-			if (obj->FSM_manager->GetAtkDelay() == false) {
-				transition = 1;
+			// �߰� �� ���� ���� (��: �÷��̾ �ʹ� �ָ� ���)
+			float loseRange = 600.f;
+			if (distanceToPlayer > loseRange) {
+				transition = 2;
 				break;
 			}
-		}
-		if (distanceToPlayer > attackRange)
-			npc->MoveForward(0.2f);
-		Octree::GameObjectOctree.update(npc->GetID(), npc->GetPosition());
-		std::vector<tree_obj*> results;
-		tree_obj n_obj{ npc->GetID(),npc->GetPosition() };
-		Octree::PlayerOctree.query(n_obj, oct_distance, results);
-		for (auto& p_obj : results) {
-			for (auto& cl : PlayerClient::PlayerClients) {
-				if (cl.second->state != PC_INGAME)continue;
-				if (cl.second->m_id != p_obj->u_id) continue;
-				cl.second->SendMovePacket(npc);
-			}
-		}
-		// �߰� �� ���� ���� (��: �÷��̾ �ʹ� �ָ� ���)
-		float loseRange = 600.f;
-		if (distanceToPlayer > loseRange)
-		{
-			transition = 2;
 			break;
 		}
-		break;
 	}
-	}
-	if (transition == 1)
-	{
+	if (transition == 1) {
 		npc->FSM_manager->ChangeState(std::make_shared<AtkNPCAttackState>());
 		return;
 	}
-	if (transition == 2)
-	{
+	if (transition == 2) {
 		npc->FSM_manager->ChangeState(std::make_shared<AtkNPCStandingState>());
 		return;
 	}
@@ -342,7 +317,6 @@ void AtkNPCChaseState::Execute(std::shared_ptr<GameObject> npc)
 
 void AtkNPCChaseState::Exit(std::shared_ptr<GameObject> npc)
 {
-
 }
 
 //=====================================Die=================================================
@@ -354,7 +328,7 @@ void AtkNPCDieState::Enter(std::shared_ptr<GameObject> npc)
 
 	npc->SetAnimationType(ANIMATION_TYPE::DIE);
 	std::vector<tree_obj*> results;
-	tree_obj n_obj{ npc->GetID(),npc->GetPosition() };
+	tree_obj n_obj{npc->GetID(), npc->GetPosition()};
 	Octree::PlayerOctree.query(n_obj, oct_distance, results);
 	for (auto& p_obj : results) {
 		std::lock_guard<std::mutex> lock(g_clients_mutex);
@@ -363,7 +337,6 @@ void AtkNPCDieState::Enter(std::shared_ptr<GameObject> npc)
 			cl.second->SendAnimationPacket(npc);
 		}
 	}
-
 }
 
 void AtkNPCDieState::Execute(std::shared_ptr<GameObject> npc)
@@ -371,13 +344,12 @@ void AtkNPCDieState::Execute(std::shared_ptr<GameObject> npc)
 	endtime = std::chrono::system_clock::now();
 	auto exectime = endtime - starttime;
 	auto exec_ms = std::chrono::duration_cast<std::chrono::milliseconds>(exectime).count();
-	if (exec_ms > duration_time)
-	{
+	if (exec_ms > duration_time) {
 		// ���� ��ȯ
 		npc->FSM_manager->ChangeState(std::make_shared<AtkNPCRespawnState>());
 		return;
 	}
-	if(npc->GetType() == OBJECT_TYPE::OB_BAT && npc->fly_height > 0.f) {
+	if (npc->GetType() == OBJECT_TYPE::OB_BAT && npc->fly_height > 0.f) {
 		npc->fly_height -= 1.f;
 		if (npc->fly_height < 0.f) npc->fly_height = 0.f;
 		npc->MoveForward(0.f);
@@ -399,13 +371,13 @@ void AtkNPCRespawnState::Enter(std::shared_ptr<GameObject> npc)
 
 
 	std::vector<tree_obj*> results;
-	tree_obj n_obj{ npc->GetID(),npc->GetPosition() };
+	tree_obj n_obj{npc->GetID(), npc->GetPosition()};
 	Octree::PlayerOctree.query(n_obj, oct_distance, results);
 
 	for (auto& p_obj : results) {
 		std::lock_guard<std::mutex> lock(g_clients_mutex);
 		for (auto& cl : PlayerClient::PlayerClients) {
-			if (cl.second->state != PC_INGAME)continue;
+			if (cl.second->state != PC_INGAME) continue;
 			if (cl.second->m_id != p_obj->u_id) continue;
 			cl.second->SendRemovePacket(npc);
 		}
@@ -417,8 +389,7 @@ void AtkNPCRespawnState::Execute(std::shared_ptr<GameObject> npc)
 	endtime = std::chrono::system_clock::now();
 	auto exectime = endtime - starttime;
 	auto exec_ms = std::chrono::duration_cast<std::chrono::milliseconds>(exectime).count();
-	if (exec_ms > duration_time)
-	{
+	if (exec_ms > duration_time) {
 		// ���� ��ġ�� ����
 		npc->Sethp(20);
 
@@ -446,9 +417,8 @@ void AtkNPCRespawnState::Exit(std::shared_ptr<GameObject> npc)
 	npc->is_alive = true;
 
 	std::vector<tree_obj*> results;
-	tree_obj n_obj{ npc->GetID(),npc->GetPosition() };
+	tree_obj n_obj{npc->GetID(), npc->GetPosition()};
 	Octree::PlayerOctree.query(n_obj, oct_distance, results);
-
 }
 
 //=====================================Attack=================================================
@@ -460,7 +430,7 @@ void AtkNPCAttackState::Enter(std::shared_ptr<GameObject> npc)
 	duration_time = 1.f * 1000; // 1�ʰ�
 	npc->SetAnimationType(ANIMATION_TYPE::ATTACK);
 	std::vector<tree_obj*> results;
-	tree_obj n_obj{ npc->GetID(),npc->GetPosition() };
+	tree_obj n_obj{npc->GetID(), npc->GetPosition()};
 	Octree::PlayerOctree.query(n_obj, oct_distance, results);
 	for (auto& p_obj : results) {
 		std::lock_guard<std::mutex> lock(g_clients_mutex);
@@ -484,13 +454,12 @@ void AtkNPCAttackState::Execute(std::shared_ptr<GameObject> npc)
 	if (exec_ms < 0.25 * 1000.f) {
 		auto n_type = npc->GetType();
 		if (npc->fly_height > 0) npc->fly_height -= 0.5f; // ���� �߿��� ���ݾ� ������
-		if(n_type == OBJECT_TYPE::OB_RAPTOR || n_type == OBJECT_TYPE::OB_TOAD)
+		if (n_type == OBJECT_TYPE::OB_RAPTOR || n_type == OBJECT_TYPE::OB_TOAD)
 			npc->MoveForward(0.5f);
 		else
 			npc->MoveForward(0.75f);
 
-	}
-	else {
+	} else {
 		if (npc->GetType() == OBJECT_TYPE::OB_BAT && npc->fly_height < 13.f) {
 			npc->fly_height += 0.5f;
 			npc->MoveForward(0.f);
@@ -499,12 +468,12 @@ void AtkNPCAttackState::Execute(std::shared_ptr<GameObject> npc)
 	Octree::GameObjectOctree.update(npc->GetID(), npc->GetPosition());
 
 	std::vector<tree_obj*> results;
-	tree_obj n_obj{ npc->GetID(),npc->GetPosition() };
+	tree_obj n_obj{npc->GetID(), npc->GetPosition()};
 	Octree::PlayerOctree.query(n_obj, oct_distance, results);
 	for (auto& p_obj : results) {
 		std::lock_guard<std::mutex> lock(g_clients_mutex);
 		for (auto& cl : PlayerClient::PlayerClients) {
-			if (cl.second->state != PC_INGAME)continue;
+			if (cl.second->state != PC_INGAME) continue;
 			if (cl.second->m_id != p_obj->u_id) continue;
 
 			cl.second->SendMovePacket(npc);
@@ -525,7 +494,7 @@ void AtkNPCHitState::Enter(std::shared_ptr<GameObject> npc)
 	starttime = std::chrono::system_clock::now();
 	duration_time = 1.0f * 1000; // 1�ʰ� ����
 	std::vector<tree_obj*> results;
-	tree_obj n_obj{ npc->GetID(),npc->GetPosition() };
+	tree_obj n_obj{npc->GetID(), npc->GetPosition()};
 	Octree::PlayerOctree.query(n_obj, oct_distance, results);
 	for (auto& p_obj : results) {
 		std::lock_guard<std::mutex> lock(g_clients_mutex);
@@ -551,12 +520,12 @@ void AtkNPCHitState::Execute(std::shared_ptr<GameObject> npc)
 	Octree::GameObjectOctree.update(npc->GetID(), npc->GetPosition());
 
 	std::vector<tree_obj*> results;
-	tree_obj n_obj{ npc->GetID(),npc->GetPosition() };
+	tree_obj n_obj{npc->GetID(), npc->GetPosition()};
 	Octree::PlayerOctree.query(n_obj, oct_distance, results);
 	for (auto& p_obj : results) {
 		std::lock_guard<std::mutex> lock(g_clients_mutex);
 		for (auto& cl : PlayerClient::PlayerClients) {
-			if (cl.second->state != PC_INGAME)continue;
+			if (cl.second->state != PC_INGAME) continue;
 			if (cl.second->m_id != p_obj->u_id) continue;
 
 			cl.second->SendMovePacket(npc);
@@ -567,7 +536,6 @@ void AtkNPCHitState::Execute(std::shared_ptr<GameObject> npc)
 void AtkNPCHitState::Exit(std::shared_ptr<GameObject> npc)
 {
 }
-
 
 
 void AtkNPCGlobalState::Enter(std::shared_ptr<GameObject> npc)
@@ -583,7 +551,7 @@ void AtkNPCGlobalState::Execute(std::shared_ptr<GameObject> npc)
 		if (exec_ms > sustainment_time) {
 			is_invincible = false;
 			std::vector<tree_obj*> results;
-			tree_obj n_obj{ npc->GetID(),npc->GetPosition() };
+			tree_obj n_obj{npc->GetID(), npc->GetPosition()};
 			Octree::PlayerOctree.query(n_obj, oct_distance, results);
 			for (auto& p_obj : results) {
 				std::lock_guard<std::mutex> lock(g_clients_mutex);

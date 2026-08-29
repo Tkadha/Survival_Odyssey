@@ -4,13 +4,13 @@
 #include <string>
 #include <conio.h> // for _kbhit() and _getch()
 #include <WS2tcpip.h>
-#pragma comment (lib, "WS2_32.LIB")
+#pragma comment(lib, "WS2_32.LIB")
 #include "../Global.h"
 #include "../ServerLib/ServerHeader.h"
 #ifdef _DEBUG
-#pragma comment(lib,"../x64/Debug/serverlib.lib")
+#pragma comment(lib, "../x64/Debug/serverlib.lib")
 #else
-#pragma comment(lib,"../x64/Release/serverlib.lib")
+#pragma comment(lib, "../x64/Release/serverlib.lib")
 #endif
 
 short PORT = 8999;
@@ -36,41 +36,36 @@ void ReconnectToNewServer(const char* n_addr, short n_port);
 void Process_Packet(char* packet)
 {
 	E_PACKET type = static_cast<E_PACKET>(packet[1]);
-	switch (type)
-	{
+	switch (type) {
 	case E_PACKET::E_P_CHAT: {
 		CHAT_PACKET* recv_p = reinterpret_cast<CHAT_PACKET*>(packet);
 		cout << "Received: " << recv_p->chat << endl;
-	}
-						   break;
+	} break;
 	case E_PACKET::E_P_CHANGEPORT: {
 		CHANGEPORT_PACKET* recv_p = reinterpret_cast<CHANGEPORT_PACKET*>(packet);
 		cout << "Changing server to " << recv_p->addr << ":" << recv_p->port << endl;
 		ReconnectToNewServer(recv_p->addr, recv_p->port);
-		if (recv_p->port = 9000) s_type = SERVER_TYPE::E_GAME;
-		else s_type = SERVER_TYPE::E_LOBBY;
-	}
-								 break;
+		if (recv_p->port = 9000)
+			s_type = SERVER_TYPE::E_GAME;
+		else
+			s_type = SERVER_TYPE::E_LOBBY;
+	} break;
 	case E_PACKET::E_DB_SUCCESS_FAIL: {
 		DB_SUCCESS_FAIL_PACKET* recv_p = reinterpret_cast<DB_SUCCESS_FAIL_PACKET*>(packet);
 		if (static_cast<E_PACKET>(recv_p->kind) == E_PACKET::E_DB_REGISTER) {
 			if (recv_p->result == 1) {
 				cout << "Register Success" << endl;
-			}
-			else {
+			} else {
 				cout << "Register Fail" << endl;
 			}
-		}
-		else if (static_cast<E_PACKET>(recv_p->kind) == E_PACKET::E_DB_LOGIN) {
+		} else if (static_cast<E_PACKET>(recv_p->kind) == E_PACKET::E_DB_LOGIN) {
 			if (recv_p->result == 1) {
 				cout << "Login Success" << endl;
-			}
-			else {
+			} else {
 				cout << "Login Fail" << endl;
 			}
 		}
-	}
-		break;
+	} break;
 	}
 }
 
@@ -90,8 +85,7 @@ void send_message()
 		p.type = static_cast<char>(E_PACKET::E_P_CHAT);
 		OVER_EXP* send_over = new OVER_EXP(reinterpret_cast<char*>(&p), p.size);
 		WSASend(server_s->m_fd, &send_over->wsabuf, 1, nullptr, 0, &send_over->over, send_callback);
-	}
-	else {
+	} else {
 		INGAME_PACKET p;
 		OVER_EXP* send_over = new OVER_EXP(reinterpret_cast<char*>(&p), p.size);
 		WSASend(server_s->m_fd, &send_over->wsabuf, 1, nullptr, 0, &send_over->over, send_callback);
@@ -120,7 +114,7 @@ void send_login()
 
 
 void CALLBACK recv_callback(DWORD err, DWORD recv_size,
-	LPWSAOVERLAPPED recv_over, DWORD sendflag)
+							LPWSAOVERLAPPED recv_over, DWORD sendflag)
 {
 	if (err != 0 || recv_size == 0) {
 		cout << "Connection closed or error occurred." << endl;
@@ -156,7 +150,7 @@ void CALLBACK recv_callback(DWORD err, DWORD recv_size,
 	}
 
 	memset(server_s->m_recv_over.send_buf + server_s->m_prev_remain, 0,
-		sizeof(server_s->m_recv_over.send_buf) - server_s->m_prev_remain);
+		   sizeof(server_s->m_recv_over.send_buf) - server_s->m_prev_remain);
 	memset(&server_s->m_recv_over.wsabuf, 0, sizeof(server_s->m_recv_over.over));
 
 	// 다음 수신 준비
@@ -167,7 +161,7 @@ void CALLBACK recv_callback(DWORD err, DWORD recv_size,
 }
 
 void CALLBACK send_callback(DWORD err, DWORD sent_size,
-	LPWSAOVERLAPPED send_over, DWORD sendflag)
+							LPWSAOVERLAPPED send_over, DWORD sendflag)
 {
 	delete reinterpret_cast<OVER_EXP*>(send_over);
 }
@@ -190,11 +184,9 @@ int main()
 			char ch = _getch();
 			if (ch == 'k' || ch == 'K') {
 				send_message();
-			}
-			else if (ch == 't' || ch == 'T') {
+			} else if (ch == 't' || ch == 'T') {
 				send_login();
-			}
-			else if (ch == 'q' || ch == 'Q') {
+			} else if (ch == 'q' || ch == 'Q') {
 				bshutdown = true;
 			}
 		}
@@ -222,5 +214,5 @@ void ReconnectToNewServer(const char* n_addr, short n_port)
 	server_s->m_recv_over.wsabuf.len = BUFSIZE;
 	server_s->m_recv_over.wsabuf.buf = server_s->m_recv_over.send_buf;
 	WSARecv(server_s->m_fd, &(server_s->m_recv_over.wsabuf), 1, nullptr,
-		&server_s->m_readFlags, &(server_s->m_recv_over.over), recv_callback);
+			&server_s->m_readFlags, &(server_s->m_recv_over.over), recv_callback);
 }

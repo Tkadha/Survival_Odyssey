@@ -15,4 +15,3 @@ public:
 	static Endpoint Any;
 	std::string ToString();
 };
-

@@ -23,8 +23,7 @@ Timer::~Timer()
 
 void Timer::Tick(float fLockFPS)
 {
-	if (m_bStopped)
-	{
+	if (m_bStopped) {
 		m_fTimeElapsed = 0.0f;
 		return;
 	}
@@ -33,10 +32,8 @@ void Timer::Tick(float fLockFPS)
 	::QueryPerformanceCounter((LARGE_INTEGER*)&m_nCurrentPerformanceCounter);
 	fTimeElapsed = float((m_nCurrentPerformanceCounter - m_nLastPerformanceCounter) * m_fTimeScale);
 
-	if (fLockFPS > 0.0f)
-	{
-		while (fTimeElapsed < (1.0f / fLockFPS))
-		{
+	if (fLockFPS > 0.0f) {
+		while (fTimeElapsed < (1.0f / fLockFPS)) {
 			::QueryPerformanceCounter((LARGE_INTEGER*)&m_nCurrentPerformanceCounter);
 			fTimeElapsed = float((m_nCurrentPerformanceCounter - m_nLastPerformanceCounter) * m_fTimeScale);
 		}
@@ -44,8 +41,7 @@ void Timer::Tick(float fLockFPS)
 
 	m_nLastPerformanceCounter = m_nCurrentPerformanceCounter;
 
-	if (fabsf(fTimeElapsed - m_fTimeElapsed) < 1.0f)
-	{
+	if (fabsf(fTimeElapsed - m_fTimeElapsed) < 1.0f) {
 		::memmove(&m_fFrameTime[1], m_fFrameTime, (MAX_SAMPLE_COUNT - 1) * sizeof(float));
 		m_fFrameTime[0] = fTimeElapsed;
 		if (m_nSampleCount < MAX_SAMPLE_COUNT) m_nSampleCount++;
@@ -53,8 +49,7 @@ void Timer::Tick(float fLockFPS)
 
 	m_nFramesPerSecond++;
 	m_fFPSTimeElapsed += fTimeElapsed;
-	if (m_fFPSTimeElapsed > 1.0f)
-	{
+	if (m_fFPSTimeElapsed > 1.0f) {
 		m_nCurrentFrameRate = m_nFramesPerSecond;
 		m_nFramesPerSecond = 0;
 		m_fFPSTimeElapsed = 0.0f;
@@ -67,24 +62,23 @@ void Timer::Tick(float fLockFPS)
 
 unsigned long Timer::GetFrameRate(LPTSTR lpszString, int nCharacters)
 {
-	if (lpszString)
-	{
+	if (lpszString) {
 		_itow_s(m_nCurrentFrameRate, lpszString, nCharacters, 10);
 		wcscat_s(lpszString, nCharacters, _T(" FPS)"));
 	}
 
-	return(m_nCurrentFrameRate);
+	return (m_nCurrentFrameRate);
 }
 
 float Timer::GetTimeElapsed()
 {
-	return(m_fTimeElapsed);
+	return (m_fTimeElapsed);
 }
 
 float Timer::GetTotalTime()
 {
-	if (m_bStopped) return(float(((m_nStopPerformanceCounter - m_nPausedPerformanceCounter) - m_nBasePerformanceCounter) * m_fTimeScale));
-	return(float(((m_nCurrentPerformanceCounter - m_nPausedPerformanceCounter) - m_nBasePerformanceCounter) * m_fTimeScale));
+	if (m_bStopped) return (float(((m_nStopPerformanceCounter - m_nPausedPerformanceCounter) - m_nBasePerformanceCounter) * m_fTimeScale));
+	return (float(((m_nCurrentPerformanceCounter - m_nPausedPerformanceCounter) - m_nBasePerformanceCounter) * m_fTimeScale));
 }
 
 void Timer::Reset()
@@ -102,8 +96,7 @@ void Timer::Start()
 {
 	__int64 nPerformanceCounter;
 	::QueryPerformanceCounter((LARGE_INTEGER*)&nPerformanceCounter);
-	if (m_bStopped)
-	{
+	if (m_bStopped) {
 		m_nPausedPerformanceCounter += (nPerformanceCounter - m_nStopPerformanceCounter);
 		m_nLastPerformanceCounter = nPerformanceCounter;
 		m_nStopPerformanceCounter = 0;
@@ -113,8 +106,7 @@ void Timer::Start()
 
 void Timer::Stop()
 {
-	if (!m_bStopped)
-	{
+	if (!m_bStopped) {
 		::QueryPerformanceCounter((LARGE_INTEGER*)&m_nStopPerformanceCounter);
 		m_bStopped = true;
 	}

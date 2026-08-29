@@ -23,20 +23,17 @@ void Iocp::Add(Socket& socket, void* userPtr)
 		throw Exception("IOCP add failed!");
 }
 
-void Iocp::Wait(IocpEvents &output, int timeoutMs)
+void Iocp::Wait(IocpEvents& output, int timeoutMs)
 {
-	 BOOL r = GetQueuedCompletionStatusEx(m_hIocp, output.m_events, MaxEventCount, (ULONG*)&output.m_eventCount, timeoutMs, FALSE);
-	 if (!r)
-	 {
-		 output.m_eventCount = 0;
-	 }
+	BOOL r = GetQueuedCompletionStatusEx(m_hIocp, output.m_events, MaxEventCount, (ULONG*)&output.m_eventCount, timeoutMs, FALSE);
+	if (!r) {
+		output.m_eventCount = 0;
+	}
 }
 void Iocp::Wait(LobbyIocpEvents& output, int timeoutMs)
 {
 	BOOL r = GetQueuedCompletionStatusEx(m_hIocp, output.m_events, MaxLobbyEventCount, (ULONG*)&output.m_eventCount, timeoutMs, FALSE);
-	if (!r)
-	{
+	if (!r) {
 		output.m_eventCount = 0;
 	}
 }
-

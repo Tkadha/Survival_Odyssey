@@ -1,6 +1,6 @@
 #pragma once
 
-class Exception:public std::exception
+class Exception : public std::exception
 {
 public:
 	Exception(const std::string& text);
@@ -10,4 +10,3 @@ public:
 
 	const char* what() { return m_text.c_str(); }
 };
-

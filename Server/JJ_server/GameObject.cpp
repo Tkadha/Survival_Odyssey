@@ -8,7 +8,7 @@ std::unordered_map<OBJECT_TYPE, std::shared_ptr<BoundingOrientedBox>> OBB_Manage
 std::vector<shared_ptr<GameObject>> GameObject::gameObjects;
 std::vector<shared_ptr<GameObject>> GameObject::ConstructObjects;
 
-#define MIN_HEIGHT                  1055.f      
+#define MIN_HEIGHT 1055.f
 
 GameObject::GameObject()
 {
@@ -31,13 +31,12 @@ void GameObject::MoveForward(float fDistance)
 	myCurrentWorldMat *= XMMatrixTranslationFromVector(XMLoadFloat3(&GetPosition()));
 	local_obb.Transform(myCurrentOBB, myCurrentWorldMat);
 	std::vector<tree_obj*> nearby_objects;
-	tree_obj n_obj{ GetID(), GetPosition() };
-	Octree::GameObjectOctree.query(n_obj, XMFLOAT3{ 500,300,500 }, nearby_objects);
+	tree_obj n_obj{GetID(), GetPosition()};
+	Octree::GameObjectOctree.query(n_obj, XMFLOAT3{500, 300, 500}, nearby_objects);
 
 	XMVECTOR totalPushOutVector = XMVectorSet(0, 0, 0, 0);
 	int collisionCount = 0;
-	for (auto& other_info : nearby_objects)
-	{
+	for (auto& other_info : nearby_objects) {
 		// 자기 자신은 제외
 		if (other_info->u_id == GetID()) continue;
 
@@ -45,14 +44,12 @@ void GameObject::MoveForward(float fDistance)
 		if (!other_obj || !other_obj->is_alive) continue;
 		if (other_obj->Gethp() <= 0) continue;
 		if (!other_obj->IsRenderObj()) continue;
-		if (this->GetType() == OBJECT_TYPE::OB_BAT)
-		{
+		if (this->GetType() == OBJECT_TYPE::OB_BAT) {
 			if (other_obj->GetType() != OBJECT_TYPE::OB_TREE) continue;
 		}
 
 		// 충돌했다면 밀어낼 방향 계산
-		if (myCurrentOBB.Intersects(other_obj->world_obb))
-		{
+		if (myCurrentOBB.Intersects(other_obj->world_obb)) {
 			XMVECTOR myCenter = XMLoadFloat3(&GetPosition());
 			XMVECTOR otherCenter = XMLoadFloat3(&other_obj->GetPosition());
 
@@ -64,8 +61,7 @@ void GameObject::MoveForward(float fDistance)
 			collisionCount++;
 		}
 	}
-	if (collisionCount > 0)
-	{
+	if (collisionCount > 0) {
 		// 평균적인 밀어내기 방향 계산
 		totalPushOutVector = XMVector3Normalize(totalPushOutVector);
 
@@ -102,15 +98,14 @@ void GameObject::MoveForward(float fDistance)
 	std::vector<tree_obj*> presults;
 	std::vector<tree_obj*> oresults;
 	{
-		tree_obj n_obj{ GetID() ,test_move };
-		Octree::PlayerOctree.query(n_obj, XMFLOAT3{ 500,300,500 }, presults);
-		Octree::GameObjectOctree.query(n_obj, XMFLOAT3{ 500,300,500 }, oresults);
+		tree_obj n_obj{GetID(), test_move};
+		Octree::PlayerOctree.query(n_obj, XMFLOAT3{500, 300, 500}, presults);
+		Octree::GameObjectOctree.query(n_obj, XMFLOAT3{500, 300, 500}, oresults);
 		for (auto& p_obj : presults) {
 			for (auto& cl : PlayerClient::PlayerClients) {
 				if (cl.second->state != PC_INGAME) continue;
 				if (cl.second->m_id != p_obj->u_id) continue;
-				if (testOBBX.Intersects(cl.second->world_obb))
-				{
+				if (testOBBX.Intersects(cl.second->world_obb)) {
 					test_move.x = GetPosition().x;
 					break;
 				}
@@ -122,19 +117,16 @@ void GameObject::MoveForward(float fDistance)
 			if (!GameObject::gameObjects[o_obj->u_id]->IsRenderObj()) continue;
 			if (false == GameObject::gameObjects[o_obj->u_id]->is_alive) continue;
 			auto t = GameObject::gameObjects[o_obj->u_id]->GetType();
-			if (this->GetType() == OBJECT_TYPE::OB_BAT)
-			{
+			if (this->GetType() == OBJECT_TYPE::OB_BAT) {
 				if (t != OBJECT_TYPE::OB_TREE) continue;
 			}
-			if (testOBBX.Intersects(GameObject::gameObjects[o_obj->u_id]->world_obb))
-			{
+			if (testOBBX.Intersects(GameObject::gameObjects[o_obj->u_id]->world_obb)) {
 				test_move.x = GetPosition().x;
 				break;
 			}
 		}
 		for (auto& st_obj : GameObject::ConstructObjects) {
-			if (testOBBX.Intersects(st_obj->world_obb))
-			{
+			if (testOBBX.Intersects(st_obj->world_obb)) {
 				test_move.x = GetPosition().x;
 				break;
 			}
@@ -151,10 +143,9 @@ void GameObject::MoveForward(float fDistance)
 	{
 		for (auto& p_obj : presults) {
 			for (auto& cl : PlayerClient::PlayerClients) {
-				if (cl.second->state != PC_INGAME)continue;
+				if (cl.second->state != PC_INGAME) continue;
 				if (cl.second->m_id != p_obj->u_id) continue;
-				if (testOBBZ.Intersects(cl.second->world_obb))
-				{
+				if (testOBBZ.Intersects(cl.second->world_obb)) {
 					test_move.z = GetPosition().z;
 					break;
 				}
@@ -166,15 +157,13 @@ void GameObject::MoveForward(float fDistance)
 			if (!GameObject::gameObjects[o_obj->u_id]->IsRenderObj()) continue;
 			if (false == GameObject::gameObjects[o_obj->u_id]->is_alive) continue;
 			auto t = GameObject::gameObjects[o_obj->u_id]->GetType();
-			if (testOBBZ.Intersects(GameObject::gameObjects[o_obj->u_id]->world_obb))
-			{
+			if (testOBBZ.Intersects(GameObject::gameObjects[o_obj->u_id]->world_obb)) {
 				test_move.z = GetPosition().z;
 				break;
 			}
 		}
 		for (auto& st_obj : GameObject::ConstructObjects) {
-			if (testOBBX.Intersects(st_obj->world_obb))
-			{
+			if (testOBBX.Intersects(st_obj->world_obb)) {
 				test_move.z = GetPosition().z;
 				break;
 			}
@@ -202,17 +191,16 @@ void GameObject::Rotate(float fPitch, float fYaw, float fRoll)
 	XMVECTOR totalPushOutVector = XMVectorSet(0, 0, 0, 0);
 	int collisionCount = 0;
 
-	tree_obj n_obj{ GetID(), GetPosition() };
-	Octree::PlayerOctree.query(n_obj, XMFLOAT3{ 500,300,500 }, presults);
-	Octree::GameObjectOctree.query(n_obj, XMFLOAT3{ 500,300,500 }, oresults);
+	tree_obj n_obj{GetID(), GetPosition()};
+	Octree::PlayerOctree.query(n_obj, XMFLOAT3{500, 300, 500}, presults);
+	Octree::GameObjectOctree.query(n_obj, XMFLOAT3{500, 300, 500}, oresults);
 
 	for (auto& p_obj : presults) {
 		for (auto& cl : PlayerClient::PlayerClients) {
 			if (cl.second->state != PC_INGAME) continue;
 			if (cl.second->m_id != p_obj->u_id) continue;
 
-			if (testOBB.Intersects(cl.second->world_obb))
-			{
+			if (testOBB.Intersects(cl.second->world_obb)) {
 				XMVECTOR myCenter = XMLoadFloat3(&GetPosition());
 				XMVECTOR otherCenter = XMLoadFloat3(&cl.second->world_obb.Center);
 				XMVECTOR pushDir = XMVector3Normalize(XMVectorSubtract(myCenter, otherCenter));
@@ -227,12 +215,10 @@ void GameObject::Rotate(float fPitch, float fYaw, float fRoll)
 		auto& other_obj = GameObject::gameObjects[o_obj->u_id];
 		if (!other_obj || !other_obj->is_alive || other_obj->Gethp() <= 0) continue;
 		if (!other_obj->IsRenderObj()) continue;
-		if (this->GetType() == OBJECT_TYPE::OB_BAT)
-		{
+		if (this->GetType() == OBJECT_TYPE::OB_BAT) {
 			if (other_obj->GetType() != OBJECT_TYPE::OB_TREE) continue;
 		}
-		if (testOBB.Intersects(other_obj->world_obb))
-		{
+		if (testOBB.Intersects(other_obj->world_obb)) {
 			XMVECTOR myCenter = XMLoadFloat3(&GetPosition());
 			XMVECTOR otherCenter = XMLoadFloat3(&other_obj->world_obb.Center);
 			XMVECTOR pushDir = XMVector3Normalize(XMVectorSubtract(myCenter, otherCenter));
@@ -241,8 +227,7 @@ void GameObject::Rotate(float fPitch, float fYaw, float fRoll)
 		}
 	}
 	for (auto& st_obj : GameObject::ConstructObjects) {
-		if (testOBB.Intersects(st_obj->world_obb))
-		{
+		if (testOBB.Intersects(st_obj->world_obb)) {
 			XMVECTOR myCenter = XMLoadFloat3(&GetPosition());
 			XMVECTOR otherCenter = XMLoadFloat3(&st_obj->world_obb.Center);
 			XMVECTOR pushDir = XMVector3Normalize(XMVectorSubtract(myCenter, otherCenter));
@@ -251,8 +236,7 @@ void GameObject::Rotate(float fPitch, float fYaw, float fRoll)
 		}
 	}
 
-	if (collisionCount > 0)
-	{
+	if (collisionCount > 0) {
 		totalPushOutVector = XMVector3Normalize(totalPushOutVector);
 		totalPushOutVector = XMVectorSetY(totalPushOutVector, 0.0f);
 		totalPushOutVector = XMVector3Normalize(totalPushOutVector);

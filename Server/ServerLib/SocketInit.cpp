@@ -12,11 +12,8 @@ SocketInit::SocketInit()
 	WSADATA w;
 	WSAStartup(MAKEWORD(2, 2), &w);
 #endif
-
-
 }
 
 void SocketInit::Touch()
 {
 }
-

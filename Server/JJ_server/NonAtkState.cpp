@@ -8,7 +8,6 @@
 #include <iostream>
 
 
-
 void NonAtkNPCGlobalState::Enter(std::shared_ptr<GameObject> npc)
 {
 }
@@ -21,10 +20,10 @@ void NonAtkNPCGlobalState::Execute(std::shared_ptr<GameObject> npc)
 		auto exec_ms = std::chrono::duration_cast<std::chrono::milliseconds>(exectime).count();
 		if (exec_ms > sustainment_time) {
 			is_invincible = false;
-			
+
 			std::vector<tree_obj*> results;
-			XMFLOAT3 oct_distance{ 2500,1000,2500 };
-			tree_obj n_obj{ npc->GetID(),npc->GetPosition() };
+			XMFLOAT3 oct_distance{2500, 1000, 2500};
+			tree_obj n_obj{npc->GetID(), npc->GetPosition()};
 			Octree::PlayerOctree.query(n_obj, oct_distance, results);
 			for (auto& p_obj : results) {
 				std::lock_guard<mutex> lock(g_clients_mutex);
@@ -43,7 +42,6 @@ void NonAtkNPCGlobalState::Exit(std::shared_ptr<GameObject> npc)
 }
 
 
-
 //=====================================Standing=================================================
 
 
@@ -55,7 +53,7 @@ void NonAtkNPCStandingState::Enter(std::shared_ptr<GameObject> npc)
 
 	// 근처에 있는 플레이어에게 타입 보내기
 	std::vector<tree_obj*> results;
-	tree_obj n_obj{ npc->GetID(),npc->GetPosition() };
+	tree_obj n_obj{npc->GetID(), npc->GetPosition()};
 	Octree::PlayerOctree.query(n_obj, oct_distance, results);
 	for (auto& p_obj : results) {
 		std::lock_guard<mutex> lock(g_clients_mutex);
@@ -71,13 +69,11 @@ void NonAtkNPCStandingState::Execute(std::shared_ptr<GameObject> npc)
 	endtime = std::chrono::system_clock::now();
 	auto exectime = endtime - starttime;
 	auto exec_ms = std::chrono::duration_cast<std::chrono::milliseconds>(exectime).count();
-	if(exec_ms > duration_time)
-	{
+	if (exec_ms > duration_time) {
 		// 상태 전환
 		npc->FSM_manager->ChangeState(std::make_shared<NonAtkNPCMoveState>());
 		return;
 	}
-
 }
 
 void NonAtkNPCStandingState::Exit(std::shared_ptr<GameObject> npc)
@@ -86,7 +82,6 @@ void NonAtkNPCStandingState::Exit(std::shared_ptr<GameObject> npc)
 
 
 //=====================================Move=================================================
-
 
 
 void NonAtkNPCMoveState::Enter(std::shared_ptr<GameObject> npc)
@@ -99,7 +94,7 @@ void NonAtkNPCMoveState::Enter(std::shared_ptr<GameObject> npc)
 
 	// 근처에 있는 플레이어에게 타입 보내기
 	std::vector<tree_obj*> results;
-	tree_obj n_obj{ npc->GetID(),npc->GetPosition() };
+	tree_obj n_obj{npc->GetID(), npc->GetPosition()};
 	Octree::PlayerOctree.query(n_obj, oct_distance, results);
 	for (auto& p_obj : results) {
 		std::lock_guard<mutex> lock(g_clients_mutex);
@@ -117,70 +112,70 @@ void NonAtkNPCMoveState::Execute(std::shared_ptr<GameObject> npc)
 	endtime = std::chrono::system_clock::now();
 	auto exectime = endtime - starttime;
 	auto exec_ms = std::chrono::duration_cast<std::chrono::milliseconds>(exectime).count();
-	if (exec_ms > duration_time)
-	{
+	if (exec_ms > duration_time) {
 		// 상태 전환
 		npc->FSM_manager->ChangeState(std::make_shared<NonAtkNPCStandingState>());
 		return;
 	}
-	switch (npc->GetType())
-	{
-	case OBJECT_TYPE::OB_COW:
-	{
-		switch (move_type)
-		{
+	switch (npc->GetType()) {
+	case OBJECT_TYPE::OB_COW: {
+		switch (move_type) {
 		case 0:
 			// 전진
 			npc->MoveForward(0.2f);
 			break;
 		case 1:
 			// 회전하면서 전진
-			if (rotate_type == 0) npc->Rotate(0.f, -0.5f, 0.f);
-			else if (rotate_type == 1) npc->Rotate(0.f, 0.5f, 0.f);
+			if (rotate_type == 0)
+				npc->Rotate(0.f, -0.5f, 0.f);
+			else if (rotate_type == 1)
+				npc->Rotate(0.f, 0.5f, 0.f);
 			npc->MoveForward(0.1f);
 			break;
 		case 2:
 			// 회전
-			if (rotate_type == 0) npc->Rotate(0.f, -0.25f, 0.f);
-			else if (rotate_type == 1) npc->Rotate(0.f, 0.25f, 0.f);
+			if (rotate_type == 0)
+				npc->Rotate(0.f, -0.25f, 0.f);
+			else if (rotate_type == 1)
+				npc->Rotate(0.f, 0.25f, 0.f);
 			break;
 		}
-	}
-	break;
-	case OBJECT_TYPE::OB_PIG:
-	{
-		switch (move_type)
-		{
+	} break;
+	case OBJECT_TYPE::OB_PIG: {
+		switch (move_type) {
 		case 0:
 			// 전진
 			npc->MoveForward(0.2f);
 			break;
 		case 1:
 			// 회전하면서 전진
-			if (rotate_type == 0) npc->Rotate(0.f, -0.5f, 0.f);
-			else if (rotate_type == 1) npc->Rotate(0.f, 0.5f, 0.f);
+			if (rotate_type == 0)
+				npc->Rotate(0.f, -0.5f, 0.f);
+			else if (rotate_type == 1)
+				npc->Rotate(0.f, 0.5f, 0.f);
 			npc->MoveForward(0.1f);
 			break;
 		case 2:
 			// 회전
-			if (rotate_type == 0) npc->Rotate(0.f, -0.25f, 0.f);
-			else if (rotate_type == 1) npc->Rotate(0.f, 0.25f, 0.f);
+			if (rotate_type == 0)
+				npc->Rotate(0.f, -0.25f, 0.f);
+			else if (rotate_type == 1)
+				npc->Rotate(0.f, 0.25f, 0.f);
 			break;
 		}
-	}
-	break;
+	} break;
 	default:
 		break;
 	}
 	Octree::GameObjectOctree.update(npc->GetID(), npc->GetPosition());
 
 	std::vector<tree_obj*> results;
-	tree_obj n_obj{ npc->GetID(),npc->GetPosition() };
+	tree_obj n_obj{npc->GetID(), npc->GetPosition()};
 	Octree::PlayerOctree.query(n_obj, oct_distance, results);
 	for (auto& p_obj : results) {
 		std::lock_guard<mutex> lock(g_clients_mutex);
 		for (auto& cl : PlayerClient::PlayerClients) {
-			if (cl.second->state != PC_INGAME)continue;
+			if (cl.second->state != PC_INGAME) continue;
 			if (cl.second->m_id != p_obj->u_id) continue;
 			cl.second->SendMovePacket(npc);
 		}
@@ -204,12 +199,12 @@ void NonAtkNPCRunAwayState::Enter(std::shared_ptr<GameObject> npc)
 
 	// 근처에 있는 플레이어에게 타입 보내기
 	std::vector<tree_obj*> results;
-	tree_obj n_obj{ npc->GetID(),npc->GetPosition() };
+	tree_obj n_obj{npc->GetID(), npc->GetPosition()};
 	Octree::PlayerOctree.query(n_obj, oct_distance, results);
 	for (auto& p_obj : results) {
 		std::lock_guard<mutex> lock(g_clients_mutex);
 		for (auto& cl : PlayerClient::PlayerClients) {
-			if (cl.second->state != PC_INGAME)continue;
+			if (cl.second->state != PC_INGAME) continue;
 			if (cl.second->m_id != p_obj->u_id) continue;
 			cl.second->SendAnimationPacket(npc);
 		}
@@ -221,66 +216,61 @@ void NonAtkNPCRunAwayState::Execute(std::shared_ptr<GameObject> npc)
 	endtime = std::chrono::system_clock::now();
 	auto exectime = endtime - starttime;
 	auto exec_ms = std::chrono::duration_cast<std::chrono::milliseconds>(exectime).count();
-	if (total_time > duration_time)
-	{
+	if (total_time > duration_time) {
 		// 상태 전환
 		npc->FSM_manager->ChangeState(std::make_shared<NonAtkNPCMoveState>());
 		return;
 	}
-	switch (npc->GetType())
-	{
-	case OBJECT_TYPE::OB_COW:
-	{
-		switch (move_type)
-		{
+	switch (npc->GetType()) {
+	case OBJECT_TYPE::OB_COW: {
+		switch (move_type) {
 		case 0:
 			// 전진
 			npc->MoveForward(0.45f);
 			break;
 		case 1:
 			// 회전하면서 전진
-			if (rotate_type == 0) npc->Rotate(0.f, -1.0f, 0.f);
-			else if (rotate_type == 1) npc->Rotate(0.f, 1.0f, 0.f);
+			if (rotate_type == 0)
+				npc->Rotate(0.f, -1.0f, 0.f);
+			else if (rotate_type == 1)
+				npc->Rotate(0.f, 1.0f, 0.f);
 			npc->MoveForward(0.3f);
 			break;
 		}
-	}
-	break;
-	case OBJECT_TYPE::OB_PIG:
-	{
-		switch (move_type)
-		{
+	} break;
+	case OBJECT_TYPE::OB_PIG: {
+		switch (move_type) {
 		case 0:
 			// 전진
 			npc->MoveForward(0.6f);
 			break;
 		case 1:
 			// 회전하면서 전진
-			if (rotate_type == 0) npc->Rotate(0.f, -1.0f, 0.f);
-			else if (rotate_type == 1) npc->Rotate(0.f, 1.0f, 0.f);
+			if (rotate_type == 0)
+				npc->Rotate(0.f, -1.0f, 0.f);
+			else if (rotate_type == 1)
+				npc->Rotate(0.f, 1.0f, 0.f);
 			npc->MoveForward(0.45f);
 			break;
 		}
-	}
-	break;
+	} break;
 	default:
 		break;
 	}
 	Octree::GameObjectOctree.update(npc->GetID(), npc->GetPosition());
 	std::vector<tree_obj*> results;
-	tree_obj n_obj{ npc->GetID(),npc->GetPosition() };
+	tree_obj n_obj{npc->GetID(), npc->GetPosition()};
 	Octree::PlayerOctree.query(n_obj, oct_distance, results);
 	for (auto& p_obj : results) {
 		std::lock_guard<mutex> lock(g_clients_mutex);
 		for (auto& cl : PlayerClient::PlayerClients) {
-			if (cl.second->state != PC_INGAME)continue;
+			if (cl.second->state != PC_INGAME) continue;
 			if (cl.second->m_id != p_obj->u_id) continue;
 			cl.second->SendMovePacket(npc);
 		}
 	}
 
-	if (exec_ms > duration_time / 20)
-	{
+	if (exec_ms > duration_time / 20) {
 		move_type = rand_type(dre) % 2;
 		rotate_type = rand_type(dre) % 2;
 		total_time += exec_ms;
@@ -302,12 +292,12 @@ void NonAtkNPCDieState::Enter(std::shared_ptr<GameObject> npc)
 	npc->SetAnimationType(ANIMATION_TYPE::DIE);
 	// 근처에 있는 플레이어에게 타입 보내기
 	std::vector<tree_obj*> results;
-	tree_obj n_obj{ npc->GetID(),npc->GetPosition() };
+	tree_obj n_obj{npc->GetID(), npc->GetPosition()};
 	Octree::PlayerOctree.query(n_obj, oct_distance, results);
 	for (auto& p_obj : results) {
 		std::lock_guard<mutex> lock(g_clients_mutex);
 		for (auto& cl : PlayerClient::PlayerClients) {
-			if (cl.second->state != PC_INGAME)continue;
+			if (cl.second->state != PC_INGAME) continue;
 			if (cl.second->m_id != p_obj->u_id) continue;
 			cl.second->SendAnimationPacket(npc);
 		}
@@ -319,8 +309,7 @@ void NonAtkNPCDieState::Execute(std::shared_ptr<GameObject> npc)
 	endtime = std::chrono::system_clock::now();
 	auto exectime = endtime - starttime;
 	auto exec_ms = std::chrono::duration_cast<std::chrono::milliseconds>(exectime).count();
-	if (exec_ms > duration_time)
-	{
+	if (exec_ms > duration_time) {
 		// 상태 전환
 		npc->FSM_manager->ChangeState(std::make_shared<NonAtkNPCRespawnState>());
 		return;
@@ -339,13 +328,13 @@ void NonAtkNPCRespawnState::Enter(std::shared_ptr<GameObject> npc)
 	duration_time = 20 * 1000; // 20초간 안보이도록
 
 	std::vector<tree_obj*> results;
-	tree_obj n_obj{ npc->GetID(),npc->GetPosition() };
+	tree_obj n_obj{npc->GetID(), npc->GetPosition()};
 	Octree::PlayerOctree.query(n_obj, oct_distance, results);
 
 	for (auto& p_obj : results) {
 		std::lock_guard<mutex> lock(g_clients_mutex);
 		for (auto& cl : PlayerClient::PlayerClients) {
-			if (cl.second->state != PC_INGAME)continue;
+			if (cl.second->state != PC_INGAME) continue;
 			if (cl.second->m_id != p_obj->u_id) continue;
 			cl.second->SendRemovePacket(npc);
 		}
@@ -357,17 +346,16 @@ void NonAtkNPCRespawnState::Execute(std::shared_ptr<GameObject> npc)
 	endtime = std::chrono::system_clock::now();
 	auto exectime = endtime - starttime;
 	auto exec_ms = std::chrono::duration_cast<std::chrono::milliseconds>(exectime).count();
-	if (exec_ms > duration_time)
-	{
+	if (exec_ms > duration_time) {
 		npc->Sethp(20);
-		std::pair<float,float> randompos = genRandom::generateRandomXZ(gen, 1000.f, 2000.f, 1000.f, 2000.f);
+		std::pair<float, float> randompos = genRandom::generateRandomXZ(gen, 1000.f, 2000.f, 1000.f, 2000.f);
 		XMFLOAT3 xmf3Scale = Terrain::terrain->GetScale();
 		int scale_z = (int)(randompos.second / xmf3Scale.z);
 		bool bReverseQuad = ((scale_z % 2) != 0);
 		float fHeight = Terrain::terrain->GetHeight(randompos.first, randompos.second, bReverseQuad) + 0.0f;
 		float y{};
-		if (y < fHeight)y = fHeight;
-		
+		if (y < fHeight) y = fHeight;
+
 		npc->SetPosition(randompos.first, y, randompos.second);
 
 		Octree::GameObjectOctree.update(npc->GetID(), npc->GetPosition());
@@ -383,6 +371,6 @@ void NonAtkNPCRespawnState::Exit(std::shared_ptr<GameObject> npc)
 	npc->is_alive = true;
 
 	std::vector<tree_obj*> results;
-	tree_obj n_obj{ npc->GetID(),npc->GetPosition() };
+	tree_obj n_obj{npc->GetID(), npc->GetPosition()};
 	Octree::PlayerOctree.query(n_obj, oct_distance, results);
 }

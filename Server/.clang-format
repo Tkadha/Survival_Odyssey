@@ -1,0 +1,76 @@
+# Survival_Odyssey / Server 코드 스타일
+#
+# 중괄호:
+#   - 함수 / 클래스 / 구조체 / enum / namespace 의 여는 중괄호는 "다음 줄" (Allman)
+#   - if / for / while / switch, else / catch 는 "같은 줄에 붙임" (K&R)
+# 탭 들여쓰기.
+# 긴 줄은 재배치하지 않는다(ColumnLimit: 0) — 기존 수식/호출 배치를 보존하기 위함.
+
+Language:        Cpp
+BasedOnStyle:    LLVM
+Standard:        c++17
+
+# --- 들여쓰기 ---
+UseTab:          Always
+TabWidth:        4
+IndentWidth:     4
+ContinuationIndentWidth: 4
+AccessModifierOffset: -4
+NamespaceIndentation: None
+IndentCaseLabels: false
+IndentPPDirectives: None
+
+# --- 중괄호: 함수/클래스는 Allman, 제어문은 K&R ---
+BreakBeforeBraces: Custom
+BraceWrapping:
+  AfterFunction:        true
+  AfterClass:           true
+  AfterStruct:          true
+  AfterUnion:           true
+  AfterEnum:            true
+  AfterNamespace:       true
+  AfterExternBlock:     true
+  AfterControlStatement: Never
+  AfterCaseLabel:       false
+  BeforeElse:           false
+  BeforeCatch:          false
+  BeforeWhile:          false
+  SplitEmptyFunction:   false
+  SplitEmptyRecord:     false
+  IndentBraces:         false
+
+# --- 포인터 / 참조: 타입에 붙임 (char* p, Foo& r) ---
+PointerAlignment:     Left
+ReferenceAlignment:   Left
+DerivePointerAlignment: false
+
+# --- 줄바꿈 / 폭: 기존 줄을 쪼개거나 합치지 않는다 ---
+ColumnLimit:          0
+ReflowComments:       false
+BreakStringLiterals:  false
+
+# --- 짧은 구문은 그대로 둔다 (가드절, 클래스 내 인라인 게터) ---
+AllowShortIfStatementsOnASingleLine:   WithoutElse
+AllowShortLoopsOnASingleLine:          true
+AllowShortBlocksOnASingleLine:         Empty
+AllowShortFunctionsOnASingleLine:      Inline
+AllowShortCaseLabelsOnASingleLine:     false
+AllowShortEnumsOnASingleLine:          false
+
+# --- 공백 ---
+SpaceBeforeParens:      ControlStatements
+SpaceAfterCStyleCast:   false
+SpacesInParentheses:    false
+SpacesInAngles:         false
+Cpp11BracedListStyle:   true
+
+# --- include: PCH(stdafx.h)가 항상 먼저 와야 하므로 정렬하지 않는다 ---
+SortIncludes:     Never
+IncludeBlocks:    Preserve
+
+# --- 기타 (diff 최소화) ---
+MaxEmptyLinesToKeep: 2
+KeepEmptyLinesAtTheStartOfBlocks: true
+FixNamespaceComments: false
+AlignTrailingComments: false
+AlignAfterOpenBracket: Align

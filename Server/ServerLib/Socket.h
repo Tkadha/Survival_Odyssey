@@ -5,7 +5,6 @@
 #include <mswsock.h>
 
 
-
 #include <string>
 
 
@@ -19,8 +18,16 @@ enum class SocketType
 	Udp,
 };
 
-enum class COMP_TYPE { OP_ACCEPT, OP_RECV, OP_SEND, OP_FSM_UPDATE, OP_PLAYER_UPDATE };
-class OVER_EXP {
+enum class COMP_TYPE
+{
+	OP_ACCEPT,
+	OP_RECV,
+	OP_SEND,
+	OP_FSM_UPDATE,
+	OP_PLAYER_UPDATE
+};
+class OVER_EXP
+{
 public:
 	WSAOVERLAPPED over;
 	WSABUF wsabuf;
@@ -28,14 +35,16 @@ public:
 	COMP_TYPE comp_type;
 	char m_isReadOverlapped = false;
 	int obj_id;
-	OVER_EXP() : comp_type(COMP_TYPE::OP_RECV)
+	OVER_EXP()
+		: comp_type(COMP_TYPE::OP_RECV)
 	{
 		ZeroMemory(&over, sizeof(over));
 		wsabuf.len = BUFSIZE;
 		wsabuf.buf = send_buf;
 		ZeroMemory(&send_buf, sizeof(send_buf));
 	}
-	OVER_EXP(char* packet) : comp_type(COMP_TYPE::OP_SEND)
+	OVER_EXP(char* packet)
+		: comp_type(COMP_TYPE::OP_SEND)
 	{
 		ZeroMemory(&over, sizeof(over));
 		wsabuf.len = packet[0];
@@ -43,7 +52,8 @@ public:
 		ZeroMemory(&send_buf, sizeof(send_buf));
 		memcpy(send_buf, packet, packet[0]);
 	}
-	OVER_EXP(const char* packet, short buf_size) : comp_type(COMP_TYPE::OP_SEND)
+	OVER_EXP(const char* packet, short buf_size)
+		: comp_type(COMP_TYPE::OP_SEND)
 	{
 		ZeroMemory(&over, sizeof(over));
 		wsabuf.len = buf_size;
@@ -63,7 +73,7 @@ public:
 	LPFN_ACCEPTEX AcceptEx = NULL;
 	// Overlapped I/O나 IOCP를 쓸 때에만 사용됩니다. 현재 overlapped I/O 중이면 true입니다.
 	bool m_isReadOverlapped = false;
-	// Overlapped receive or accept을 할 때 사용되는 overlapped 객체입니다. 
+	// Overlapped receive or accept을 할 때 사용되는 overlapped 객체입니다.
 	// I/O 완료 전까지는 보존되어야 합니다.
 	WSAOVERLAPPED m_readOverlappedStruct;
 	// Receive나 ReceiveOverlapped에 의해 수신되는 데이터가 채워지는 곳입니다.
@@ -91,7 +101,6 @@ public:
 	int Receive();
 	int ReceiveOverlapped();
 	void SetNonblocking();
-	
 };
 
 std::string GetLastErrorAsString();
