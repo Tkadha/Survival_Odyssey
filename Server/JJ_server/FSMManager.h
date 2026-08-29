@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 #include "FSMState.h"
 #include <memory>
 template <class entity_type>

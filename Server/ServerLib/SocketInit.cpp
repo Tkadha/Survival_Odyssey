@@ -1,4 +1,4 @@
-#include "stdafx.h"
+ï»¿#include "stdafx.h"
 #include "SocketInit.h"
 
 using namespace std;
@@ -8,7 +8,7 @@ SocketInit g_socketInit;
 SocketInit::SocketInit()
 {
 #ifdef _WIN32
-	// Windows¿¡¼­´Â WSAStartup, WSACleanupÀÌ ÃÖÃÊ¿Í ÃÖÈÄ¿¡ µü ÇÑ¹ø ÀÖ¾î¾ß ÇÑ´Ù.
+	// Windowsì—ì„œëŠ” WSAStartup, WSACleanupì´ ìµœì´ˆì™€ ìµœí›„ì— ë”± í•œë²ˆ ìˆì–´ì•¼ í•œë‹¤.
 	WSADATA w;
 	WSAStartup(MAKEWORD(2, 2), &w);
 #endif

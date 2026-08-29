@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 #include <chrono>
 #include <concurrent_priority_queue.h>
 enum class EVENT_TYPE

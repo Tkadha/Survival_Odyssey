@@ -1,13 +1,13 @@
-#include <WinSock2.h>
+ï»¿#include <WinSock2.h>
 #include <WS2tcpip.h>
 #include <iostream>
 #include <string>
 #include "../Global.h"
 #pragma comment(lib, "Ws2_32.lib")
 
-#define SERVER_IP "127.0.0.1" // ¼­¹ö IP
-#define SERVER_PORT 9000 // ¼­¹ö Æ÷Æ®
-#define BUFFER_SIZE 512 // ¹öÆÛ Å©±â
+#define SERVER_IP "127.0.0.1" // ì„œë²„ IP
+#define SERVER_PORT 9000 // ì„œë²„ í¬íŠ¸
+#define BUFFER_SIZE 512 // ë²„í¼ í¬ê¸°
 
 void start()
 {
@@ -48,7 +48,7 @@ int main()
 
 	std::cout << "Connected to server at " << SERVER_IP << ":" << SERVER_PORT << std::endl;
 
-	// ¸Ş½ÃÁö º¸³»±â
+	// ë©”ì‹œì§€ ë³´ë‚´ê¸°
 	std::string message = "Hello, IOCP server!";
 	int bytesSent = send(clientSock, message.c_str(), message.length(), 0);
 	if (bytesSent == SOCKET_ERROR) {
@@ -59,7 +59,7 @@ int main()
 	}
 	std::cout << "Sent message: " << message << std::endl;
 
-	// ¼­¹ö·ÎºÎÅÍ ÀÀ´ä ¹Ş±â
+	// ì„œë²„ë¡œë¶€í„° ì‘ë‹µ ë°›ê¸°
 	char buffer[BUFFER_SIZE] = {0};
 	int bytesReceived = recv(clientSock, buffer, BUFFER_SIZE - 1, 0);
 	if (bytesReceived > 0) {
@@ -71,7 +71,7 @@ int main()
 		std::cerr << "Receive failed. Error: " << WSAGetLastError() << std::endl;
 	}
 
-	// ¼ÒÄÏ ´İ±â
+	// ì†Œì¼“ ë‹«ê¸°
 	closesocket(clientSock);
 	stop();
 	return 0;

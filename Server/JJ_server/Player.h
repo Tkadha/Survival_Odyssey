@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 #include "../ServerLib/RemoteClient.h"
 #include "stdafx.h"
 #include "../Global.h"
@@ -6,7 +6,7 @@
 #include "Terrain.h"
 #include <iostream>
 #include <atomic>
-// client Á¤º¸
+// client ì •ë³´
 #include <mutex>
 extern std::mutex g_clients_mutex;
 
@@ -45,8 +45,8 @@ private:
 	float m_fFriction = 0.0f;
 
 	DWORD m_direction = 0;
-	PlayerInput m_lastReceivedInput{}; // ¸¶Áö¸·À¸·Î ¹ŞÀº ÀÔ·Â »óÅÂ ÀúÀå
-	ServerPlayerState m_currentState = ServerPlayerState::Idle; // ¼­¹ö Ãø ÇÃ·¹ÀÌ¾î »óÅÂ (ServerPlayerState enum Á¤ÀÇ ÇÊ¿ä)
+	PlayerInput m_lastReceivedInput{}; // ë§ˆì§€ë§‰ìœ¼ë¡œ ë°›ì€ ì…ë ¥ ìƒíƒœ ì €ì¥
+	ServerPlayerState m_currentState = ServerPlayerState::Idle; // ì„œë²„ ì¸¡ í”Œë ˆì´ì–´ ìƒíƒœ (ServerPlayerState enum ì •ì˜ í•„ìš”)
 
 	LPVOID m_pPlayerUpdatedContext = NULL;
 
@@ -92,7 +92,7 @@ public:
 		: RemoteClient(socketType)
 	{
 		state = PC_FREE;
-		m_Position = XMFLOAT3(8000.f, 0.0f, 8000.f); // Å×½ºÆ®¿ë ÀÓÀÇ ÁöÁ¤
+		m_Position = XMFLOAT3(8000.f, 0.0f, 8000.f); // í…ŒìŠ¤íŠ¸ìš© ì„ì˜ ì§€ì •
 		m_Right = XMFLOAT3(1.0f, 0.0f, 0.0f);
 		m_Up = XMFLOAT3(0.0f, 1.0f, 0.0f);
 		m_Look = XMFLOAT3(0.0f, 0.0f, 1.0f);
@@ -133,7 +133,7 @@ public:
 
 	void Update(float fTimeElapsed);
 
-	// »óÅÂ¸Ó½Å Àû¿ë ¾÷µ¥ÀÌÆ® Å×½ºÆ®
+	// ìƒíƒœë¨¸ì‹  ì ìš© ì—…ë°ì´íŠ¸ í…ŒìŠ¤íŠ¸
 	void Update_test(float deltaTime);
 	bool CheckIfGrounded();
 	void SnapToGround();
@@ -176,7 +176,7 @@ public:
 	}
 	void RespawnPlayer()
 	{
-		m_Position = XMFLOAT3(8000.f, Terrain::terrain->GetHeight(8000.f, 8000.f), 8000.f); // Å×½ºÆ®¿ë ÀÓÀÇ ÁöÁ¤
+		m_Position = XMFLOAT3(8000.f, Terrain::terrain->GetHeight(8000.f, 8000.f), 8000.f); // í…ŒìŠ¤íŠ¸ìš© ì„ì˜ ì§€ì •
 		m_Velocity = XMFLOAT3(0.0f, 0.0f, 0.0f);
 		Playerhp.store(Maxhp.load());
 		Playerstamina.store(Maxstamina.load());

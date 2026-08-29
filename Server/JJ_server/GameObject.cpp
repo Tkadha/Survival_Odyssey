@@ -1,4 +1,4 @@
-#include "stdafx.h"
+ï»¿#include "stdafx.h"
 #include <iostream>
 #include "Player.h"
 #include "Terrain.h"
@@ -37,7 +37,7 @@ void GameObject::MoveForward(float fDistance)
 	XMVECTOR totalPushOutVector = XMVectorSet(0, 0, 0, 0);
 	int collisionCount = 0;
 	for (auto& other_info : nearby_objects) {
-		// ÀÚ±â ÀÚ½ÅÀº Á¦¿Ü
+		// ìê¸° ìì‹ ì€ ì œì™¸
 		if (other_info->u_id == GetID()) continue;
 
 		auto& other_obj = GameObject::gameObjects[other_info->u_id];
@@ -48,24 +48,24 @@ void GameObject::MoveForward(float fDistance)
 			if (other_obj->GetType() != OBJECT_TYPE::OB_TREE) continue;
 		}
 
-		// Ãæµ¹Çß´Ù¸é ¹Ğ¾î³¾ ¹æÇâ °è»ê
+		// ì¶©ëŒí–ˆë‹¤ë©´ ë°€ì–´ë‚¼ ë°©í–¥ ê³„ì‚°
 		if (myCurrentOBB.Intersects(other_obj->world_obb)) {
 			XMVECTOR myCenter = XMLoadFloat3(&GetPosition());
 			XMVECTOR otherCenter = XMLoadFloat3(&other_obj->GetPosition());
 
-			// »ó´ë¹æ Áß½É -> ³» Áß½É ¹æÇâÀ¸·Î ¹Ğ¾î³¾ º¤ÅÍ °è»ê
+			// ìƒëŒ€ë°© ì¤‘ì‹¬ -> ë‚´ ì¤‘ì‹¬ ë°©í–¥ìœ¼ë¡œ ë°€ì–´ë‚¼ ë²¡í„° ê³„ì‚°
 			XMVECTOR pushDir = XMVector3Normalize(XMVectorSubtract(myCenter, otherCenter));
 
-			// ¿©·¯ °´Ã¼¿Í °ãÃÆÀ» °æ¿ì¸¦ ´ëºñÇØ ¹æÇâÀ» ´õÇØÁÜ
+			// ì—¬ëŸ¬ ê°ì²´ì™€ ê²¹ì³¤ì„ ê²½ìš°ë¥¼ ëŒ€ë¹„í•´ ë°©í–¥ì„ ë”í•´ì¤Œ
 			totalPushOutVector = XMVectorAdd(totalPushOutVector, pushDir);
 			collisionCount++;
 		}
 	}
 	if (collisionCount > 0) {
-		// Æò±ÕÀûÀÎ ¹Ğ¾î³»±â ¹æÇâ °è»ê
+		// í‰ê· ì ì¸ ë°€ì–´ë‚´ê¸° ë°©í–¥ ê³„ì‚°
 		totalPushOutVector = XMVector3Normalize(totalPushOutVector);
 
-		// ¹Ğ¾î³»´Â Èû (ÀÌ °ªÀº ½ÇÇèÀ» ÅëÇØ Á¶ÀıÇØ¾ß ÇÕ´Ï´Ù)
+		// ë°€ì–´ë‚´ëŠ” í˜ (ì´ ê°’ì€ ì‹¤í—˜ì„ í†µí•´ ì¡°ì ˆí•´ì•¼ í•©ë‹ˆë‹¤)
 		float pushMagnitude = 0.5f;
 
 		XMVECTOR currentPosVec = XMLoadFloat3(&GetPosition());
@@ -75,7 +75,7 @@ void GameObject::MoveForward(float fDistance)
 		XMStoreFloat3(&newPos, newPosVec);
 		newPos.y = Terrain::terrain->GetHeight(newPos.x, newPos.z);
 
-		// À§Ä¡ º¸Á¤ (ÀÌ¶§´Â Ãæµ¹ °Ë»ç ¾øÀÌ ¹Ù·Î Àû¿ë)
+		// ìœ„ì¹˜ ë³´ì • (ì´ë•ŒëŠ” ì¶©ëŒ ê²€ì‚¬ ì—†ì´ ë°”ë¡œ ì ìš©)
 		SetPosition(newPos);
 	}
 
@@ -85,7 +85,7 @@ void GameObject::MoveForward(float fDistance)
 
 	xmf3TargetPosition.y = Terrain::terrain->GetHeight(xmf3TargetPosition.x, xmf3TargetPosition.z) + fly_height;
 
-	// Ãæµ¹Ã³¸®
+	// ì¶©ëŒì²˜ë¦¬
 	XMFLOAT3 test_move = xmf3CurrentPosition;
 	test_move.x = xmf3TargetPosition.x;
 	BoundingOrientedBox testOBBX;
@@ -94,7 +94,7 @@ void GameObject::MoveForward(float fDistance)
 	matX *= XMMatrixRotationQuaternion(XMLoadFloat4(&GetOrientation()));
 	matX *= XMMatrixTranslation(test_move.x, Terrain::terrain->GetHeight(test_move.x, test_move.z), test_move.z);
 	local_obb.Transform(testOBBX, matX);
-	// °´Ã¼ ¼øÈ¯ÇØ¼­ Ãæµ¹ Ã¼Å©
+	// ê°ì²´ ìˆœí™˜í•´ì„œ ì¶©ëŒ ì²´í¬
 	std::vector<tree_obj*> presults;
 	std::vector<tree_obj*> oresults;
 	{
@@ -242,7 +242,7 @@ void GameObject::Rotate(float fPitch, float fYaw, float fRoll)
 		totalPushOutVector = XMVector3Normalize(totalPushOutVector);
 		float pushMagnitude = 0.1f;
 
-		// ÃÖÁ¾ À§Ä¡ º¸Á¤
+		// ìµœì¢… ìœ„ì¹˜ ë³´ì •
 		xmf4x4._41 += XMVectorGetX(totalPushOutVector) * pushMagnitude;
 		xmf4x4._43 += XMVectorGetZ(totalPushOutVector) * pushMagnitude;
 		xmf4x4._42 = Terrain::terrain->GetHeight(xmf4x4._41, xmf4x4._43);

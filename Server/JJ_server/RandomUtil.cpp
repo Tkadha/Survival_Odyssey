@@ -1,4 +1,4 @@
-#include "stdafx.h"
+﻿#include "stdafx.h"
 #include "RandomUtil.h"
 
 std::random_device rd;

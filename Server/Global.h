@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 
 
 enum class E_PACKET
@@ -83,16 +83,16 @@ enum class ANIMATION_TYPE
 
 enum class E_STAT
 {
-	STAMINA = 0, // ½ºÅÂ¹Ì³ª
-	HUNGER = 1, // Çã±â
-	THIRST = 2, // °¥Áõ
-	HP = 3, // Ã¼·Â
-	MAX_STAMINA = 4, // ÃÖ´ë ½ºÅÂ¹Ì³ª
-	MAX_HP = 5, // ÃÖ´ë Ã¼·Â
-	SPEED = 6, // ÀÌµ¿ ¼Óµµ
-	NONE = 7 // »óÅÂ ¾øÀ½
+	STAMINA = 0, // ìŠ¤íƒœë¯¸ë‚˜
+	HUNGER = 1, // í—ˆê¸°
+	THIRST = 2, // ê°ˆì¦
+	HP = 3, // ì²´ë ¥
+	MAX_STAMINA = 4, // ìµœëŒ€ ìŠ¤íƒœë¯¸ë‚˜
+	MAX_HP = 5, // ìµœëŒ€ ì²´ë ¥
+	SPEED = 6, // ì´ë™ ì†ë„
+	NONE = 7 // ìƒíƒœ ì—†ìŒ
 };
-const int MAX_BUF_SIZE = 1024; // ¹öÆÛ ÃÖ´ë Å©±â
+const int MAX_BUF_SIZE = 1024; // ë²„í¼ ìµœëŒ€ í¬ê¸°
 
 
 #pragma pack(push, 1) // 1byte alignment
@@ -104,10 +104,10 @@ struct PlayerInput
 	char WalkLeft = false;
 	char WalkRight = false;
 	char Jump = false;
-	char Attack = false; // ¿¹: FÅ° ¶Ç´Â ¸¶¿ì½º Å¬¸¯
-	char Interact = false; // ¿¹: EÅ°
-	char Run = false; // ¿¹: Shift Å°
-	// ÇÊ¿ä½Ã ´Ù¸¥ Å°³ª ¸¶¿ì½º ÀÔ·Â Ãß°¡
+	char Attack = false; // ì˜ˆ: Fí‚¤ ë˜ëŠ” ë§ˆìš°ìŠ¤ í´ë¦­
+	char Interact = false; // ì˜ˆ: Eí‚¤
+	char Run = false; // ì˜ˆ: Shift í‚¤
+	// í•„ìš”ì‹œ ë‹¤ë¥¸ í‚¤ë‚˜ ë§ˆìš°ìŠ¤ ì…ë ¥ ì¶”ê°€
 	char Hit = false;
 	void clear()
 	{
@@ -240,8 +240,8 @@ public:
 class CHANGE_STAT_PACKET : public PACKET
 {
 public:
-	int oid; // °´Ã¼ ID
-	E_STAT stat; // »óÅÂ (¿¹: 0: ÀÏ¹İ, 1: °ø°İ, 2: ¹æ¾î µî)
+	int oid; // ê°ì²´ ID
+	E_STAT stat; // ìƒíƒœ (ì˜ˆ: 0: ì¼ë°˜, 1: ê³µê²©, 2: ë°©ì–´ ë“±)
 	float value;
 	CHANGE_STAT_PACKET()
 	{
@@ -344,7 +344,7 @@ class OBJ_INVINCIBLE_PACKET : public PACKET
 {
 public:
 	int oid;
-	char invincible; // 1: ¹«Àû, 0: ¹«Àû ÇØÁ¦
+	char invincible; // 1: ë¬´ì , 0: ë¬´ì  í•´ì œ
 	OBJ_INVINCIBLE_PACKET()
 	{
 		oid = -1;
@@ -397,7 +397,7 @@ public:
 	{
 		serverTime = 0.0f;
 		size = sizeof(TIME_SYNC_PACKET);
-		type = static_cast<char>(E_PACKET::E_SYNC_TIME); // ½Ã°£ µ¿±âÈ­´Â º°µµÀÇ Å¸ÀÔÀ¸·Î Á¤ÀÇÇÒ ¼ö ÀÖÀ½
+		type = static_cast<char>(E_PACKET::E_SYNC_TIME); // ì‹œê°„ ë™ê¸°í™”ëŠ” ë³„ë„ì˜ íƒ€ì…ìœ¼ë¡œ ì •ì˜í•  ìˆ˜ ìˆìŒ
 	}
 };
 
@@ -517,7 +517,7 @@ class DB_SUCCESS_FAIL_PACKET : public PACKET
 {
 public:
 	char kind{}; // E_DB_REGISTER, E_DB_LOGIN
-	char result{}; //1: ¼º°ø, 0: ½ÇÆĞ
+	char result{}; //1: ì„±ê³µ, 0: ì‹¤íŒ¨
 	unsigned long long uid;
 	DB_SUCCESS_FAIL_PACKET()
 	{

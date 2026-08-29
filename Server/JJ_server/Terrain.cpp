@@ -1,4 +1,4 @@
-#include "stdafx.h"
+﻿#include "stdafx.h"
 #include "Terrain.h"
 
 std::shared_ptr<Terrain> Terrain::terrain = std::make_shared<Terrain>(_T("../../Client/LabProject07-9-8/Terrain/terrain_16.raw"), 2049, 2049, XMFLOAT3(5.f, 0.1f, 5.f));

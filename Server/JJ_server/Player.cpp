@@ -1,4 +1,4 @@
-#include "stdafx.h"
+﻿#include "stdafx.h"
 #include "Player.h"
 #include "Terrain.h"
 #include "GameObject.h"
@@ -160,7 +160,7 @@ void PlayerClient::Change_Stat(E_STAT stat, float value)
 		Maxhp.store(value);
 		break;
 	case E_STAT::SPEED:
-		Speed_stat = value; // �̵� �ӵ�
+		Speed_stat = value; // 이동 속도
 		break;
 	default:
 		break;
@@ -176,45 +176,45 @@ void PlayerClient::Update_test(float deltaTime)
 {
 	if (this->state != PC_INGAME) return;
 	PlayerInput currentInput = m_lastReceivedInput;
-	// ���� ���� ó��
-	static float attackTimer = 0.0f; // �����δ� ��� ������ ����
+	// 공격 상태 처리
+	static float attackTimer = 0.0f; // 실제로는 멤버 변수로 관리
 	if (m_currentState == ServerPlayerState::Attacking) {
 		attackTimer -= deltaTime;
 		if (attackTimer <= 0.0f) {
-			m_currentState = ServerPlayerState::Idle; // ���� ������ Idle��
+			m_currentState = ServerPlayerState::Idle; // 공격 끝나면 Idle로
 		}
 	}
 
-	// ������ȯ
+	// 상태전환
 	bool isGrounded = CheckIfGrounded();
-	if (m_currentState != ServerPlayerState::Attacking) { // ���� �� �ƴ� ����
+	if (m_currentState != ServerPlayerState::Attacking) { // 공격 중 아닐 때만
 		if (currentInput.Attack) {
 			m_currentState = ServerPlayerState::Attacking;
-			attackTimer = 0.8f; // ���� ���� �ð�
-			m_Velocity.x = m_Velocity.z = 0; // ���� �� �̵� �Ұ�
+			attackTimer = 0.8f; // 공격 지속 시간
+			m_Velocity.x = m_Velocity.z = 0; // 공격 중 이동 불가
 		} else if (currentInput.Jump && isGrounded) {
 			m_currentState = ServerPlayerState::Jumping;
-			m_Velocity.y = 100.0f; // ���� �ʱ� �ӵ�
-		} else if (isGrounded && m_currentState == ServerPlayerState::Falling) { // ����
-			m_currentState = ServerPlayerState::Idle; // �����ϸ� Idle
+			m_Velocity.y = 100.0f; // 점프 초기 속도
+		} else if (isGrounded && m_currentState == ServerPlayerState::Falling) { // 착지
+			m_currentState = ServerPlayerState::Idle; // 착지하면 Idle
 			m_Velocity.y = 0;
-		} else if (m_Velocity.y < -1.0f && !isGrounded && m_currentState != ServerPlayerState::Jumping) { // �������� ��
+		} else if (m_Velocity.y < -1.0f && !isGrounded && m_currentState != ServerPlayerState::Jumping) { // 떨어지는 중
 			m_currentState = ServerPlayerState::Falling;
 		} else if (isGrounded && (currentInput.MoveForward || currentInput.MoveBackward || currentInput.WalkLeft || currentInput.WalkRight)) {
-			// ���� �ְ� �̵� �Է��� ������ Walking �Ǵ� Running
+			// 땅에 있고 이동 입력이 있으면 Walking 또는 Running
 			if (currentInput.Run)
 				m_currentState = ServerPlayerState::Running;
 			else
 				m_currentState = ServerPlayerState::Walking;
 			// m_currentState = (currentInput.Run && currentInput.MoveForward) ? ServerPlayerState::Running : ServerPlayerState::Walking;
 		} else if (isGrounded) {
-			// ���� �ְ� �ٸ� ���� ������ Idle
+			// 땅에 있고 다른 조건 없으면 Idle
 			m_currentState = ServerPlayerState::Idle;
 		}
 	}
 
 
-	// �ӵ� ���
+	// 속도 계산
 	XMFLOAT3 targetVelocityXZ = {0.0f, 0.0f, 0.0f};
 	if (m_currentState == ServerPlayerState::Walking || m_currentState == ServerPlayerState::Running || m_currentState == ServerPlayerState::Falling || m_currentState == ServerPlayerState::Jumping) {
 		XMFLOAT3 moveVector = {0.0f, 0.0f, 0.0f};
@@ -240,27 +240,27 @@ void PlayerClient::Update_test(float deltaTime)
 		}
 		if (isMovingInput) {
 			moveVector = Vector3::Normalize(moveVector);
-			float currentSpeed = (m_currentState == ServerPlayerState::Running) ? m_runSpeed : m_walkSpeed; // ���º� �ӵ�
+			float currentSpeed = (m_currentState == ServerPlayerState::Running) ? m_runSpeed : m_walkSpeed; // 상태별 속도
 			targetVelocityXZ = Vector3::ScalarProduct(moveVector, currentSpeed);
 		}
 	}
 
-	// �ӵ� ����
+	// 속도 설정
 	m_Velocity.x = targetVelocityXZ.x;
 	m_Velocity.z = targetVelocityXZ.z;
 
-	// �߷� ����
+	// 중력 적용
 	if (!isGrounded || m_currentState == ServerPlayerState::Jumping) {
-		m_Velocity.y += m_Gravity.y * deltaTime; // m_gravity.y�� �������� ��
+		m_Velocity.y += m_Gravity.y * deltaTime; // m_gravity.y는 음수여야 함
 	}
 
-	// ���� ����
-	if (isGrounded && m_currentState != ServerPlayerState::Running && m_currentState != ServerPlayerState::Walking) { // Idle ������
+	// 마찰 적용
+	if (isGrounded && m_currentState != ServerPlayerState::Running && m_currentState != ServerPlayerState::Walking) { // Idle 에서만
 		m_Velocity.x *= (1.0f - m_fFriction * deltaTime);
 		m_Velocity.z *= (1.0f - m_fFriction * deltaTime);
 	}
 
-	// �ӵ� ����
+	// 속도 제한
 	float fLength = sqrtf(m_Velocity.x * m_Velocity.x + m_Velocity.z * m_Velocity.z);
 	float fMaxVelocityXZ = m_fMaxVelocityXZ;
 	if (fLength > m_fMaxVelocityXZ) {
@@ -272,10 +272,10 @@ void PlayerClient::Update_test(float deltaTime)
 	if (fLength > m_fMaxVelocityY) m_Velocity.y *= (fMaxVelocityY / fLength);
 
 
-	// �̵� �� �浹 ó��
+	// 이동 및 충돌 처리
 	//XMFLOAT3 deltaPos = Vector3::ScalarProduct(m_Velocity, deltaTime);
 	XMFLOAT3 deltaVel = Vector3::ScalarProduct(m_Velocity, 0.35f);
-	// XMFLOAT3 deltaVel = Vector3::ScalarProduct(m_Velocity, 0.55f); // test�� �̼� ����
+	// XMFLOAT3 deltaVel = Vector3::ScalarProduct(m_Velocity, 0.55f); // test용 이속 증가
 
 	if (currentInput.WalkLeft || currentInput.WalkRight) {
 		deltaVel.x /= 1.3f;
@@ -287,18 +287,18 @@ void PlayerClient::Update_test(float deltaTime)
 		deltaVel.z *= (1.f + 0.03f * Speed_stat);
 	}
 
-	// ���� ����
+	// 런닝 판정
 	if (m_currentState == ServerPlayerState::Running) {
 		deltaVel.x *= 1.6f;
 		deltaVel.z *= 1.6f;
 	}
-	// ���ο� ȿ�� Ȯ��
+	// 슬로우 효과 확인
 	if (b_slow) {
 		deltaVel.x /= 1.6f;
 		deltaVel.z /= 1.6f;
 	}
 
-	// �и� ó��
+	// 밀림 처리
 	{
 		BoundingOrientedBox myCurrentOBB = world_obb;
 		std::vector<tree_obj*> presults;
@@ -328,9 +328,9 @@ void PlayerClient::Update_test(float deltaTime)
 			}
 		}
 
-		// �ٸ� ���� ������Ʈ�� ��ħ Ȯ��
+		// 다른 게임 오브젝트와 겹침 확인
 		for (auto& o_obj : oresults) {
-			// ��Ȱ��/���� ��ü ���� (���� �ڵ�� ����)
+			// 비활성/죽은 객체 제외 (기존 코드와 동일)
 			auto& other_obj = GameObject::gameObjects[o_obj->u_id];
 			if (!other_obj || !other_obj->is_alive || other_obj->Gethp() <= 0) continue;
 			if (!other_obj->IsRenderObj()) continue;
@@ -344,7 +344,7 @@ void PlayerClient::Update_test(float deltaTime)
 			}
 		}
 
-		// �Ǽ��� ������Ʈ�� ��ħ Ȯ��
+		// 건설된 오브젝트와 겹침 확인
 		for (auto& c_obj : GameObject::ConstructObjects) {
 			if (myCurrentOBB.Intersects(c_obj->world_obb)) {
 				XMVECTOR myCenter = XMLoadFloat3(&m_Position);
@@ -355,12 +355,12 @@ void PlayerClient::Update_test(float deltaTime)
 				collisionCount++;
 			}
 		}
-		// 4. ���� �������� ��ġ�� �����մϴ�.
+		// 4. 계산된 방향으로 위치를 보정합니다.
 		if (collisionCount > 0) {
-			// ���� ��ü�� ������ ��츦 ����� ��� �о�� ������ ���
+			// 여러 객체와 겹쳤을 경우를 대비해 평균 밀어내기 방향을 계산
 			totalPushOutVector = XMVector3Normalize(totalPushOutVector);
 
-			// �о�� ���� ũ�� (�� ���� ������ ���� ������ �����ؾ� �մϴ�)
+			// 밀어내는 힘의 크기 (이 값은 실험을 통해 적절히 조절해야 합니다)
 			float pushMagnitude = 0.5f;
 
 			XMVECTOR currentPosVec = XMLoadFloat3(&m_Position);
@@ -369,14 +369,14 @@ void PlayerClient::Update_test(float deltaTime)
 			XMFLOAT3 newPos;
 			XMStoreFloat3(&newPos, newPosVec);
 			newPos.y = Terrain::terrain->GetHeight(newPos.x, newPos.z);
-			// ������ ��ġ�� ��� �����մϴ�.
-			// SetPosition�� ����ϰų� ��� ���� m_Position�� ���� �����մϴ�.
+			// 보정된 위치를 즉시 적용합니다.
+			// SetPosition을 사용하거나 멤버 변수 m_Position을 직접 수정합니다.
 			SetPosition(newPos);
 		}
 	}
-	/* �浹 ó��*/
-	// �̵� �浹ó�� ����
-	// X�� �̵� �õ�
+	/* 충돌 처리*/
+	// 이동 충돌처리 적용
+	// X축 이동 시도
 	XMFLOAT3 moving_pos = m_Position;
 	moving_pos.x += deltaVel.x;
 	BoundingOrientedBox testOBBX;
@@ -388,7 +388,7 @@ void PlayerClient::Update_test(float deltaTime)
 	local_obb.Transform(testOBBX, matX);
 	testOBBX.Orientation.w = 1.f;
 
-	// octree �����ؼ� ���� ���̱�
+	// octree 적용해서 범위 줄이기
 	std::vector<tree_obj*> presults;
 	std::vector<tree_obj*> oresults;
 	{
@@ -424,7 +424,7 @@ void PlayerClient::Update_test(float deltaTime)
 		}
 	}
 
-	// Z�� �̵� �õ�
+	// Z축 이동 시도
 	moving_pos.z += deltaVel.z;
 	BoundingOrientedBox testOBBZ;
 	XMMATRIX matZ;
@@ -477,7 +477,7 @@ void PlayerClient::Update_test(float deltaTime)
 		moving_pos.y += deltaVel.y;
 
 	SetPosition(moving_pos);
-	// �� ¤��
+	// 땅 짚기
 	SnapToGround();
 }
 
@@ -511,7 +511,7 @@ void PlayerClient::SnapToGround()
 		xmf3PlayerPosition.y = fHeight;
 		SetPosition(xmf3PlayerPosition);
 	}
-	// ���๰�� ���� �� ������ ���� �����ϱ�
+	// 건축물이 생길 시 제거후 로직 변경하기
 	if (m_currentState != ServerPlayerState::Jumping) {
 		xmf3PlayerPosition.y = fHeight;
 		SetPosition(xmf3PlayerPosition);
@@ -524,7 +524,7 @@ void PlayerClient::SetEffect(OBJECT_TYPE obj_type)
 	case OBJECT_TYPE::OB_TOAD: {
 		SetSlow(true);
 		EVENT ev{EVENT_TYPE::E_P_SLOW_END, m_id, -1};
-		EVENT::add_timer(ev, 5000); // 5�� �Ŀ� ���ο� ȿ�� ����
+		EVENT::add_timer(ev, 5000); // 5초 후에 슬로우 효과 제거
 	} break;
 	case OBJECT_TYPE::OB_SPIDER: {
 		EVENT ev{EVENT_TYPE::E_P_POISON, m_id, -1};
@@ -569,7 +569,7 @@ void PlayerClient::BroadCastRotatePacket()
 	s_packet.uid = m_id;
 	for (auto& cl : PlayerClient::PlayerClients) {
 		if (cl.second->state != PC_INGAME) continue;
-		if (cl.second->m_id == m_id) continue; // �� �ڽ��� �����Ѵ�.
+		if (cl.second->m_id == m_id) continue; // 나 자신은 제외한다.
 		cl.second->tcpConnection.SendOverlapped(reinterpret_cast<char*>(&s_packet));
 	}
 }
@@ -583,7 +583,7 @@ void PlayerClient::BroadCastInputPacket()
 	s_packet.uid = m_id;
 	for (auto& cl : PlayerClient::PlayerClients) {
 		if (cl.second->state != PC_INGAME) continue;
-		if (cl.second->m_id == m_id) continue; // �� �ڽ��� �����Ѵ�.
+		if (cl.second->m_id == m_id) continue; // 나 자신은 제외한다.
 		cl.second->tcpConnection.SendOverlapped(reinterpret_cast<char*>(&s_packet));
 	}
 }
@@ -594,7 +594,7 @@ void PlayerClient::BroadCastWeaponPacket(WEAPON_CHANGE_PACKET p)
 	s_packet.uid = m_id;
 	for (auto& cl : PlayerClient::PlayerClients) {
 		if (cl.second->state != PC_INGAME) continue;
-		if (cl.second->m_id == m_id) continue; // �� �ڽ��� �����Ѵ�.
+		if (cl.second->m_id == m_id) continue; // 나 자신은 제외한다.
 		cl.second->tcpConnection.SendOverlapped(reinterpret_cast<char*>(&s_packet));
 	}
 }
@@ -608,7 +608,7 @@ void PlayerClient::BroadCastHitPacket(PlayerInput pi)
 	s_packet.uid = m_id;
 	for (auto& cl : PlayerClient::PlayerClients) {
 		if (cl.second->state != PC_INGAME) continue;
-		if (cl.second->m_id == m_id) continue; // �� �ڽ��� �����Ѵ�.
+		if (cl.second->m_id == m_id) continue; // 나 자신은 제외한다.
 		cl.second->tcpConnection.SendOverlapped(reinterpret_cast<char*>(&s_packet));
 	}
 }
@@ -635,7 +635,7 @@ void PlayerClient::SendInvinciblePacket(int oid, bool invin_type)
 
 void PlayerClient::SendAddPacket(shared_ptr<GameObject> obj)
 {
-	if (false == obj->is_alive) return; // ������ �� ���¶��
+	if (false == obj->is_alive) return; // 리스폰 중 상태라면
 	ADD_PACKET s_packet;
 	s_packet.size = sizeof(ADD_PACKET);
 	s_packet.type = static_cast<char>(E_PACKET::E_O_ADD);

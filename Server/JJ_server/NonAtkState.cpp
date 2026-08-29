@@ -1,4 +1,4 @@
-#include "stdafx.h"
+ï»¿#include "stdafx.h"
 #include "Player.h"
 #include "NonAtkState.h"
 #include "GameObject.h"
@@ -48,10 +48,10 @@ void NonAtkNPCGlobalState::Exit(std::shared_ptr<GameObject> npc)
 void NonAtkNPCStandingState::Enter(std::shared_ptr<GameObject> npc)
 {
 	starttime = std::chrono::system_clock::now();
-	duration_time = rand_time(dre) * 1000; // ·£´ıÇÑ ½Ã°£(1~3ÃÊ)À» ¹Ğ¸®ÃÊ·Î º¯È¯
+	duration_time = rand_time(dre) * 1000; // ëœë¤í•œ ì‹œê°„(1~3ì´ˆ)ì„ ë°€ë¦¬ì´ˆë¡œ ë³€í™˜
 	npc->SetAnimationType(ANIMATION_TYPE::IDLE);
 
-	// ±ÙÃ³¿¡ ÀÖ´Â ÇÃ·¹ÀÌ¾î¿¡°Ô Å¸ÀÔ º¸³»±â
+	// ê·¼ì²˜ì— ìˆëŠ” í”Œë ˆì´ì–´ì—ê²Œ íƒ€ì… ë³´ë‚´ê¸°
 	std::vector<tree_obj*> results;
 	tree_obj n_obj{npc->GetID(), npc->GetPosition()};
 	Octree::PlayerOctree.query(n_obj, oct_distance, results);
@@ -70,7 +70,7 @@ void NonAtkNPCStandingState::Execute(std::shared_ptr<GameObject> npc)
 	auto exectime = endtime - starttime;
 	auto exec_ms = std::chrono::duration_cast<std::chrono::milliseconds>(exectime).count();
 	if (exec_ms > duration_time) {
-		// »óÅÂ ÀüÈ¯
+		// ìƒíƒœ ì „í™˜
 		npc->FSM_manager->ChangeState(std::make_shared<NonAtkNPCMoveState>());
 		return;
 	}
@@ -87,12 +87,12 @@ void NonAtkNPCStandingState::Exit(std::shared_ptr<GameObject> npc)
 void NonAtkNPCMoveState::Enter(std::shared_ptr<GameObject> npc)
 {
 	starttime = std::chrono::system_clock::now();
-	duration_time = rand_time(dre) * 1000; // ·£´ıÇÑ ½Ã°£(1~3ÃÊ)À» ¹Ğ¸®ÃÊ·Î º¯È¯
-	move_type = rand_type(dre); // ·£´ıÇÑ ÀÌµ¿ Å¸ÀÔ(0~2)
-	rotate_type = rand_type(dre) % 2; // ·£´ıÇÑ È¸Àü Å¸ÀÔ(0~1)
+	duration_time = rand_time(dre) * 1000; // ëœë¤í•œ ì‹œê°„(1~3ì´ˆ)ì„ ë°€ë¦¬ì´ˆë¡œ ë³€í™˜
+	move_type = rand_type(dre); // ëœë¤í•œ ì´ë™ íƒ€ì…(0~2)
+	rotate_type = rand_type(dre) % 2; // ëœë¤í•œ íšŒì „ íƒ€ì…(0~1)
 	npc->SetAnimationType(ANIMATION_TYPE::WALK);
 
-	// ±ÙÃ³¿¡ ÀÖ´Â ÇÃ·¹ÀÌ¾î¿¡°Ô Å¸ÀÔ º¸³»±â
+	// ê·¼ì²˜ì— ìˆëŠ” í”Œë ˆì´ì–´ì—ê²Œ íƒ€ì… ë³´ë‚´ê¸°
 	std::vector<tree_obj*> results;
 	tree_obj n_obj{npc->GetID(), npc->GetPosition()};
 	Octree::PlayerOctree.query(n_obj, oct_distance, results);
@@ -108,12 +108,12 @@ void NonAtkNPCMoveState::Enter(std::shared_ptr<GameObject> npc)
 
 void NonAtkNPCMoveState::Execute(std::shared_ptr<GameObject> npc)
 {
-	// ¾ÕÀ¸·Î ÀÌµ¿
+	// ì•ìœ¼ë¡œ ì´ë™
 	endtime = std::chrono::system_clock::now();
 	auto exectime = endtime - starttime;
 	auto exec_ms = std::chrono::duration_cast<std::chrono::milliseconds>(exectime).count();
 	if (exec_ms > duration_time) {
-		// »óÅÂ ÀüÈ¯
+		// ìƒíƒœ ì „í™˜
 		npc->FSM_manager->ChangeState(std::make_shared<NonAtkNPCStandingState>());
 		return;
 	}
@@ -121,11 +121,11 @@ void NonAtkNPCMoveState::Execute(std::shared_ptr<GameObject> npc)
 	case OBJECT_TYPE::OB_COW: {
 		switch (move_type) {
 		case 0:
-			// ÀüÁø
+			// ì „ì§„
 			npc->MoveForward(0.2f);
 			break;
 		case 1:
-			// È¸ÀüÇÏ¸é¼­ ÀüÁø
+			// íšŒì „í•˜ë©´ì„œ ì „ì§„
 			if (rotate_type == 0)
 				npc->Rotate(0.f, -0.5f, 0.f);
 			else if (rotate_type == 1)
@@ -133,7 +133,7 @@ void NonAtkNPCMoveState::Execute(std::shared_ptr<GameObject> npc)
 			npc->MoveForward(0.1f);
 			break;
 		case 2:
-			// È¸Àü
+			// íšŒì „
 			if (rotate_type == 0)
 				npc->Rotate(0.f, -0.25f, 0.f);
 			else if (rotate_type == 1)
@@ -144,11 +144,11 @@ void NonAtkNPCMoveState::Execute(std::shared_ptr<GameObject> npc)
 	case OBJECT_TYPE::OB_PIG: {
 		switch (move_type) {
 		case 0:
-			// ÀüÁø
+			// ì „ì§„
 			npc->MoveForward(0.2f);
 			break;
 		case 1:
-			// È¸ÀüÇÏ¸é¼­ ÀüÁø
+			// íšŒì „í•˜ë©´ì„œ ì „ì§„
 			if (rotate_type == 0)
 				npc->Rotate(0.f, -0.5f, 0.f);
 			else if (rotate_type == 1)
@@ -156,7 +156,7 @@ void NonAtkNPCMoveState::Execute(std::shared_ptr<GameObject> npc)
 			npc->MoveForward(0.1f);
 			break;
 		case 2:
-			// È¸Àü
+			// íšŒì „
 			if (rotate_type == 0)
 				npc->Rotate(0.f, -0.25f, 0.f);
 			else if (rotate_type == 1)
@@ -191,13 +191,13 @@ void NonAtkNPCMoveState::Exit(std::shared_ptr<GameObject> npc)
 void NonAtkNPCRunAwayState::Enter(std::shared_ptr<GameObject> npc)
 {
 	starttime = std::chrono::system_clock::now();
-	total_time = 0; // ÃÑ ½Ã°£ ÃÊ±âÈ­
-	duration_time = 10 * 1000; // 10ÃÊ°£ µµ¸Á´Ù´Ô
-	move_type = rand_type(dre) % 2; // ·£´ıÇÑ ÀÌµ¿ Å¸ÀÔ(0~1)
-	rotate_type = rand_type(dre) % 2; // ·£´ıÇÑ È¸Àü Å¸ÀÔ(0~1)
+	total_time = 0; // ì´ ì‹œê°„ ì´ˆê¸°í™”
+	duration_time = 10 * 1000; // 10ì´ˆê°„ ë„ë§ë‹¤ë‹˜
+	move_type = rand_type(dre) % 2; // ëœë¤í•œ ì´ë™ íƒ€ì…(0~1)
+	rotate_type = rand_type(dre) % 2; // ëœë¤í•œ íšŒì „ íƒ€ì…(0~1)
 	npc->SetAnimationType(ANIMATION_TYPE::RUN);
 
-	// ±ÙÃ³¿¡ ÀÖ´Â ÇÃ·¹ÀÌ¾î¿¡°Ô Å¸ÀÔ º¸³»±â
+	// ê·¼ì²˜ì— ìˆëŠ” í”Œë ˆì´ì–´ì—ê²Œ íƒ€ì… ë³´ë‚´ê¸°
 	std::vector<tree_obj*> results;
 	tree_obj n_obj{npc->GetID(), npc->GetPosition()};
 	Octree::PlayerOctree.query(n_obj, oct_distance, results);
@@ -217,7 +217,7 @@ void NonAtkNPCRunAwayState::Execute(std::shared_ptr<GameObject> npc)
 	auto exectime = endtime - starttime;
 	auto exec_ms = std::chrono::duration_cast<std::chrono::milliseconds>(exectime).count();
 	if (total_time > duration_time) {
-		// »óÅÂ ÀüÈ¯
+		// ìƒíƒœ ì „í™˜
 		npc->FSM_manager->ChangeState(std::make_shared<NonAtkNPCMoveState>());
 		return;
 	}
@@ -225,11 +225,11 @@ void NonAtkNPCRunAwayState::Execute(std::shared_ptr<GameObject> npc)
 	case OBJECT_TYPE::OB_COW: {
 		switch (move_type) {
 		case 0:
-			// ÀüÁø
+			// ì „ì§„
 			npc->MoveForward(0.45f);
 			break;
 		case 1:
-			// È¸ÀüÇÏ¸é¼­ ÀüÁø
+			// íšŒì „í•˜ë©´ì„œ ì „ì§„
 			if (rotate_type == 0)
 				npc->Rotate(0.f, -1.0f, 0.f);
 			else if (rotate_type == 1)
@@ -241,11 +241,11 @@ void NonAtkNPCRunAwayState::Execute(std::shared_ptr<GameObject> npc)
 	case OBJECT_TYPE::OB_PIG: {
 		switch (move_type) {
 		case 0:
-			// ÀüÁø
+			// ì „ì§„
 			npc->MoveForward(0.6f);
 			break;
 		case 1:
-			// È¸ÀüÇÏ¸é¼­ ÀüÁø
+			// íšŒì „í•˜ë©´ì„œ ì „ì§„
 			if (rotate_type == 0)
 				npc->Rotate(0.f, -1.0f, 0.f);
 			else if (rotate_type == 1)
@@ -287,10 +287,10 @@ void NonAtkNPCRunAwayState::Exit(std::shared_ptr<GameObject> npc)
 void NonAtkNPCDieState::Enter(std::shared_ptr<GameObject> npc)
 {
 	starttime = std::chrono::system_clock::now();
-	duration_time = 10 * 1000; // 10ÃÊ°£ Á×¾îÀÖÀ½
+	duration_time = 10 * 1000; // 10ì´ˆê°„ ì£½ì–´ìˆìŒ
 
 	npc->SetAnimationType(ANIMATION_TYPE::DIE);
-	// ±ÙÃ³¿¡ ÀÖ´Â ÇÃ·¹ÀÌ¾î¿¡°Ô Å¸ÀÔ º¸³»±â
+	// ê·¼ì²˜ì— ìˆëŠ” í”Œë ˆì´ì–´ì—ê²Œ íƒ€ì… ë³´ë‚´ê¸°
 	std::vector<tree_obj*> results;
 	tree_obj n_obj{npc->GetID(), npc->GetPosition()};
 	Octree::PlayerOctree.query(n_obj, oct_distance, results);
@@ -310,7 +310,7 @@ void NonAtkNPCDieState::Execute(std::shared_ptr<GameObject> npc)
 	auto exectime = endtime - starttime;
 	auto exec_ms = std::chrono::duration_cast<std::chrono::milliseconds>(exectime).count();
 	if (exec_ms > duration_time) {
-		// »óÅÂ ÀüÈ¯
+		// ìƒíƒœ ì „í™˜
 		npc->FSM_manager->ChangeState(std::make_shared<NonAtkNPCRespawnState>());
 		return;
 	}
@@ -325,7 +325,7 @@ void NonAtkNPCRespawnState::Enter(std::shared_ptr<GameObject> npc)
 {
 	npc->is_alive = false;
 	starttime = std::chrono::system_clock::now();
-	duration_time = 20 * 1000; // 20ÃÊ°£ ¾Èº¸ÀÌµµ·Ï
+	duration_time = 20 * 1000; // 20ì´ˆê°„ ì•ˆë³´ì´ë„ë¡
 
 	std::vector<tree_obj*> results;
 	tree_obj n_obj{npc->GetID(), npc->GetPosition()};
@@ -360,7 +360,7 @@ void NonAtkNPCRespawnState::Execute(std::shared_ptr<GameObject> npc)
 
 		Octree::GameObjectOctree.update(npc->GetID(), npc->GetPosition());
 
-		// »óÅÂ ÀüÈ¯
+		// ìƒíƒœ ì „í™˜
 		npc->FSM_manager->ChangeState(std::make_shared<NonAtkNPCStandingState>());
 		return;
 	}

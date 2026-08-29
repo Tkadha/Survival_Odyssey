@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 #include <iostream>
 #include <memory>
 #include <thread>
@@ -32,9 +32,9 @@ public:
 	string name;
 	bool is_mage;
 
-	bool b_isNet; // ¼­¹ö ¿¬°á ¿©ºÎ
-	bool b_isLogin; // ·Î±×ÀÎ ¿Ï·á ¿©ºÎ
-	bool b_isLoginProg; // ·Î±×ÀÎ ÁøÇà ÁßÀÎÁö ¿©ºÎ
+	bool b_isNet; // ì„œë²„ ì—°ê²° ì—¬ë¶€
+	bool b_isLogin; // ë¡œê·¸ì¸ ì™„ë£Œ ì—¬ë¶€
+	bool b_isLoginProg; // ë¡œê·¸ì¸ ì§„í–‰ ì¤‘ì¸ì§€ ì—¬ë¶€
 private:
 	NetworkMGR() = default;
 	NetworkMGR(const NetworkMGR&) = delete;

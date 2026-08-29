@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 #include "stdafx.h"
 #include "../Global.h"
 #include "FSMManager.h"
@@ -172,8 +172,8 @@ public:
 	BoundingOrientedBox world_obb;
 
 public:
-	float _fMaxHp; // ÃÖ´ë Ã¼·Â (°è»êÀ» À§ÇØ ÇÊ¿ä)
-	bool _bTriggered66Percent = false; // 66% Ã¼·Â ±¸°£ Åë°ú ¿©ºÎ ÇÃ·¡±×
-	bool _bTriggered33Percent = false; // 33% Ã¼·Â ±¸°£ Åë°ú ¿©ºÎ ÇÃ·¡±×
+	float _fMaxHp; // ìµœëŒ€ ì²´ë ¥ (ê³„ì‚°ì„ ìœ„í•´ í•„ìš”)
+	bool _bTriggered66Percent = false; // 66% ì²´ë ¥ êµ¬ê°„ í†µê³¼ ì—¬ë¶€ í”Œë˜ê·¸
+	bool _bTriggered33Percent = false; // 33% ì²´ë ¥ êµ¬ê°„ í†µê³¼ ì—¬ë¶€ í”Œë˜ê·¸
 	bool _bUsedSpecialAttack = false;
 };

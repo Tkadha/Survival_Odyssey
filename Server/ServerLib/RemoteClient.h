@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 #include <thread>
 #include <memory>
 #include <mutex>
@@ -8,13 +8,13 @@
 using namespace std;
 
 
-// TCP ¿¬°á °¢°¢ÀÇ °´Ã¼.
+// TCP ì—°ê²° ê°ê°ì˜ ê°ì²´.
 class RemoteClient
 {
 public:
 	static unordered_map<RemoteClient*, shared_ptr<RemoteClient>> remoteClients;
 
-	Socket tcpConnection; // acceptÇÑ TCP ¿¬°á
+	Socket tcpConnection; // acceptí•œ TCP ì—°ê²°
 	ULONGLONG m_id;
 
 	RemoteClient()

@@ -1,4 +1,4 @@
-#define _CRT_SECURE_NO_WARNINGS
+ï»¿#define _CRT_SECURE_NO_WARNINGS
 
 #include <iostream>
 #include <string>
@@ -125,7 +125,7 @@ void CALLBACK recv_callback(DWORD err, DWORD recv_size,
 	char* recv_buf = reinterpret_cast<OVER_EXP*>(recv_over)->send_buf;
 	int recv_len = recv_size;
 
-	{ // ÆĞÅ¶ ¼ö½Å
+	{ // íŒ¨í‚· ìˆ˜ì‹ 
 		int remain_data = recv_len + server_s->m_prev_remain;
 		unsigned char packet_size = recv_buf[0];
 		while (remain_data > 0 && packet_size <= remain_data) {
@@ -133,17 +133,17 @@ void CALLBACK recv_callback(DWORD err, DWORD recv_size,
 				remain_data = 0;
 				break;
 			}
-			// ÆĞÅ¶ Ã³¸®
+			// íŒ¨í‚· ì²˜ë¦¬
 			Process_Packet(recv_buf);
 
-			// ´ÙÀ½ ÆĞÅ¶ ÀÌµ¿, ³²Àº µ¥ÀÌÅÍ °»½Å
+			// ë‹¤ìŒ íŒ¨í‚· ì´ë™, ë‚¨ì€ ë°ì´í„° ê°±ì‹ 
 			recv_buf += packet_size;
 			remain_data -= packet_size;
 		}
-		// ³²Àº µ¥ÀÌÅÍ ÀúÀå
+		// ë‚¨ì€ ë°ì´í„° ì €ì¥
 		server_s->m_prev_remain = remain_data;
 
-		// ³²Àº µ¥ÀÌÅÍ°¡ 0ÀÌ ¾Æ´Ñ °ªÀ» °¡Áö¸é recv_bufÀÇ ¸Ç ¾ÕÀ¸·Î º¹»çÇÑ´Ù.
+		// ë‚¨ì€ ë°ì´í„°ê°€ 0ì´ ì•„ë‹Œ ê°’ì„ ê°€ì§€ë©´ recv_bufì˜ ë§¨ ì•ìœ¼ë¡œ ë³µì‚¬í•œë‹¤.
 		if (remain_data > 0) {
 			memcpy(server_s->m_recv_over.send_buf, recv_buf, remain_data);
 		}
@@ -153,7 +153,7 @@ void CALLBACK recv_callback(DWORD err, DWORD recv_size,
 		   sizeof(server_s->m_recv_over.send_buf) - server_s->m_prev_remain);
 	memset(&server_s->m_recv_over.wsabuf, 0, sizeof(server_s->m_recv_over.over));
 
-	// ´ÙÀ½ ¼ö½Å ÁØºñ
+	// ë‹¤ìŒ ìˆ˜ì‹  ì¤€ë¹„
 	server_s->m_readFlags = 0;
 	server_s->m_recv_over.wsabuf.len = BUFSIZE - server_s->m_prev_remain;
 	server_s->m_recv_over.wsabuf.buf = server_s->m_recv_over.send_buf + server_s->m_prev_remain;
@@ -172,14 +172,14 @@ int main()
 	server_s = make_shared<Socket>(SocketType::Tcp);
 	server_s->Connect(Endpoint(SERVER_ADDR, PORT));
 
-	// Ã¹ ¹øÂ° µ¥ÀÌÅÍ ¼ö½Å ½ÃÀÛ
+	// ì²« ë²ˆì§¸ ë°ì´í„° ìˆ˜ì‹  ì‹œì‘
 	server_s->m_readFlags = 0;
 	server_s->m_recv_over.wsabuf.len = BUFSIZE;
 	server_s->m_recv_over.wsabuf.buf = server_s->m_recv_over.send_buf;
 	WSARecv(server_s->m_fd, &(server_s->m_recv_over.wsabuf), 1, nullptr, &server_s->m_readFlags, &(server_s->m_recv_over.over), recv_callback);
 
 	while (!bshutdown) {
-		// Å° ÀÔ·Â È®ÀÎ
+		// í‚¤ ì…ë ¥ í™•ì¸
 		if (_kbhit()) {
 			char ch = _getch();
 			if (ch == 'k' || ch == 'K') {
@@ -190,7 +190,7 @@ int main()
 				bshutdown = true;
 			}
 		}
-		SleepEx(0, TRUE); // ºñµ¿±â ÀÛ¾÷ ¼öÇà
+		SleepEx(0, TRUE); // ë¹„ë™ê¸° ì‘ì—… ìˆ˜í–‰
 	}
 
 	WSACleanup();
@@ -199,17 +199,17 @@ int main()
 
 void ReconnectToNewServer(const char* n_addr, short n_port)
 {
-	// ±âÁ¸ ¼ÒÄÏ Á¾·á
+	// ê¸°ì¡´ ì†Œì¼“ ì¢…ë£Œ
 	closesocket(server_s->m_fd);
 	Sleep(100);
-	// »õ·Î¿î ¼ÒÄÏ »ı¼º ¹× ¿¬°á
+	// ìƒˆë¡œìš´ ì†Œì¼“ ìƒì„± ë° ì—°ê²°
 	char save_addr[20];
 	strncpy(save_addr, n_addr, sizeof(save_addr));
 	server_s = make_shared<Socket>(SocketType::Tcp);
 	server_s->Connect(Endpoint(save_addr, n_port));
 	cout << "Reconnected to " << save_addr << ":" << n_port << endl;
 
-	// Ã¹ ¹øÂ° µ¥ÀÌÅÍ ¼ö½Å ½ÃÀÛ
+	// ì²« ë²ˆì§¸ ë°ì´í„° ìˆ˜ì‹  ì‹œì‘
 	server_s->m_readFlags = 0;
 	server_s->m_recv_over.wsabuf.len = BUFSIZE;
 	server_s->m_recv_over.wsabuf.buf = server_s->m_recv_over.send_buf;

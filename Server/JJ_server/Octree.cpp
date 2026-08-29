@@ -1,4 +1,4 @@
-#include "stdafx.h"
+﻿#include "stdafx.h"
 #include "Octree.h"
 
 Octree Octree::PlayerOctree = {XMFLOAT3{0, 0, 0}, XMFLOAT3{10200, 6000, 10200}};

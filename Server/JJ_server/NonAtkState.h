@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 #include "FSMState.h"
 #include <chrono>
 class GameObject;
@@ -6,7 +6,7 @@ class GameObject;
 class NonAtkNPCGlobalState : public FSMState<GameObject>
 {
 	std::chrono::time_point<std::chrono::system_clock> starttime;
-	bool is_invincible = false; // ¹«Àû»óÅÂÀÎÁö Ã¼Å©ÇÏ´Â º¯¼ö
+	bool is_invincible = false; // ë¬´ì ìƒíƒœì¸ì§€ ì²´í¬í•˜ëŠ” ë³€ìˆ˜
 	long long sustainment_time = 1500.f;
 
 public:
@@ -19,10 +19,10 @@ public:
 	virtual void SetInvincible(long long time = 1500.f)
 	{
 		is_invincible = true;
-		sustainment_time = time; // ¹«Àû»óÅÂ Áö¼Ó½Ã°£ ¼³Á¤
-		starttime = std::chrono::system_clock::now(); // ¹«Àû»óÅÂ ½ÃÀÛ½Ã°£
-	} // ¹«Àû»óÅÂ·Î ÀüÈ¯
-	virtual bool GetInvincible() const { return is_invincible; } // ¹«Àû»óÅÂÀÎÁö Ã¼Å©ÇÏ´Â ÇÔ¼ö
+		sustainment_time = time; // ë¬´ì ìƒíƒœ ì§€ì†ì‹œê°„ ì„¤ì •
+		starttime = std::chrono::system_clock::now(); // ë¬´ì ìƒíƒœ ì‹œì‘ì‹œê°„
+	} // ë¬´ì ìƒíƒœë¡œ ì „í™˜
+	virtual bool GetInvincible() const { return is_invincible; } // ë¬´ì ìƒíƒœì¸ì§€ ì²´í¬í•˜ëŠ” í•¨ìˆ˜
 };
 
 class NonAtkNPCStandingState : public FSMState<GameObject>
@@ -45,8 +45,8 @@ class NonAtkNPCMoveState : public FSMState<GameObject>
 	std::chrono::time_point<std::chrono::system_clock> starttime;
 	std::chrono::time_point<std::chrono::system_clock> endtime;
 	long long duration_time;
-	char move_type; // 0 ÀüÁø 1 È¸ÀüÇÏ¸é¼­ ÀüÁø 2 È¸Àü
-	char rotate_type; // 0 ½Ã°è¹æÇâ 1 ¹İ½Ã°è¹æÇâ
+	char move_type; // 0 ì „ì§„ 1 íšŒì „í•˜ë©´ì„œ ì „ì§„ 2 íšŒì „
+	char rotate_type; // 0 ì‹œê³„ë°©í–¥ 1 ë°˜ì‹œê³„ë°©í–¥
 public:
 	virtual void Enter(std::shared_ptr<GameObject> npc);
 
@@ -61,8 +61,8 @@ class NonAtkNPCRunAwayState : public FSMState<GameObject>
 	std::chrono::time_point<std::chrono::system_clock> endtime;
 	long long duration_time;
 	long long total_time;
-	char move_type; // 0 ÀüÁø 1 È¸ÀüÇÏ¸é¼­ ÀüÁø
-	char rotate_type; // 0 ½Ã°è¹æÇâ 1 ¹İ½Ã°è¹æÇâ
+	char move_type; // 0 ì „ì§„ 1 íšŒì „í•˜ë©´ì„œ ì „ì§„
+	char rotate_type; // 0 ì‹œê³„ë°©í–¥ 1 ë°˜ì‹œê³„ë°©í–¥
 public:
 	virtual void Enter(std::shared_ptr<GameObject> npc);
 

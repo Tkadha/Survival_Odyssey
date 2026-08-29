@@ -1,4 +1,4 @@
-// stdafx.h : include file for standard system include files,
+ï»¿// stdafx.h : include file for standard system include files,
 // or project specific include files that are used frequently, but
 // are changed infrequently
 //
@@ -325,7 +325,7 @@ enum class ServerPlayerState
 	Walking,
 	Running,
 	Jumping,
-	Falling, // Á¡ÇÁ ÈÄ ÇÏ°­ ¶Ç´Â ±×³É ¶³¾îÁú ¶§
+	Falling, // ì í”„ í›„ í•˜ê°• ë˜ëŠ” ê·¸ëƒ¥ ë–¨ì–´ì§ˆ ë•Œ
 	Attacking
-	// ÇÊ¿äÇÑ »óÅÂ Ãß°¡
+	// í•„ìš”í•œ ìƒíƒœ ì¶”ê°€
 };
