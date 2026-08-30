@@ -168,6 +168,7 @@
       <ConformanceMode>false</ConformanceMode>
       <AdditionalIncludeDirectories>C:\Users\admin\source\repos\JJ_server\ServerLib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PrecompiledHeader>Create</PrecompiledHeader>
+      <LanguageStandard>Default</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>

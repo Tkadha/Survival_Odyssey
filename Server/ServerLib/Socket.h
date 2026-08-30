@@ -42,6 +42,7 @@ public:
 		wsabuf.len = BUFSIZE;
 		wsabuf.buf = send_buf;
 		ZeroMemory(&send_buf, sizeof(send_buf));
+		obj_id = 0;
 	}
 	OVER_EXP(char* packet)
 		: comp_type(COMP_TYPE::OP_SEND)
@@ -51,6 +52,7 @@ public:
 		wsabuf.buf = send_buf;
 		ZeroMemory(&send_buf, sizeof(send_buf));
 		memcpy(send_buf, packet, packet[0]);
+		obj_id = 0;
 	}
 	OVER_EXP(const char* packet, short buf_size)
 		: comp_type(COMP_TYPE::OP_SEND)
@@ -60,6 +62,7 @@ public:
 		wsabuf.buf = send_buf;
 		ZeroMemory(&send_buf, sizeof(send_buf));
 		memcpy(send_buf, packet, buf_size);
+		obj_id = 0;
 	}
 	~OVER_EXP() {}
 };

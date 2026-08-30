@@ -17,6 +17,7 @@
 #include <DirectXCollision.h>
 #include <random>
 #include <algorithm>
+#include <type_traits>
 
 
 extern std::atomic_bool g_is_night;
@@ -301,19 +302,15 @@ namespace genRandom
 template <typename T>
 std::pair<T, T> generateRandomXZ(std::mt19937& gen, T xStart, T xEnd, T zStart, T zEnd)
 {
-	T x, z;
+	using Distribution = typename std::conditional<
+		std::is_integral<T>::value,
+		std::uniform_int_distribution<T>,
+		std::uniform_real_distribution<T>>::type;
 
-	if constexpr (std::is_integral<T>::value) {
-		std::uniform_int_distribution<T> xDist(xStart, xEnd);
-		std::uniform_int_distribution<T> zDist(zStart, zEnd);
-		x = xDist(gen);
-		z = zDist(gen);
-	} else {
-		std::uniform_real_distribution<T> xDist(xStart, xEnd);
-		std::uniform_real_distribution<T> zDist(zStart, zEnd);
-		x = xDist(gen);
-		z = zDist(gen);
-	}
+	Distribution xDist(xStart, xEnd);
+	Distribution zDist(zStart, zEnd);
+	T x = xDist(gen);
+	T z = zDist(gen);
 
 	return std::make_pair(x, z);
 }
