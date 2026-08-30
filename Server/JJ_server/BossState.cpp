@@ -398,10 +398,7 @@ void BossRespawnState::Execute(const std::shared_ptr<GameObject>& npc)
 		npc->Sethp(20);
 
 		std::pair<float, float> randompos = genRandom::generateRandomXZ(gen, 1000.f, 2000.f, 1000.f, 2000.f);
-		XMFLOAT3 xmf3Scale = Terrain::terrain->GetScale();
-		int scale_z = static_cast<int>(randompos.second / xmf3Scale.z);
-		bool bReverseQuad = ((scale_z % 2) != 0);
-		float fHeight = Terrain::terrain->GetHeight(randompos.first, randompos.second, bReverseQuad) + 0.0f;
+		float fHeight = Terrain::terrain->GetHeightAtQuad(randompos.first, randompos.second);
 		float y{};
 		if (y < fHeight) y = fHeight;
 		if (npc->GetType() == OBJECT_TYPE::OB_BAT)

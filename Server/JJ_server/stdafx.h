@@ -30,6 +30,9 @@ using namespace DirectX::PackedVector;
 
 #define EPSILON 1.0e-10f
 
+// 지형에서 물/절벽으로 취급하는 최소 높이. (기존에 3개 cpp 에 각각 #define 되어 있던 것을 통합)
+constexpr float MIN_HEIGHT = 1055.0f;
+
 inline bool IsZero(float fValue)
 {
 	return ((fabsf(fValue) < EPSILON));

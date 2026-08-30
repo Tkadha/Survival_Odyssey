@@ -23,7 +23,6 @@ using namespace std;
 
 #define PORT 9000
 
-#define MIN_HEIGHT 1055.f
 //-----------------------------------------------
 //
 //				game server
@@ -81,8 +80,6 @@ void ProcessClientLeave(shared_ptr<PlayerClient> remoteClient)
 	// 로그아웃 정보 보내기
 	for (auto& cl : PlayerClient::PlayerClients) {
 		LOGOUT_PACKET s_packet;
-		s_packet.size = sizeof(LOGOUT_PACKET);
-		s_packet.type = static_cast<char>(E_PACKET::E_P_LOGOUT);
 		s_packet.uid = remoteClient->m_id;
 		cl.second->tcpConnection.SendOverlapped(reinterpret_cast<char*>(&s_packet));
 	}
@@ -164,8 +161,6 @@ void worker_thread()
 								if (Client->Playerstamina.compare_exchange_weak(stamina, desiredstamina)) {
 									// 패킷전송
 									CHANGE_STAT_PACKET s_packet;
-									s_packet.size = sizeof(CHANGE_STAT_PACKET);
-									s_packet.type = static_cast<char>(E_PACKET::E_P_CHANGE_STAT);
 									s_packet.stat = E_STAT::STAMINA;
 									s_packet.value = Client->Playerstamina.load();
 									Client->tcpConnection.SendOverlapped(reinterpret_cast<char*>(&s_packet));
@@ -336,8 +331,6 @@ void ProcessPacket(shared_ptr<PlayerClient>& client, char* packet)
 			client->Playerstamina -= 5;
 			if (client->Playerstamina.load() < 0) client->Playerstamina.store(0);
 			CHANGE_STAT_PACKET s_packet;
-			s_packet.size = sizeof(CHANGE_STAT_PACKET);
-			s_packet.type = static_cast<char>(E_PACKET::E_P_CHANGE_STAT);
 			s_packet.stat = E_STAT::STAMINA;
 			s_packet.value = client->Playerstamina.load();
 			client->tcpConnection.SendOverlapped(reinterpret_cast<char*>(&s_packet));
@@ -414,14 +407,10 @@ void ProcessPacket(shared_ptr<PlayerClient>& client, char* packet)
 		if (client->Playerhp.load() < 0) {
 			client->RespawnPlayer();
 			PLAYER_RESPAWN_PACKET p;
-			p.size = sizeof(PLAYER_RESPAWN_PACKET);
-			p.type = static_cast<char>(E_PACKET::E_P_RESPAWN);
 			client->tcpConnection.SendOverlapped(reinterpret_cast<char*>(&p));
 			client->BroadCastPosPacket();
 		}
 		CHANGE_STAT_PACKET s_packet;
-		s_packet.size = sizeof(CHANGE_STAT_PACKET);
-		s_packet.type = static_cast<char>(E_PACKET::E_P_CHANGE_STAT);
 		s_packet.stat = E_STAT::HP;
 		s_packet.value = client->Playerhp.load();
 		client->tcpConnection.SendOverlapped(reinterpret_cast<char*>(&s_packet));
@@ -552,8 +541,6 @@ void event_thread()
 								if (it.second->Playerhp.compare_exchange_weak(hp, desiredHp)) {
 									// 패킷전송
 									CHANGE_STAT_PACKET s_packet;
-									s_packet.size = sizeof(CHANGE_STAT_PACKET);
-									s_packet.type = static_cast<char>(E_PACKET::E_P_CHANGE_STAT);
 									s_packet.stat = E_STAT::HP;
 									s_packet.value = it.second->Playerhp.load();
 									it.second->tcpConnection.SendOverlapped(reinterpret_cast<char*>(&s_packet));
@@ -584,8 +571,6 @@ void event_thread()
 								if (it.second->Playerstamina.compare_exchange_weak(stamina, desiredstamina)) {
 									// 패킷전송
 									CHANGE_STAT_PACKET s_packet;
-									s_packet.size = sizeof(CHANGE_STAT_PACKET);
-									s_packet.type = static_cast<char>(E_PACKET::E_P_CHANGE_STAT);
 									s_packet.stat = E_STAT::STAMINA;
 									s_packet.value = it.second->Playerstamina.load();
 									it.second->tcpConnection.SendOverlapped(reinterpret_cast<char*>(&s_packet));
@@ -615,8 +600,6 @@ void event_thread()
 								if (it.second->PlayerHunger.compare_exchange_weak(expectedHunger, desiredHunger)) {
 									// 패킷전송
 									CHANGE_STAT_PACKET s_packet;
-									s_packet.size = sizeof(CHANGE_STAT_PACKET);
-									s_packet.type = static_cast<char>(E_PACKET::E_P_CHANGE_STAT);
 									s_packet.stat = E_STAT::HUNGER;
 									s_packet.value = it.second->PlayerHunger.load();
 									it.second->tcpConnection.SendOverlapped(reinterpret_cast<char*>(&s_packet));
@@ -649,8 +632,6 @@ void event_thread()
 								if (it.second->PlayerThirst.compare_exchange_weak(expectedThirst, desiredThirst)) {
 									// 패킷전송
 									CHANGE_STAT_PACKET s_packet;
-									s_packet.size = sizeof(CHANGE_STAT_PACKET);
-									s_packet.type = static_cast<char>(E_PACKET::E_P_CHANGE_STAT);
 									s_packet.stat = E_STAT::THIRST;
 									s_packet.value = it.second->PlayerThirst.load();
 									it.second->tcpConnection.SendOverlapped(reinterpret_cast<char*>(&s_packet));
@@ -678,8 +659,6 @@ void event_thread()
 								if (it.second->Playerhp.compare_exchange_weak(hp, desiredHp)) {
 									// 패킷전송
 									CHANGE_STAT_PACKET s_packet;
-									s_packet.size = sizeof(CHANGE_STAT_PACKET);
-									s_packet.type = static_cast<char>(E_PACKET::E_P_CHANGE_STAT);
 									s_packet.stat = E_STAT::HP;
 									s_packet.value = it.second->Playerhp.load();
 									it.second->tcpConnection.SendOverlapped(reinterpret_cast<char*>(&s_packet));
@@ -708,8 +687,6 @@ void event_thread()
 								if (it.second->Playerstamina.compare_exchange_weak(stamina, desiredstamina)) {
 									// 패킷전송
 									CHANGE_STAT_PACKET s_packet;
-									s_packet.size = sizeof(CHANGE_STAT_PACKET);
-									s_packet.type = static_cast<char>(E_PACKET::E_P_CHANGE_STAT);
 									s_packet.stat = E_STAT::STAMINA;
 									s_packet.value = it.second->Playerstamina.load();
 									it.second->tcpConnection.SendOverlapped(reinterpret_cast<char*>(&s_packet));
@@ -881,15 +858,11 @@ void ProcessAccept()
 			remoteClient->SetPosition(p_pos);
 
 			LOGIN_PACKET s_packet;
-			s_packet.size = sizeof(LOGIN_PACKET);
-			s_packet.type = static_cast<char>(E_PACKET::E_P_LOGIN);
 			s_packet.uid = remoteClient->m_id;
 			// 내 정보 보내기
 			remoteClient->tcpConnection.SendOverlapped(reinterpret_cast<char*>(&s_packet));
 
 			POSITION_PACKET s_pospacket;
-			s_pospacket.size = sizeof(POSITION_PACKET);
-			s_pospacket.type = static_cast<char>(E_PACKET::E_P_POSITION);
 			s_pospacket.uid = remoteClient->m_id;
 			auto& pos = remoteClient->GetPosition();
 			s_pospacket.position.x = pos.x;
@@ -902,8 +875,6 @@ void ProcessAccept()
 			for (auto& cl : PlayerClient::PlayerClients) {
 				if (cl.second.get() == remoteClient.get()) continue; // 나 자신은 제외한다.
 				LOGIN_PACKET s_a_packet;
-				s_a_packet.size = sizeof(LOGIN_PACKET);
-				s_a_packet.type = static_cast<char>(E_PACKET::E_P_LOGIN);
 				s_a_packet.uid = cl.second->m_id;
 				remoteClient->tcpConnection.SendOverlapped(reinterpret_cast<char*>(&s_a_packet));
 			}

@@ -8,8 +8,6 @@ std::unordered_map<OBJECT_TYPE, std::shared_ptr<BoundingOrientedBox>> OBB_Manage
 std::vector<shared_ptr<GameObject>> GameObject::gameObjects;
 std::vector<shared_ptr<GameObject>> GameObject::ConstructObjects;
 
-#define MIN_HEIGHT 1055.f
-
 GameObject::GameObject()
 {
 	animationType = ANIMATION_TYPE::UNKNOWN;

@@ -110,9 +110,7 @@ public:
 	}
 	~PlayerClient() = default;
 
-	void Move(ULONG nDirection, float fDistance, bool bVelocity = false);
 	void Move(const XMFLOAT3& xmf3Shift, bool bVelocity = false);
-	void Move(float fxOffset = 0.0f, float fyOffset = 0.0f, float fzOffset = 0.0f);
 
 	XMFLOAT3 GetPosition() const { return m_Position; }
 	const XMFLOAT3& GetVelocity() const { return (m_Velocity); }
@@ -130,8 +128,6 @@ public:
 	XMFLOAT3 GetRight() const { return m_Right; }
 	XMFLOAT3 GetUp() const { return m_Up; }
 	XMFLOAT3 GetLook() const { return m_Look; }
-
-	void Update(float fTimeElapsed);
 
 	// 상태머신 적용 업데이트 테스트
 	void Update_test(float deltaTime);

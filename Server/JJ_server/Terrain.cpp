@@ -72,3 +72,10 @@ float Terrain::GetHeight(float fx, float fz, bool bReverseQuad)
 
 	return (fHeight * world_scale.y);
 }
+
+float Terrain::GetHeightAtQuad(float x, float z)
+{
+	int qz = static_cast<int>(z / m_xmf3Scale.z);
+	bool bReverseQuad = ((qz % 2) != 0);
+	return GetHeight(x, z, bReverseQuad);
+}

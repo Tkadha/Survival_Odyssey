@@ -6,33 +6,8 @@
 #include "Event.h"
 #include <iostream>
 
-#define DIR_FORWARD 0x01
-#define DIR_BACKWARD 0x02
-#define DIR_LEFT 0x04
-#define DIR_RIGHT 0x08
-#define DIR_UP 0x10
-#define DIR_DOWN 0x20
-
-#define MIN_HEIGHT 1055.f
 unordered_map<PlayerClient*, shared_ptr<PlayerClient>> PlayerClient::PlayerClients;
 std::mutex g_clients_mutex;
-
-void PlayerClient::Move(ULONG dwDirection, float fDistance, bool bUpdateVelocity)
-{
-	if (dwDirection) {
-		XMFLOAT3 xmf3Shift = XMFLOAT3(0, 0, 0);
-		if (dwDirection & DIR_FORWARD) xmf3Shift = Vector3::Add(xmf3Shift, m_Look, fDistance);
-		if (dwDirection & DIR_BACKWARD) xmf3Shift = Vector3::Add(xmf3Shift, m_Look, -fDistance);
-
-		if (dwDirection & DIR_RIGHT) xmf3Shift = Vector3::Add(xmf3Shift, m_Right, fDistance);
-		if (dwDirection & DIR_LEFT) xmf3Shift = Vector3::Add(xmf3Shift, m_Right, -fDistance);
-
-		if (dwDirection & DIR_UP) xmf3Shift = Vector3::Add(xmf3Shift, m_Up, fDistance);
-		if (dwDirection & DIR_DOWN) xmf3Shift = Vector3::Add(xmf3Shift, m_Up, -fDistance);
-
-		Move(xmf3Shift, bUpdateVelocity);
-	}
-}
 
 void PlayerClient::Move(const XMFLOAT3& xmf3Shift, bool bUpdateVelocity)
 {
@@ -76,45 +51,6 @@ void PlayerClient::UpdateTransform()
 	world_obb.Extents.x = local_obb.Extents.x * scale.x;
 	world_obb.Extents.y = local_obb.Extents.y * scale.y;
 	world_obb.Extents.z = local_obb.Extents.z * scale.z;
-}
-
-void PlayerClient::Update(float fTimeElapsed)
-{
-	m_Velocity = Vector3::Add(m_Velocity, m_Gravity);
-	float fLength = sqrtf(m_Velocity.x * m_Velocity.x + m_Velocity.z * m_Velocity.z);
-	float fMaxVelocityXZ = m_fMaxVelocityXZ;
-	if (fLength > m_fMaxVelocityXZ) {
-		m_Velocity.x *= (fMaxVelocityXZ / fLength);
-		m_Velocity.z *= (fMaxVelocityXZ / fLength);
-	}
-	float fMaxVelocityY = m_fMaxVelocityY;
-	fLength = sqrtf(m_Velocity.y * m_Velocity.y);
-	if (fLength > m_fMaxVelocityY) m_Velocity.y *= (fMaxVelocityY / fLength);
-
-	XMFLOAT3 xmf3Velocity = Vector3::ScalarProduct(m_Velocity, fTimeElapsed, false);
-	Move(xmf3Velocity, false);
-
-	if (Terrain::terrain) {
-		XMFLOAT3 xmf3Scale = Terrain::terrain->GetScale();
-		XMFLOAT3 xmf3PlayerPosition = GetPosition();
-		int z = static_cast<int>(xmf3PlayerPosition.z / xmf3Scale.z);
-		bool bReverseQuad = ((z % 2) != 0);
-		float fHeight = Terrain::terrain->GetHeight(xmf3PlayerPosition.x, xmf3PlayerPosition.z, bReverseQuad) + 0.0f;
-		if (xmf3PlayerPosition.y < fHeight) {
-			XMFLOAT3 xmf3PlayerVelocity = GetVelocity();
-			xmf3PlayerVelocity.y = 0.0f;
-			SetVelocity(xmf3PlayerVelocity);
-			xmf3PlayerPosition.y = fHeight;
-			SetPosition(xmf3PlayerPosition);
-		}
-		xmf3PlayerPosition.y = fHeight;
-		SetPosition(xmf3PlayerPosition);
-	}
-
-	fLength = Vector3::Length(m_Velocity);
-	float fDeceleration = (m_fFriction * fTimeElapsed);
-	if (fDeceleration > fLength) fDeceleration = fLength;
-	m_Velocity = Vector3::Add(m_Velocity, Vector3::ScalarProduct(m_Velocity, -fDeceleration, true));
 }
 
 void PlayerClient::Change_Stat(E_STAT stat, float value)
@@ -466,11 +402,7 @@ void PlayerClient::Update_test(float deltaTime)
 	}
 
 
-	XMFLOAT3 xmf3Scale = Terrain::terrain->GetScale();
-	XMFLOAT3 xmf3PlayerPosition = moving_pos;
-	int z = static_cast<int>(xmf3PlayerPosition.z / xmf3Scale.z);
-	bool bReverseQuad = ((z % 2) != 0);
-	FLOAT move_pos_y = Terrain::terrain->GetHeight(xmf3PlayerPosition.x, xmf3PlayerPosition.z, bReverseQuad) + 0.0f;
+	FLOAT move_pos_y = Terrain::terrain->GetHeightAtQuad(moving_pos.x, moving_pos.z);
 	if (move_pos_y < MIN_HEIGHT) {
 		moving_pos = m_Position;
 	} else
@@ -484,11 +416,8 @@ void PlayerClient::Update_test(float deltaTime)
 bool PlayerClient::CheckIfGrounded()
 {
 	if (this->state != PC_INGAME) return false;
-	XMFLOAT3 xmf3Scale = Terrain::terrain->GetScale();
 	XMFLOAT3 xmf3PlayerPosition = GetPosition();
-	int z = static_cast<int>(xmf3PlayerPosition.z / xmf3Scale.z);
-	bool bReverseQuad = ((z % 2) != 0);
-	float fHeight = Terrain::terrain->GetHeight(xmf3PlayerPosition.x, xmf3PlayerPosition.z, bReverseQuad) + 0.0f;
+	float fHeight = Terrain::terrain->GetHeightAtQuad(xmf3PlayerPosition.x, xmf3PlayerPosition.z);
 	if (xmf3PlayerPosition.y <= fHeight) return true;
 
 	return false;
@@ -497,11 +426,8 @@ bool PlayerClient::CheckIfGrounded()
 void PlayerClient::SnapToGround()
 {
 	if (this->state != PC_INGAME) return;
-	XMFLOAT3 xmf3Scale = Terrain::terrain->GetScale();
 	XMFLOAT3 xmf3PlayerPosition = GetPosition();
-	int z = static_cast<int>(xmf3PlayerPosition.z / xmf3Scale.z);
-	bool bReverseQuad = ((z % 2) != 0);
-	float fHeight = Terrain::terrain->GetHeight(xmf3PlayerPosition.x, xmf3PlayerPosition.z, bReverseQuad) + 0.0f;
+	float fHeight = Terrain::terrain->GetHeightAtQuad(xmf3PlayerPosition.x, xmf3PlayerPosition.z);
 
 	if (xmf3PlayerPosition.y < fHeight) {
 		XMFLOAT3 xmf3PlayerVelocity = GetVelocity();
@@ -545,8 +471,6 @@ void PlayerClient::SetEffect(OBJECT_TYPE obj_type)
 void PlayerClient::BroadCastPosPacket()
 {
 	POSITION_PACKET s_packet;
-	s_packet.size = sizeof(POSITION_PACKET);
-	s_packet.type = static_cast<char>(E_PACKET::E_P_POSITION);
 	s_packet.uid = m_id;
 	s_packet.position.x = m_Position.x;
 	s_packet.position.y = m_Position.y;
@@ -561,8 +485,6 @@ void PlayerClient::BroadCastPosPacket()
 void PlayerClient::BroadCastRotatePacket()
 {
 	ROTATE_PACKET s_packet;
-	s_packet.size = sizeof(ROTATE_PACKET);
-	s_packet.type = static_cast<char>(E_PACKET::E_P_ROTATE);
 	s_packet.right = FLOAT3{m_Right.x, m_Right.y, m_Right.z};
 	s_packet.up = FLOAT3{m_Up.x, m_Up.y, m_Up.z};
 	s_packet.look = FLOAT3{m_Look.x, m_Look.y, m_Look.z};
@@ -577,8 +499,6 @@ void PlayerClient::BroadCastRotatePacket()
 void PlayerClient::BroadCastInputPacket()
 {
 	INPUT_PACKET s_packet;
-	s_packet.size = sizeof(INPUT_PACKET);
-	s_packet.type = static_cast<char>(E_PACKET::E_P_INPUT);
 	s_packet.inputData = m_lastReceivedInput;
 	s_packet.uid = m_id;
 	for (auto& cl : PlayerClient::PlayerClients) {
@@ -602,8 +522,6 @@ void PlayerClient::BroadCastWeaponPacket(WEAPON_CHANGE_PACKET p)
 void PlayerClient::BroadCastHitPacket(PlayerInput pi)
 {
 	INPUT_PACKET s_packet;
-	s_packet.size = sizeof(INPUT_PACKET);
-	s_packet.type = static_cast<char>(E_PACKET::E_P_INPUT);
 	s_packet.inputData = pi;
 	s_packet.uid = m_id;
 	for (auto& cl : PlayerClient::PlayerClients) {
@@ -616,8 +534,6 @@ void PlayerClient::BroadCastHitPacket(PlayerInput pi)
 void PlayerClient::SendHpPacket(int oid, int hp)
 {
 	OBJ_HP_PACKET s_packet;
-	s_packet.size = sizeof(OBJ_HP_PACKET);
-	s_packet.type = static_cast<char>(E_PACKET::E_O_SETHP);
 	s_packet.oid = oid;
 	s_packet.hp = hp;
 	tcpConnection.SendOverlapped(reinterpret_cast<char*>(&s_packet));
@@ -626,8 +542,6 @@ void PlayerClient::SendHpPacket(int oid, int hp)
 void PlayerClient::SendInvinciblePacket(int oid, bool invin_type)
 {
 	OBJ_INVINCIBLE_PACKET s_packet;
-	s_packet.size = sizeof(OBJ_INVINCIBLE_PACKET);
-	s_packet.type = static_cast<char>(E_PACKET::E_O_INVINCIBLE);
 	s_packet.oid = oid;
 	s_packet.invincible = invin_type ? 1 : 0;
 	tcpConnection.SendOverlapped(reinterpret_cast<char*>(&s_packet));
@@ -637,8 +551,6 @@ void PlayerClient::SendAddPacket(shared_ptr<GameObject> obj)
 {
 	if (false == obj->is_alive) return; // 리스폰 중 상태라면
 	ADD_PACKET s_packet;
-	s_packet.size = sizeof(ADD_PACKET);
-	s_packet.type = static_cast<char>(E_PACKET::E_O_ADD);
 	s_packet.position.x = obj->GetPosition().x;
 	s_packet.position.y = obj->GetPosition().y;
 	s_packet.position.z = obj->GetPosition().z;
@@ -669,8 +581,6 @@ void PlayerClient::SendRemovePacket(shared_ptr<GameObject> obj)
 	}
 
 	REMOVE_PACKET s_packet;
-	s_packet.size = sizeof(REMOVE_PACKET);
-	s_packet.type = static_cast<char>(E_PACKET::E_O_REMOVE);
 	s_packet.id = obj->GetID();
 	tcpConnection.SendOverlapped(reinterpret_cast<char*>(&s_packet));
 }
@@ -678,8 +588,6 @@ void PlayerClient::SendRemovePacket(shared_ptr<GameObject> obj)
 void PlayerClient::SendMovePacket(shared_ptr<GameObject> obj)
 {
 	MOVE_PACKET s_packet;
-	s_packet.size = sizeof(MOVE_PACKET);
-	s_packet.type = static_cast<char>(E_PACKET::E_O_MOVE);
 	s_packet.position.x = obj->GetPosition().x;
 	s_packet.position.y = obj->GetPosition().y;
 	s_packet.position.z = obj->GetPosition().z;
@@ -699,8 +607,6 @@ void PlayerClient::SendMovePacket(shared_ptr<GameObject> obj)
 void PlayerClient::SendAnimationPacket(shared_ptr<GameObject> obj)
 {
 	CHANGEANIMATION_PACKET s_packet;
-	s_packet.size = sizeof(CHANGEANIMATION_PACKET);
-	s_packet.type = static_cast<char>(E_PACKET::E_O_CHANGEANIMATION);
 	s_packet.oid = obj->GetID();
 	s_packet.a_type = obj->GetAnimationType();
 	tcpConnection.SendOverlapped(reinterpret_cast<char*>(&s_packet));
@@ -709,8 +615,6 @@ void PlayerClient::SendAnimationPacket(shared_ptr<GameObject> obj)
 void PlayerClient::SendStructPacket(shared_ptr<GameObject> obj)
 {
 	STRUCT_OBJ_PACKET s_packet;
-	s_packet.size = sizeof(STRUCT_OBJ_PACKET);
-	s_packet.type = static_cast<char>(E_PACKET::E_STRUCT_OBJ);
 	s_packet.o_type = obj->GetType();
 	s_packet.position.x = obj->GetPosition().x;
 	s_packet.position.y = obj->GetPosition().y;
@@ -730,8 +634,6 @@ void PlayerClient::SendStructPacket(shared_ptr<GameObject> obj)
 void PlayerClient::SendTimePacket(float t)
 {
 	TIME_SYNC_PACKET s_packet;
-	s_packet.size = sizeof(TIME_SYNC_PACKET);
-	s_packet.type = static_cast<char>(E_PACKET::E_SYNC_TIME);
 	s_packet.serverTime = t;
 	tcpConnection.SendOverlapped(reinterpret_cast<char*>(&s_packet));
 }
@@ -739,23 +641,17 @@ void PlayerClient::SendTimePacket(float t)
 void PlayerClient::SendStartGamePacket()
 {
 	GAME_START_PACKET s_packet;
-	s_packet.size = sizeof(GAME_START_PACKET);
-	s_packet.type = static_cast<char>(E_PACKET::E_GAME_START);
 	tcpConnection.SendOverlapped(reinterpret_cast<char*>(&s_packet));
 }
 
 void PlayerClient::SendEndGamePacket()
 {
 	GAME_END_PACKET s_packet;
-	s_packet.size = sizeof(GAME_END_PACKET);
-	s_packet.type = static_cast<char>(E_PACKET::E_GAME_END);
 	tcpConnection.SendOverlapped(reinterpret_cast<char*>(&s_packet));
 }
 
 void PlayerClient::SendNewGamePacket()
 {
 	NEW_GAME_PACKET s_packet;
-	s_packet.size = sizeof(NEW_GAME_PACKET);
-	s_packet.type = static_cast<char>(E_PACKET::E_GAME_NEW);
 	tcpConnection.SendOverlapped(reinterpret_cast<char*>(&s_packet));
 }
