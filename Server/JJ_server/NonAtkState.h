@@ -1,100 +1,85 @@
 ﻿#pragma once
 #include "FSMState.h"
-#include <chrono>
 class GameObject;
+
+// 비공격형 NPC(소/돼지) 상태.
+// 각 상태는 인스턴스 1개(Instance)만 공유하며 데이터 멤버가 없다.
+// 타이머/이동타입 등 객체별 값은 GameObject::m_fsmCtx 사용.
 
 class NonAtkNPCGlobalState : public FSMState<GameObject>
 {
-	std::chrono::time_point<std::chrono::system_clock> starttime;
-	bool is_invincible = false; // 무적상태인지 체크하는 변수
-	long long sustainment_time = 1500.f;
-
 public:
-	virtual void Enter(std::shared_ptr<GameObject> npc);
-
-	virtual void Execute(std::shared_ptr<GameObject> npc);
-
-	virtual void Exit(std::shared_ptr<GameObject> npc);
-
-	virtual void SetInvincible(long long time = 1500.f)
+	static NonAtkNPCGlobalState* Instance()
 	{
-		is_invincible = true;
-		sustainment_time = time; // 무적상태 지속시간 설정
-		starttime = std::chrono::system_clock::now(); // 무적상태 시작시간
-	} // 무적상태로 전환
-	virtual bool GetInvincible() const { return is_invincible; } // 무적상태인지 체크하는 함수
+		static NonAtkNPCGlobalState s;
+		return &s;
+	}
+	void Enter(const std::shared_ptr<GameObject>& npc) override;
+	void Execute(const std::shared_ptr<GameObject>& npc) override;
+	void Exit(const std::shared_ptr<GameObject>& npc) override;
 };
 
 class NonAtkNPCStandingState : public FSMState<GameObject>
 {
-private:
-	std::chrono::time_point<std::chrono::system_clock> starttime;
-	std::chrono::time_point<std::chrono::system_clock> endtime;
-	long long duration_time;
-
 public:
-	virtual void Enter(std::shared_ptr<GameObject> npc);
-
-	virtual void Execute(std::shared_ptr<GameObject> npc);
-
-	virtual void Exit(std::shared_ptr<GameObject> npc);
+	static NonAtkNPCStandingState* Instance()
+	{
+		static NonAtkNPCStandingState s;
+		return &s;
+	}
+	void Enter(const std::shared_ptr<GameObject>& npc) override;
+	void Execute(const std::shared_ptr<GameObject>& npc) override;
+	void Exit(const std::shared_ptr<GameObject>& npc) override;
 };
 
 class NonAtkNPCMoveState : public FSMState<GameObject>
 {
-	std::chrono::time_point<std::chrono::system_clock> starttime;
-	std::chrono::time_point<std::chrono::system_clock> endtime;
-	long long duration_time;
-	char move_type; // 0 전진 1 회전하면서 전진 2 회전
-	char rotate_type; // 0 시계방향 1 반시계방향
 public:
-	virtual void Enter(std::shared_ptr<GameObject> npc);
-
-	virtual void Execute(std::shared_ptr<GameObject> npc);
-
-	virtual void Exit(std::shared_ptr<GameObject> npc);
+	static NonAtkNPCMoveState* Instance()
+	{
+		static NonAtkNPCMoveState s;
+		return &s;
+	}
+	void Enter(const std::shared_ptr<GameObject>& npc) override;
+	void Execute(const std::shared_ptr<GameObject>& npc) override;
+	void Exit(const std::shared_ptr<GameObject>& npc) override;
 };
 
 class NonAtkNPCRunAwayState : public FSMState<GameObject>
 {
-	std::chrono::time_point<std::chrono::system_clock> starttime;
-	std::chrono::time_point<std::chrono::system_clock> endtime;
-	long long duration_time;
-	long long total_time;
-	char move_type; // 0 전진 1 회전하면서 전진
-	char rotate_type; // 0 시계방향 1 반시계방향
 public:
-	virtual void Enter(std::shared_ptr<GameObject> npc);
-
-	virtual void Execute(std::shared_ptr<GameObject> npc);
-
-	virtual void Exit(std::shared_ptr<GameObject> npc);
+	static NonAtkNPCRunAwayState* Instance()
+	{
+		static NonAtkNPCRunAwayState s;
+		return &s;
+	}
+	void Enter(const std::shared_ptr<GameObject>& npc) override;
+	void Execute(const std::shared_ptr<GameObject>& npc) override;
+	void Exit(const std::shared_ptr<GameObject>& npc) override;
 };
 
 class NonAtkNPCDieState : public FSMState<GameObject>
 {
-	std::chrono::time_point<std::chrono::system_clock> starttime;
-	std::chrono::time_point<std::chrono::system_clock> endtime;
-	long long duration_time;
-
 public:
-	virtual void Enter(std::shared_ptr<GameObject> npc);
-
-	virtual void Execute(std::shared_ptr<GameObject> npc);
-
-	virtual void Exit(std::shared_ptr<GameObject> npc);
+	static NonAtkNPCDieState* Instance()
+	{
+		static NonAtkNPCDieState s;
+		return &s;
+	}
+	void Enter(const std::shared_ptr<GameObject>& npc) override;
+	void Execute(const std::shared_ptr<GameObject>& npc) override;
+	void Exit(const std::shared_ptr<GameObject>& npc) override;
 };
 
 class NonAtkNPCRespawnState : public FSMState<GameObject>
 {
-	std::chrono::time_point<std::chrono::system_clock> starttime;
-	std::chrono::time_point<std::chrono::system_clock> endtime;
-	long long duration_time;
-
 public:
-	virtual void Enter(std::shared_ptr<GameObject> npc);
-
-	virtual void Execute(std::shared_ptr<GameObject> npc);
-
-	virtual void Exit(std::shared_ptr<GameObject> npc);
+	static NonAtkNPCRespawnState* Instance()
+	{
+		static NonAtkNPCRespawnState s;
+		return &s;
+	}
+	void Enter(const std::shared_ptr<GameObject>& npc) override;
+	void Execute(const std::shared_ptr<GameObject>& npc) override;
+	void Exit(const std::shared_ptr<GameObject>& npc) override;
 };

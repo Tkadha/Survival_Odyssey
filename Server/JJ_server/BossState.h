@@ -1,167 +1,137 @@
 ﻿#pragma once
 #include "FSMState.h"
-#include <chrono>
 class GameObject;
+
+// 보스(골렘) 상태.
+// 각 상태는 인스턴스 1개(Instance)만 공유하며 데이터 멤버가 없다.
+// 타이머/어그로 대상/특수공격 카운터 등 객체별 값은 GameObject::m_fsmCtx 사용.
 
 class BossGlobalState : public FSMState<GameObject>
 {
-	std::chrono::time_point<std::chrono::system_clock> starttime;
-	bool is_invincible = false; // 무적상태인지 체크하는 변수
-
-	std::chrono::time_point<std::chrono::system_clock> atk_delay_starttime;
-	bool is_atkdelay = false;
-
-	long long sustainment_time = 1500.f;
-
 public:
-	virtual void Enter(std::shared_ptr<GameObject> npc);
-
-	virtual void Execute(std::shared_ptr<GameObject> npc);
-
-	virtual void Exit(std::shared_ptr<GameObject> npc);
-
-	virtual void SetInvincible(long long time = 1500.f)
+	static BossGlobalState* Instance()
 	{
-		is_invincible = true;
-		sustainment_time = time; // 무적상태 지속시간 설정
-		starttime = std::chrono::system_clock::now(); // 무적상태 시작시간
+		static BossGlobalState s;
+		return &s;
 	}
-	virtual bool GetInvincible() const { return is_invincible; } // 무적상태인지 체크하는 함수
-
-	virtual void SetAtkDelay()
-	{
-		is_atkdelay = true;
-		atk_delay_starttime = std::chrono::system_clock::now(); // 공격 딜레이 시작시간
-	}
-	virtual bool GetAtkDelay() const { return is_atkdelay; } // 공격 딜레이 상태인지 체크하는 함수
+	void Enter(const std::shared_ptr<GameObject>& npc) override;
+	void Execute(const std::shared_ptr<GameObject>& npc) override;
+	void Exit(const std::shared_ptr<GameObject>& npc) override;
 };
 
 class BossStandingState : public FSMState<GameObject>
 {
-private:
-	std::chrono::time_point<std::chrono::system_clock> starttime;
-	std::chrono::time_point<std::chrono::system_clock> endtime;
-	long long duration_time{};
-
 public:
-	virtual void Enter(std::shared_ptr<GameObject> npc);
-
-	virtual void Execute(std::shared_ptr<GameObject> npc);
-
-	virtual void Exit(std::shared_ptr<GameObject> npc);
+	static BossStandingState* Instance()
+	{
+		static BossStandingState s;
+		return &s;
+	}
+	void Enter(const std::shared_ptr<GameObject>& npc) override;
+	void Execute(const std::shared_ptr<GameObject>& npc) override;
+	void Exit(const std::shared_ptr<GameObject>& npc) override;
 };
 
 class BossMoveState : public FSMState<GameObject>
 {
-	std::chrono::time_point<std::chrono::system_clock> starttime;
-	std::chrono::time_point<std::chrono::system_clock> endtime;
-	long long duration_time{};
-	char move_type{}; // 0 전진 1 회전하면서 전진 2 회전
-	char rotate_type{}; // 0 시계방향 1 반시계방향
 public:
-	virtual void Enter(std::shared_ptr<GameObject> npc);
-
-	virtual void Execute(std::shared_ptr<GameObject> npc);
-
-	virtual void Exit(std::shared_ptr<GameObject> npc);
+	static BossMoveState* Instance()
+	{
+		static BossMoveState s;
+		return &s;
+	}
+	void Enter(const std::shared_ptr<GameObject>& npc) override;
+	void Execute(const std::shared_ptr<GameObject>& npc) override;
+	void Exit(const std::shared_ptr<GameObject>& npc) override;
 };
 
 class BossChaseState : public FSMState<GameObject>
 {
-	std::chrono::time_point<std::chrono::system_clock> starttime;
-	std::chrono::time_point<std::chrono::system_clock> endtime;
-	long long duration_time{};
-	long long aggro_player_id = -1; // 추적할 플레이어 ID
 public:
-	virtual void Enter(std::shared_ptr<GameObject> npc);
-
-	virtual void Execute(std::shared_ptr<GameObject> npc);
-
-	virtual void Exit(std::shared_ptr<GameObject> npc);
+	static BossChaseState* Instance()
+	{
+		static BossChaseState s;
+		return &s;
+	}
+	void Enter(const std::shared_ptr<GameObject>& npc) override;
+	void Execute(const std::shared_ptr<GameObject>& npc) override;
+	void Exit(const std::shared_ptr<GameObject>& npc) override;
 };
 
 class BossAttackState : public FSMState<GameObject>
 {
-	std::chrono::time_point<std::chrono::system_clock> starttime;
-	std::chrono::time_point<std::chrono::system_clock> endtime;
-	long long duration_time{};
-
 public:
-	static int Sp_atk_counter;
-
-	virtual void Enter(std::shared_ptr<GameObject> npc);
-
-	virtual void Execute(std::shared_ptr<GameObject> npc);
-
-	virtual void Exit(std::shared_ptr<GameObject> npc);
+	static BossAttackState* Instance()
+	{
+		static BossAttackState s;
+		return &s;
+	}
+	void Enter(const std::shared_ptr<GameObject>& npc) override;
+	void Execute(const std::shared_ptr<GameObject>& npc) override;
+	void Exit(const std::shared_ptr<GameObject>& npc) override;
 };
 
 class BossDieState : public FSMState<GameObject>
 {
-	std::chrono::time_point<std::chrono::system_clock> starttime;
-	std::chrono::time_point<std::chrono::system_clock> endtime;
-	long long duration_time{};
-
 public:
-	virtual void Enter(std::shared_ptr<GameObject> npc);
-
-	virtual void Execute(std::shared_ptr<GameObject> npc);
-
-	virtual void Exit(std::shared_ptr<GameObject> npc);
+	static BossDieState* Instance()
+	{
+		static BossDieState s;
+		return &s;
+	}
+	void Enter(const std::shared_ptr<GameObject>& npc) override;
+	void Execute(const std::shared_ptr<GameObject>& npc) override;
+	void Exit(const std::shared_ptr<GameObject>& npc) override;
 };
 
 class BossRespawnState : public FSMState<GameObject>
 {
-	std::chrono::time_point<std::chrono::system_clock> starttime;
-	std::chrono::time_point<std::chrono::system_clock> endtime;
-	long long duration_time{};
-
 public:
-	virtual void Enter(std::shared_ptr<GameObject> npc);
-
-	virtual void Execute(std::shared_ptr<GameObject> npc);
-
-	virtual void Exit(std::shared_ptr<GameObject> npc);
+	static BossRespawnState* Instance()
+	{
+		static BossRespawnState s;
+		return &s;
+	}
+	void Enter(const std::shared_ptr<GameObject>& npc) override;
+	void Execute(const std::shared_ptr<GameObject>& npc) override;
+	void Exit(const std::shared_ptr<GameObject>& npc) override;
 };
 
 class BossHitState : public FSMState<GameObject>
 {
-	std::chrono::time_point<std::chrono::system_clock> starttime;
-	std::chrono::time_point<std::chrono::system_clock> endtime;
-	long long duration_time{};
-
 public:
-	virtual void Enter(std::shared_ptr<GameObject> npc);
-
-	virtual void Execute(std::shared_ptr<GameObject> npc);
-
-	virtual void Exit(std::shared_ptr<GameObject> npc);
+	static BossHitState* Instance()
+	{
+		static BossHitState s;
+		return &s;
+	}
+	void Enter(const std::shared_ptr<GameObject>& npc) override;
+	void Execute(const std::shared_ptr<GameObject>& npc) override;
+	void Exit(const std::shared_ptr<GameObject>& npc) override;
 };
 
 class BossSpecialAttackStartState : public FSMState<GameObject>
 {
-	std::chrono::time_point<std::chrono::system_clock> starttime;
-	std::chrono::time_point<std::chrono::system_clock> endtime;
-	long long duration_time{};
-
 public:
-	virtual void Enter(std::shared_ptr<GameObject> npc);
-
-	virtual void Execute(std::shared_ptr<GameObject> npc);
-
-	virtual void Exit(std::shared_ptr<GameObject> npc);
+	static BossSpecialAttackStartState* Instance()
+	{
+		static BossSpecialAttackStartState s;
+		return &s;
+	}
+	void Enter(const std::shared_ptr<GameObject>& npc) override;
+	void Execute(const std::shared_ptr<GameObject>& npc) override;
+	void Exit(const std::shared_ptr<GameObject>& npc) override;
 };
 
 class BossSpecialAttackEndState : public FSMState<GameObject>
 {
-	std::chrono::time_point<std::chrono::system_clock> starttime;
-	std::chrono::time_point<std::chrono::system_clock> endtime;
-	long long duration_time{};
-
 public:
-	virtual void Enter(std::shared_ptr<GameObject> npc);
-
-	virtual void Execute(std::shared_ptr<GameObject> npc);
-
-	virtual void Exit(std::shared_ptr<GameObject> npc);
+	static BossSpecialAttackEndState* Instance()
+	{
+		static BossSpecialAttackEndState s;
+		return &s;
+	}
+	void Enter(const std::shared_ptr<GameObject>& npc) override;
+	void Execute(const std::shared_ptr<GameObject>& npc) override;
+	void Exit(const std::shared_ptr<GameObject>& npc) override;
 };

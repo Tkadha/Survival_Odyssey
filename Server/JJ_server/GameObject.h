@@ -5,6 +5,7 @@
 
 #include <unordered_map>
 #include <mutex>
+#include <chrono>
 class OBB_Manager
 {
 public:
@@ -121,8 +122,29 @@ public:
 
 public:
 	bool is_alive;
-	std::shared_ptr<FSMManager<GameObject>> FSM_manager = NULL;
+	std::shared_ptr<FSMManager<GameObject>> FSM_manager = nullptr;
 	mutable mutex FSM_mutex;
+
+	// 예전에는 각 상태 객체가 인스턴스별로 들고 있던 값들.
+	// 상태 클래스를 공유 싱글턴으로 바꾸면서 객체별 데이터를 여기로 모음.
+	// (모든 접근은 FSM_mutex 하에서만 - FSMUpdate / ChangeState / Set*/Get* 경유)
+	struct FSMContext
+	{
+		std::chrono::system_clock::time_point stateEnterTime; // 현재 상태 진입 시각
+		long long stateDurationMs = 0; // 현재 상태 지속시간(ms)
+		char moveType = 0; // Move / RunAway: 0 전진 1 회전+전진 2 회전
+		char rotateType = 0; // 0 시계 1 반시계
+		long long runAwayTotalMs = 0; // NonAtkNPCRunAwayState 누적 시간
+		long long aggroPlayerId = -1; // BossChaseState 추적 대상
+		int spAtkCounter = 0; // BossAttackState 특수공격 카운터
+		bool invincible = false; // 예전 *GlobalState
+		std::chrono::system_clock::time_point invincibleStart;
+		long long invincibleDurationMs = 1500;
+		bool atkDelay = false;
+		std::chrono::system_clock::time_point atkDelayStart;
+	};
+	FSMContext m_fsmCtx;
+
 	void InitFSM()
 	{
 		FSM_manager = std::make_shared<FSMManager<GameObject>>(shared_from_this());
@@ -132,30 +154,33 @@ public:
 		lock_guard<mutex> lock(FSM_mutex);
 		if (FSM_manager) FSM_manager->Update();
 	}
-	void ChangeState(std::shared_ptr<FSMState<GameObject>> newstate)
+	void ChangeState(FSMState<GameObject>* newstate)
 	{
 		lock_guard<mutex> lock(FSM_mutex);
 		if (FSM_manager) FSM_manager->ChangeState(newstate);
 	}
-	void SetInvincible(long long time = 1500.f)
+	void SetInvincible(long long time = 1500)
 	{
 		lock_guard<mutex> lock(FSM_mutex);
-		if (FSM_manager) FSM_manager->SetInvincible(time);
+		m_fsmCtx.invincible = true;
+		m_fsmCtx.invincibleDurationMs = time;
+		m_fsmCtx.invincibleStart = std::chrono::system_clock::now();
 	}
 	bool GetInvincible() const
 	{
 		lock_guard<mutex> lock(FSM_mutex);
-		if (FSM_manager) return FSM_manager->GetInvincible();
+		return m_fsmCtx.invincible;
 	}
 	void SetAtkDelay()
 	{
 		lock_guard<mutex> lock(FSM_mutex);
-		if (FSM_manager) FSM_manager->SetAtkDelay();
+		m_fsmCtx.atkDelay = true;
+		m_fsmCtx.atkDelayStart = std::chrono::system_clock::now();
 	}
 	bool GetAtkDelay() const
 	{
 		lock_guard<mutex> lock(FSM_mutex);
-		if (FSM_manager) return FSM_manager->GetAtkDelay();
+		return m_fsmCtx.atkDelay;
 	}
 
 public:

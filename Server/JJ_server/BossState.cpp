@@ -13,10 +13,10 @@
 constexpr float pi_f = 3.1415927f;
 
 //=====================================Standing==============================================
-void BossStandingState::Enter(std::shared_ptr<GameObject> npc)
+void BossStandingState::Enter(const std::shared_ptr<GameObject>& npc)
 {
-	starttime = std::chrono::system_clock::now();
-	duration_time = rand_time(dre) * 1500; // 랜덤한 시간(1~3초)을 밀리초로 변환
+	npc->m_fsmCtx.stateEnterTime = std::chrono::system_clock::now();
+	npc->m_fsmCtx.stateDurationMs = rand_time(dre) * 1500; // 랜덤한 시간(1~3초)을 밀리초로 변환
 	npc->SetAnimationType(ANIMATION_TYPE::IDLE);
 
 	std::vector<tree_obj*> results;
@@ -32,14 +32,14 @@ void BossStandingState::Enter(std::shared_ptr<GameObject> npc)
 	}
 }
 
-void BossStandingState::Execute(std::shared_ptr<GameObject> npc)
+void BossStandingState::Execute(const std::shared_ptr<GameObject>& npc)
 {
-	endtime = std::chrono::system_clock::now();
-	auto exectime = endtime - starttime;
+	auto endtime = std::chrono::system_clock::now();
+	auto exectime = endtime - npc->m_fsmCtx.stateEnterTime;
 	auto exec_ms = std::chrono::duration_cast<std::chrono::milliseconds>(exectime).count();
-	if (exec_ms > duration_time) {
+	if (exec_ms > npc->m_fsmCtx.stateDurationMs) {
 		// 상태 전환
-		npc->FSM_manager->ChangeState(std::make_shared<BossMoveState>());
+		npc->FSM_manager->ChangeState(BossMoveState::Instance());
 		return;
 	}
 
@@ -71,22 +71,22 @@ void BossStandingState::Execute(std::shared_ptr<GameObject> npc)
 		}
 	}
 	if (detected) {
-		npc->FSM_manager->ChangeState(std::make_shared<BossChaseState>());
+		npc->FSM_manager->ChangeState(BossChaseState::Instance());
 		return;
 	}
 }
 
-void BossStandingState::Exit(std::shared_ptr<GameObject> npc)
+void BossStandingState::Exit(const std::shared_ptr<GameObject>& npc)
 {
 }
 //=====================================Move=================================================
 
-void BossMoveState::Enter(std::shared_ptr<GameObject> npc)
+void BossMoveState::Enter(const std::shared_ptr<GameObject>& npc)
 {
-	starttime = std::chrono::system_clock::now();
-	duration_time = rand_time(dre) * 1000; // 랜덤한 시간(1~3초)을 밀리초로 변환
-	move_type = rand_type(dre); // 랜덤한 이동 타입(0~2)
-	rotate_type = rand_type(dre) % 2; // 랜덤한 회전 타입(0~1)
+	npc->m_fsmCtx.stateEnterTime = std::chrono::system_clock::now();
+	npc->m_fsmCtx.stateDurationMs = rand_time(dre) * 1000; // 랜덤한 시간(1~3초)을 밀리초로 변환
+	npc->m_fsmCtx.moveType = rand_type(dre); // 랜덤한 이동 타입(0~2)
+	npc->m_fsmCtx.rotateType = rand_type(dre) % 2; // 랜덤한 회전 타입(0~1)
 	npc->SetAnimationType(ANIMATION_TYPE::WALK);
 
 	std::vector<tree_obj*> results;
@@ -102,18 +102,18 @@ void BossMoveState::Enter(std::shared_ptr<GameObject> npc)
 	}
 }
 
-void BossMoveState::Execute(std::shared_ptr<GameObject> npc)
+void BossMoveState::Execute(const std::shared_ptr<GameObject>& npc)
 {
 	// 앞으로 이동
-	endtime = std::chrono::system_clock::now();
-	auto exectime = endtime - starttime;
+	auto endtime = std::chrono::system_clock::now();
+	auto exectime = endtime - npc->m_fsmCtx.stateEnterTime;
 	auto exec_ms = std::chrono::duration_cast<std::chrono::milliseconds>(exectime).count();
-	if (exec_ms > duration_time) {
+	if (exec_ms > npc->m_fsmCtx.stateDurationMs) {
 		// 상태 전환
-		npc->FSM_manager->ChangeState(std::make_shared<BossStandingState>());
+		npc->FSM_manager->ChangeState(BossStandingState::Instance());
 		return;
 	}
-	switch (move_type) {
+	switch (npc->m_fsmCtx.moveType) {
 	case 0:
 		// 전진
 		npc->MoveForward(0.15f);
@@ -171,18 +171,18 @@ void BossMoveState::Execute(std::shared_ptr<GameObject> npc)
 		}
 	}
 	if (detected) {
-		npc->FSM_manager->ChangeState(std::make_shared<BossChaseState>());
+		npc->FSM_manager->ChangeState(BossChaseState::Instance());
 		return;
 	}
 }
 
-void BossMoveState::Exit(std::shared_ptr<GameObject> npc)
+void BossMoveState::Exit(const std::shared_ptr<GameObject>& npc)
 {
 }
 
 //=====================================Chase=================================================
 
-void BossChaseState::Enter(std::shared_ptr<GameObject> npc)
+void BossChaseState::Enter(const std::shared_ptr<GameObject>& npc)
 {
 	npc->SetAnimationType(ANIMATION_TYPE::WALK);
 	std::vector<tree_obj*> results;
@@ -205,18 +205,18 @@ void BossChaseState::Enter(std::shared_ptr<GameObject> npc)
 			pow(playerPos.z - npcPos.z, 2));
 		if (distance < near_player_distance) {
 			near_player_distance = distance;
-			aggro_player_id = t_obj->u_id;
+			npc->m_fsmCtx.aggroPlayerId = t_obj->u_id;
 		}
 	}
 }
 
-void BossChaseState::Execute(std::shared_ptr<GameObject> npc)
+void BossChaseState::Execute(const std::shared_ptr<GameObject>& npc)
 {
 	std::vector<tree_obj*> results;
 	tree_obj n_obj{npc->GetID(), npc->GetPosition()};
 	Octree::PlayerOctree.query(n_obj, XMFLOAT3{500, 1000, 500}, results);
 	if (results.size() <= 0) {
-		npc->FSM_manager->ChangeState(std::make_shared<BossStandingState>());
+		npc->FSM_manager->ChangeState(BossStandingState::Instance());
 		return;
 	}
 
@@ -225,7 +225,7 @@ void BossChaseState::Execute(std::shared_ptr<GameObject> npc)
 	{
 		std::lock_guard<std::mutex> lock(g_clients_mutex);
 		for (auto& cl : PlayerClient::PlayerClients) {
-			if (cl.second->m_id != aggro_player_id) continue;
+			if (cl.second->m_id != npc->m_fsmCtx.aggroPlayerId) continue;
 			auto& player = cl.second;
 			XMFLOAT3 playerPos = player->GetPosition();
 			XMFLOAT3 npcPos = npc->GetPosition();
@@ -254,7 +254,7 @@ void BossChaseState::Execute(std::shared_ptr<GameObject> npc)
 			npc->Rotate(0.0f, deltaYaw * 2.f, 0.0f);
 
 			float attackRange = 100.0f;
-			if (BossAttackState::Sp_atk_counter > 5) {
+			if (npc->m_fsmCtx.spAtkCounter > 5) {
 				attackRange = 250.f;
 			}
 			float distanceToPlayer = sqrt(pow(playerPos.x - npcPos.x, 2) + pow(playerPos.y - npcPos.y, 2) + pow(playerPos.z - npcPos.z, 2));
@@ -315,25 +315,25 @@ void BossChaseState::Execute(std::shared_ptr<GameObject> npc)
 		}
 	}
 	if (transition == 1) {
-		if (npc->FSM_manager->GetAtkDelay() == false)
-			npc->FSM_manager->ChangeState(std::make_shared<BossAttackState>());
+		if (npc->m_fsmCtx.atkDelay == false)
+			npc->FSM_manager->ChangeState(BossAttackState::Instance());
 		return;
 	}
 	if (transition == 2) {
-		npc->FSM_manager->ChangeState(std::make_shared<BossStandingState>());
+		npc->FSM_manager->ChangeState(BossStandingState::Instance());
 		return;
 	}
 }
 
-void BossChaseState::Exit(std::shared_ptr<GameObject> npc)
+void BossChaseState::Exit(const std::shared_ptr<GameObject>& npc)
 {
 }
 //=====================================Die=================================================
 
-void BossDieState::Enter(std::shared_ptr<GameObject> npc)
+void BossDieState::Enter(const std::shared_ptr<GameObject>& npc)
 {
-	starttime = std::chrono::system_clock::now();
-	duration_time = 25 * 1000; // 25초간 죽어있음
+	npc->m_fsmCtx.stateEnterTime = std::chrono::system_clock::now();
+	npc->m_fsmCtx.stateDurationMs = 25 * 1000; // 25초간 죽어있음
 
 	npc->SetAnimationType(ANIMATION_TYPE::DIE);
 	std::vector<tree_obj*> results;
@@ -348,30 +348,30 @@ void BossDieState::Enter(std::shared_ptr<GameObject> npc)
 	}
 }
 
-void BossDieState::Execute(std::shared_ptr<GameObject> npc)
+void BossDieState::Execute(const std::shared_ptr<GameObject>& npc)
 {
-	endtime = std::chrono::system_clock::now();
-	auto exectime = endtime - starttime;
+	auto endtime = std::chrono::system_clock::now();
+	auto exectime = endtime - npc->m_fsmCtx.stateEnterTime;
 	auto exec_ms = std::chrono::duration_cast<std::chrono::milliseconds>(exectime).count();
-	if (exec_ms > duration_time) {
+	if (exec_ms > npc->m_fsmCtx.stateDurationMs) {
 		// 상태 전환
-		npc->FSM_manager->ChangeState(std::make_shared<BossRespawnState>());
+		npc->FSM_manager->ChangeState(BossRespawnState::Instance());
 		return;
 	}
 }
 
-void BossDieState::Exit(std::shared_ptr<GameObject> npc)
+void BossDieState::Exit(const std::shared_ptr<GameObject>& npc)
 {
 }
 
 
 //=====================================Respawn=================================================
 
-void BossRespawnState::Enter(std::shared_ptr<GameObject> npc)
+void BossRespawnState::Enter(const std::shared_ptr<GameObject>& npc)
 {
 	npc->is_alive = false;
-	starttime = std::chrono::system_clock::now();
-	duration_time = 300 * 1000; // 5분간 안보이도록
+	npc->m_fsmCtx.stateEnterTime = std::chrono::system_clock::now();
+	npc->m_fsmCtx.stateDurationMs = 300 * 1000; // 5분간 안보이도록
 
 
 	std::vector<tree_obj*> results;
@@ -388,12 +388,12 @@ void BossRespawnState::Enter(std::shared_ptr<GameObject> npc)
 	}
 }
 
-void BossRespawnState::Execute(std::shared_ptr<GameObject> npc)
+void BossRespawnState::Execute(const std::shared_ptr<GameObject>& npc)
 {
-	endtime = std::chrono::system_clock::now();
-	auto exectime = endtime - starttime;
+	auto endtime = std::chrono::system_clock::now();
+	auto exectime = endtime - npc->m_fsmCtx.stateEnterTime;
 	auto exec_ms = std::chrono::duration_cast<std::chrono::milliseconds>(exectime).count();
-	if (exec_ms > duration_time) {
+	if (exec_ms > npc->m_fsmCtx.stateDurationMs) {
 		// 랜덤 위치에 생성
 		npc->Sethp(20);
 
@@ -411,12 +411,12 @@ void BossRespawnState::Execute(std::shared_ptr<GameObject> npc)
 		Octree::GameObjectOctree.update(npc->GetID(), npc->GetPosition());
 
 		// 상태 전환
-		npc->FSM_manager->ChangeState(std::make_shared<BossStandingState>());
+		npc->FSM_manager->ChangeState(BossStandingState::Instance());
 		return;
 	}
 }
 
-void BossRespawnState::Exit(std::shared_ptr<GameObject> npc)
+void BossRespawnState::Exit(const std::shared_ptr<GameObject>& npc)
 {
 	npc->is_alive = true;
 
@@ -427,16 +427,15 @@ void BossRespawnState::Exit(std::shared_ptr<GameObject> npc)
 
 //=====================================Attack=================================================
 
-int BossAttackState::Sp_atk_counter = 0;
-void BossAttackState::Enter(std::shared_ptr<GameObject> npc)
+void BossAttackState::Enter(const std::shared_ptr<GameObject>& npc)
 {
-	starttime = std::chrono::system_clock::now();
-	duration_time = 2.65f * 1000; // 1초간
-	Sp_atk_counter++;
-	if (Sp_atk_counter > 5) {
-		Sp_atk_counter = 0;
+	npc->m_fsmCtx.stateEnterTime = std::chrono::system_clock::now();
+	npc->m_fsmCtx.stateDurationMs = 2.65f * 1000; // 1초간
+	npc->m_fsmCtx.spAtkCounter++;
+	if (npc->m_fsmCtx.spAtkCounter > 5) {
+		npc->m_fsmCtx.spAtkCounter = 0;
 		npc->SetAnimationType(ANIMATION_TYPE::SPECIAL_ATTACK);
-		duration_time = 2.f * 1000; // 스페셜 공격은 2초간
+		npc->m_fsmCtx.stateDurationMs = 2.f * 1000; // 스페셜 공격은 2초간
 	} else {
 		npc->SetAnimationType(ANIMATION_TYPE::ATTACK);
 	}
@@ -453,14 +452,14 @@ void BossAttackState::Enter(std::shared_ptr<GameObject> npc)
 	}
 }
 
-void BossAttackState::Execute(std::shared_ptr<GameObject> npc)
+void BossAttackState::Execute(const std::shared_ptr<GameObject>& npc)
 {
 	// 공격모션 시간 체크 후 다시 추적하게
-	endtime = std::chrono::system_clock::now();
-	auto exectime = endtime - starttime;
+	auto endtime = std::chrono::system_clock::now();
+	auto exectime = endtime - npc->m_fsmCtx.stateEnterTime;
 	auto exec_ms = std::chrono::duration_cast<std::chrono::milliseconds>(exectime).count();
-	if (exec_ms > duration_time) {
-		npc->FSM_manager->ChangeState(std::make_shared<BossChaseState>());
+	if (exec_ms > npc->m_fsmCtx.stateDurationMs) {
+		npc->FSM_manager->ChangeState(BossChaseState::Instance());
 		return;
 	}
 	if (exec_ms < 0.25 * 1000.f) {
@@ -485,18 +484,19 @@ void BossAttackState::Execute(std::shared_ptr<GameObject> npc)
 	}
 }
 
-void BossAttackState::Exit(std::shared_ptr<GameObject> npc)
+void BossAttackState::Exit(const std::shared_ptr<GameObject>& npc)
 {
-	npc->FSM_manager->SetAtkDelay();
+	npc->m_fsmCtx.atkDelay = true;
+	npc->m_fsmCtx.atkDelayStart = std::chrono::system_clock::now();
 }
 
 //=====================================Hit(맞았을 경우)=================================================
 
-void BossHitState::Enter(std::shared_ptr<GameObject> npc)
+void BossHitState::Enter(const std::shared_ptr<GameObject>& npc)
 {
 	npc->SetAnimationType(ANIMATION_TYPE::HIT);
-	starttime = std::chrono::system_clock::now();
-	duration_time = 1.5f * 1000; // 1초간 진행
+	npc->m_fsmCtx.stateEnterTime = std::chrono::system_clock::now();
+	npc->m_fsmCtx.stateDurationMs = 1.5f * 1000; // 1초간 진행
 	std::vector<tree_obj*> results;
 	tree_obj n_obj{npc->GetID(), npc->GetPosition()};
 	Octree::PlayerOctree.query(n_obj, oct_distance, results);
@@ -509,13 +509,13 @@ void BossHitState::Enter(std::shared_ptr<GameObject> npc)
 	}
 }
 
-void BossHitState::Execute(std::shared_ptr<GameObject> npc)
+void BossHitState::Execute(const std::shared_ptr<GameObject>& npc)
 {
-	endtime = std::chrono::system_clock::now();
-	auto exectime = endtime - starttime;
+	auto endtime = std::chrono::system_clock::now();
+	auto exectime = endtime - npc->m_fsmCtx.stateEnterTime;
 	auto exec_ms = std::chrono::duration_cast<std::chrono::milliseconds>(exectime).count();
-	if (exec_ms > duration_time) {
-		npc->FSM_manager->ChangeState(std::make_shared<BossChaseState>());
+	if (exec_ms > npc->m_fsmCtx.stateDurationMs) {
+		npc->FSM_manager->ChangeState(BossChaseState::Instance());
 		return;
 	}
 	if (exec_ms < 0.25 * 1000.f) {
@@ -536,23 +536,23 @@ void BossHitState::Execute(std::shared_ptr<GameObject> npc)
 	}
 }
 
-void BossHitState::Exit(std::shared_ptr<GameObject> npc)
+void BossHitState::Exit(const std::shared_ptr<GameObject>& npc)
 {
 }
 
 
-void BossGlobalState::Enter(std::shared_ptr<GameObject> npc)
+void BossGlobalState::Enter(const std::shared_ptr<GameObject>& npc)
 {
 }
 
-void BossGlobalState::Execute(std::shared_ptr<GameObject> npc)
+void BossGlobalState::Execute(const std::shared_ptr<GameObject>& npc)
 {
-	if (is_invincible) {
+	if (npc->m_fsmCtx.invincible) {
 		auto nowtime = std::chrono::system_clock::now();
-		auto exectime = nowtime - starttime;
+		auto exectime = nowtime - npc->m_fsmCtx.invincibleStart;
 		auto exec_ms = std::chrono::duration_cast<std::chrono::milliseconds>(exectime).count();
-		if (exec_ms > sustainment_time) {
-			is_invincible = false;
+		if (exec_ms > npc->m_fsmCtx.invincibleDurationMs) {
+			npc->m_fsmCtx.invincible = false;
 			std::vector<tree_obj*> results;
 			tree_obj n_obj{npc->GetID(), npc->GetPosition()};
 			Octree::PlayerOctree.query(n_obj, oct_distance, results);
@@ -561,31 +561,31 @@ void BossGlobalState::Execute(std::shared_ptr<GameObject> npc)
 				for (auto& cl : PlayerClient::PlayerClients) {
 					if (cl.second->state != PC_INGAME) continue;
 					if (cl.second->m_id != p_obj->u_id) continue;
-					cl.second->SendInvinciblePacket(npc->GetID(), is_invincible);
+					cl.second->SendInvinciblePacket(npc->GetID(), npc->m_fsmCtx.invincible);
 				}
 			}
 		}
 	}
-	if (is_atkdelay) {
+	if (npc->m_fsmCtx.atkDelay) {
 		auto nowtime = std::chrono::system_clock::now();
-		auto exectime = nowtime - atk_delay_starttime;
+		auto exectime = nowtime - npc->m_fsmCtx.atkDelayStart;
 		auto exec_ms = std::chrono::duration_cast<std::chrono::milliseconds>(exectime).count();
 		if (exec_ms > 1.f * 1000) {
-			is_atkdelay = false;
+			npc->m_fsmCtx.atkDelay = false;
 		}
 	}
 }
 
-void BossGlobalState::Exit(std::shared_ptr<GameObject> npc)
+void BossGlobalState::Exit(const std::shared_ptr<GameObject>& npc)
 {
 }
 
 
-void BossSpecialAttackStartState::Enter(std::shared_ptr<GameObject> npc)
+void BossSpecialAttackStartState::Enter(const std::shared_ptr<GameObject>& npc)
 {
 	npc->SetAnimationType(ANIMATION_TYPE::GROUND_SPELL_START);
-	starttime = std::chrono::system_clock::now();
-	duration_time = 2.666f * 1000;
+	npc->m_fsmCtx.stateEnterTime = std::chrono::system_clock::now();
+	npc->m_fsmCtx.stateDurationMs = 2.666f * 1000;
 	std::vector<tree_obj*> results;
 	tree_obj n_obj{npc->GetID(), npc->GetPosition()};
 	Octree::PlayerOctree.query(n_obj, oct_distance, results);
@@ -598,13 +598,13 @@ void BossSpecialAttackStartState::Enter(std::shared_ptr<GameObject> npc)
 	}
 }
 
-void BossSpecialAttackStartState::Execute(std::shared_ptr<GameObject> npc)
+void BossSpecialAttackStartState::Execute(const std::shared_ptr<GameObject>& npc)
 {
-	endtime = std::chrono::system_clock::now();
-	auto exectime = endtime - starttime;
+	auto endtime = std::chrono::system_clock::now();
+	auto exectime = endtime - npc->m_fsmCtx.stateEnterTime;
 	auto exec_ms = std::chrono::duration_cast<std::chrono::milliseconds>(exectime).count();
-	if (exec_ms > duration_time) {
-		npc->FSM_manager->ChangeState(std::make_shared<BossSpecialAttackEndState>());
+	if (exec_ms > npc->m_fsmCtx.stateDurationMs) {
+		npc->FSM_manager->ChangeState(BossSpecialAttackEndState::Instance());
 		return;
 	}
 	npc->MoveForward(0.f);
@@ -622,16 +622,16 @@ void BossSpecialAttackStartState::Execute(std::shared_ptr<GameObject> npc)
 	}
 }
 
-void BossSpecialAttackStartState::Exit(std::shared_ptr<GameObject> npc)
+void BossSpecialAttackStartState::Exit(const std::shared_ptr<GameObject>& npc)
 {
 }
 
 
-void BossSpecialAttackEndState::Enter(std::shared_ptr<GameObject> npc)
+void BossSpecialAttackEndState::Enter(const std::shared_ptr<GameObject>& npc)
 {
 	npc->SetAnimationType(ANIMATION_TYPE::GROUND_SPELL_END);
-	starttime = std::chrono::system_clock::now();
-	duration_time = 2.666f * 1000;
+	npc->m_fsmCtx.stateEnterTime = std::chrono::system_clock::now();
+	npc->m_fsmCtx.stateDurationMs = 2.666f * 1000;
 	std::vector<tree_obj*> results;
 	tree_obj n_obj{npc->GetID(), npc->GetPosition()};
 	Octree::PlayerOctree.query(n_obj, oct_distance, results);
@@ -644,13 +644,13 @@ void BossSpecialAttackEndState::Enter(std::shared_ptr<GameObject> npc)
 	}
 }
 
-void BossSpecialAttackEndState::Execute(std::shared_ptr<GameObject> npc)
+void BossSpecialAttackEndState::Execute(const std::shared_ptr<GameObject>& npc)
 {
-	endtime = std::chrono::system_clock::now();
-	auto exectime = endtime - starttime;
+	auto endtime = std::chrono::system_clock::now();
+	auto exectime = endtime - npc->m_fsmCtx.stateEnterTime;
 	auto exec_ms = std::chrono::duration_cast<std::chrono::milliseconds>(exectime).count();
-	if (exec_ms > duration_time) {
-		npc->FSM_manager->ChangeState(std::make_shared<BossStandingState>());
+	if (exec_ms > npc->m_fsmCtx.stateDurationMs) {
+		npc->FSM_manager->ChangeState(BossStandingState::Instance());
 		return;
 	}
 
@@ -669,6 +669,6 @@ void BossSpecialAttackEndState::Execute(std::shared_ptr<GameObject> npc)
 	}
 }
 
-void BossSpecialAttackEndState::Exit(std::shared_ptr<GameObject> npc)
+void BossSpecialAttackEndState::Exit(const std::shared_ptr<GameObject>& npc)
 {
 }

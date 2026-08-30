@@ -5,22 +5,23 @@ template <class entity_type>
 class FSMManager
 {
 	std::weak_ptr<entity_type> Owner;
-	std::shared_ptr<FSMState<entity_type>> Currentstate;
-	std::shared_ptr<FSMState<entity_type>> Globalstate;
+	// 공유 싱글턴 상태를 가리키기만 한다(비소유). 전이 시 포인터 대입만 발생.
+	FSMState<entity_type>* Currentstate = nullptr;
+	FSMState<entity_type>* Globalstate = nullptr;
 
 public:
 	FSMManager(std::shared_ptr<entity_type> owner)
-		: Owner(owner), Currentstate(NULL), Globalstate(NULL) {}
+		: Owner(owner) {}
 	virtual ~FSMManager() {}
 
 	FSMManager(const FSMManager&) = delete;
 	FSMManager& operator=(const FSMManager&) = delete;
 
-	void SetCurrentState(std::shared_ptr<FSMState<entity_type>> s)
+	void SetCurrentState(FSMState<entity_type>* s)
 	{
 		Currentstate = s;
 	}
-	void SetGlobalState(std::shared_ptr<FSMState<entity_type>> s)
+	void SetGlobalState(FSMState<entity_type>* s)
 	{
 		Globalstate = s;
 	}
@@ -33,33 +34,17 @@ public:
 		}
 	}
 
-	void ChangeState(std::shared_ptr<FSMState<entity_type>> newstate)
+	void ChangeState(FSMState<entity_type>* newstate)
 	{
 		if (auto owner_sp = Owner.lock()) {
-			Currentstate->Exit(owner_sp);
+			if (Currentstate) Currentstate->Exit(owner_sp);
 			Currentstate = newstate;
 			Currentstate->Enter(owner_sp);
 		}
 	}
 
-	std::shared_ptr<FSMState<entity_type>> GetCurrentState() const
+	FSMState<entity_type>* GetCurrentState() const
 	{
 		return Currentstate;
-	}
-	void SetInvincible(long long time = 1500.f)
-	{
-		Globalstate->SetInvincible(time);
-	}
-	bool GetInvincible() const
-	{
-		return Globalstate->GetInvincible();
-	}
-	void SetAtkDelay()
-	{
-		Globalstate->SetAtkDelay();
-	}
-	bool GetAtkDelay() const
-	{
-		return Globalstate->GetAtkDelay();
 	}
 };

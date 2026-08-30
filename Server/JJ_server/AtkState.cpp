@@ -12,10 +12,10 @@
 constexpr float pi_f = 3.1415927f;
 
 //=====================================Standing==============================================
-void AtkNPCStandingState::Enter(std::shared_ptr<GameObject> npc)
+void AtkNPCStandingState::Enter(const std::shared_ptr<GameObject>& npc)
 {
-	starttime = std::chrono::system_clock::now();
-	duration_time = rand_time(dre) * 1000; // 랜덤한 시간(1~3초)을 밀리초로 변환
+	npc->m_fsmCtx.stateEnterTime = std::chrono::system_clock::now();
+	npc->m_fsmCtx.stateDurationMs = rand_time(dre) * 1000; // 랜덤한 시간(1~3초)을 밀리초로 변환
 	npc->SetAnimationType(ANIMATION_TYPE::IDLE);
 
 	std::vector<tree_obj*> results;
@@ -31,14 +31,14 @@ void AtkNPCStandingState::Enter(std::shared_ptr<GameObject> npc)
 	}
 }
 
-void AtkNPCStandingState::Execute(std::shared_ptr<GameObject> npc)
+void AtkNPCStandingState::Execute(const std::shared_ptr<GameObject>& npc)
 {
-	endtime = std::chrono::system_clock::now();
-	auto exectime = endtime - starttime;
+	auto endtime = std::chrono::system_clock::now();
+	auto exectime = endtime - npc->m_fsmCtx.stateEnterTime;
 	auto exec_ms = std::chrono::duration_cast<std::chrono::milliseconds>(exectime).count();
-	if (exec_ms > duration_time) {
+	if (exec_ms > npc->m_fsmCtx.stateDurationMs) {
 		// 상태 전환
-		npc->FSM_manager->ChangeState(std::make_shared<AtkNPCMoveState>());
+		npc->FSM_manager->ChangeState(AtkNPCMoveState::Instance());
 		return;
 	}
 
@@ -70,24 +70,24 @@ void AtkNPCStandingState::Execute(std::shared_ptr<GameObject> npc)
 		}
 	}
 	if (detected) {
-		npc->FSM_manager->ChangeState(std::make_shared<AtkNPCChaseState>());
+		npc->FSM_manager->ChangeState(AtkNPCChaseState::Instance());
 		return;
 	}
 }
 
-void AtkNPCStandingState::Exit(std::shared_ptr<GameObject> npc)
+void AtkNPCStandingState::Exit(const std::shared_ptr<GameObject>& npc)
 {
 }
 
 
 //=====================================Move=================================================
 
-void AtkNPCMoveState::Enter(std::shared_ptr<GameObject> npc)
+void AtkNPCMoveState::Enter(const std::shared_ptr<GameObject>& npc)
 {
-	starttime = std::chrono::system_clock::now();
-	duration_time = rand_time(dre) * 1000; // 랜덤한 시간(1~3초)을 밀리초로 변환
-	move_type = rand_type(dre); // 랜덤한 이동 타입(0~2)
-	rotate_type = rand_type(dre) % 2; // 랜덤한 회전 타입(0~1)
+	npc->m_fsmCtx.stateEnterTime = std::chrono::system_clock::now();
+	npc->m_fsmCtx.stateDurationMs = rand_time(dre) * 1000; // 랜덤한 시간(1~3초)을 밀리초로 변환
+	npc->m_fsmCtx.moveType = rand_type(dre); // 랜덤한 이동 타입(0~2)
+	npc->m_fsmCtx.rotateType = rand_type(dre) % 2; // 랜덤한 회전 타입(0~1)
 	npc->SetAnimationType(ANIMATION_TYPE::WALK);
 
 	std::vector<tree_obj*> results;
@@ -103,18 +103,18 @@ void AtkNPCMoveState::Enter(std::shared_ptr<GameObject> npc)
 	}
 }
 
-void AtkNPCMoveState::Execute(std::shared_ptr<GameObject> npc)
+void AtkNPCMoveState::Execute(const std::shared_ptr<GameObject>& npc)
 {
 	// 앞으로 이동
-	endtime = std::chrono::system_clock::now();
-	auto exectime = endtime - starttime;
+	auto endtime = std::chrono::system_clock::now();
+	auto exectime = endtime - npc->m_fsmCtx.stateEnterTime;
 	auto exec_ms = std::chrono::duration_cast<std::chrono::milliseconds>(exectime).count();
-	if (exec_ms > duration_time) {
+	if (exec_ms > npc->m_fsmCtx.stateDurationMs) {
 		// 상태 전환
-		npc->FSM_manager->ChangeState(std::make_shared<AtkNPCStandingState>());
+		npc->FSM_manager->ChangeState(AtkNPCStandingState::Instance());
 		return;
 	}
-	switch (move_type) {
+	switch (npc->m_fsmCtx.moveType) {
 	case 0:
 		// 전진
 		npc->MoveForward(0.2f);
@@ -171,18 +171,18 @@ void AtkNPCMoveState::Execute(std::shared_ptr<GameObject> npc)
 		}
 	}
 	if (detected) {
-		npc->FSM_manager->ChangeState(std::make_shared<AtkNPCChaseState>());
+		npc->FSM_manager->ChangeState(AtkNPCChaseState::Instance());
 		return;
 	}
 }
 
-void AtkNPCMoveState::Exit(std::shared_ptr<GameObject> npc)
+void AtkNPCMoveState::Exit(const std::shared_ptr<GameObject>& npc)
 {
 }
 
 //=====================================Chase=================================================
 
-void AtkNPCChaseState::Enter(std::shared_ptr<GameObject> npc)
+void AtkNPCChaseState::Enter(const std::shared_ptr<GameObject>& npc)
 {
 	if (npc->GetType() == OBJECT_TYPE::OB_BAT) npc->fly_height = 13.f;
 	npc->SetAnimationType(ANIMATION_TYPE::WALK);
@@ -198,13 +198,13 @@ void AtkNPCChaseState::Enter(std::shared_ptr<GameObject> npc)
 	}
 }
 
-void AtkNPCChaseState::Execute(std::shared_ptr<GameObject> npc)
+void AtkNPCChaseState::Execute(const std::shared_ptr<GameObject>& npc)
 {
 	std::vector<tree_obj*> results;
 	tree_obj n_obj{npc->GetID(), npc->GetPosition()};
 	Octree::PlayerOctree.query(n_obj, XMFLOAT3{500, 1000, 500}, results);
 	if (results.size() <= 0) {
-		npc->FSM_manager->ChangeState(std::make_shared<AtkNPCStandingState>());
+		npc->FSM_manager->ChangeState(AtkNPCStandingState::Instance());
 		return;
 	}
 	long long near_player_id{0};
@@ -277,8 +277,7 @@ void AtkNPCChaseState::Execute(std::shared_ptr<GameObject> npc)
 						cl.second->SendMovePacket(npc);
 					}
 				}
-				auto obj = dynamic_cast<GameObject*>(npc.get());
-				if (obj->FSM_manager->GetAtkDelay() == false) {
+				if (npc->m_fsmCtx.atkDelay == false) {
 					transition = 1;
 					break;
 				}
@@ -306,25 +305,25 @@ void AtkNPCChaseState::Execute(std::shared_ptr<GameObject> npc)
 		}
 	}
 	if (transition == 1) {
-		npc->FSM_manager->ChangeState(std::make_shared<AtkNPCAttackState>());
+		npc->FSM_manager->ChangeState(AtkNPCAttackState::Instance());
 		return;
 	}
 	if (transition == 2) {
-		npc->FSM_manager->ChangeState(std::make_shared<AtkNPCStandingState>());
+		npc->FSM_manager->ChangeState(AtkNPCStandingState::Instance());
 		return;
 	}
 }
 
-void AtkNPCChaseState::Exit(std::shared_ptr<GameObject> npc)
+void AtkNPCChaseState::Exit(const std::shared_ptr<GameObject>& npc)
 {
 }
 
 //=====================================Die=================================================
 
-void AtkNPCDieState::Enter(std::shared_ptr<GameObject> npc)
+void AtkNPCDieState::Enter(const std::shared_ptr<GameObject>& npc)
 {
-	starttime = std::chrono::system_clock::now();
-	duration_time = 10 * 1000; // 10초간 죽어있음
+	npc->m_fsmCtx.stateEnterTime = std::chrono::system_clock::now();
+	npc->m_fsmCtx.stateDurationMs = 10 * 1000; // 10초간 죽어있음
 
 	npc->SetAnimationType(ANIMATION_TYPE::DIE);
 	std::vector<tree_obj*> results;
@@ -339,14 +338,14 @@ void AtkNPCDieState::Enter(std::shared_ptr<GameObject> npc)
 	}
 }
 
-void AtkNPCDieState::Execute(std::shared_ptr<GameObject> npc)
+void AtkNPCDieState::Execute(const std::shared_ptr<GameObject>& npc)
 {
-	endtime = std::chrono::system_clock::now();
-	auto exectime = endtime - starttime;
+	auto endtime = std::chrono::system_clock::now();
+	auto exectime = endtime - npc->m_fsmCtx.stateEnterTime;
 	auto exec_ms = std::chrono::duration_cast<std::chrono::milliseconds>(exectime).count();
-	if (exec_ms > duration_time) {
+	if (exec_ms > npc->m_fsmCtx.stateDurationMs) {
 		// 상태 전환
-		npc->FSM_manager->ChangeState(std::make_shared<AtkNPCRespawnState>());
+		npc->FSM_manager->ChangeState(AtkNPCRespawnState::Instance());
 		return;
 	}
 	if (npc->GetType() == OBJECT_TYPE::OB_BAT && npc->fly_height > 0.f) {
@@ -356,18 +355,18 @@ void AtkNPCDieState::Execute(std::shared_ptr<GameObject> npc)
 	}
 }
 
-void AtkNPCDieState::Exit(std::shared_ptr<GameObject> npc)
+void AtkNPCDieState::Exit(const std::shared_ptr<GameObject>& npc)
 {
 }
 
 
 //=====================================Respawn=================================================
 
-void AtkNPCRespawnState::Enter(std::shared_ptr<GameObject> npc)
+void AtkNPCRespawnState::Enter(const std::shared_ptr<GameObject>& npc)
 {
 	npc->is_alive = false;
-	starttime = std::chrono::system_clock::now();
-	duration_time = 20 * 1000; // 20초간 안보이도록
+	npc->m_fsmCtx.stateEnterTime = std::chrono::system_clock::now();
+	npc->m_fsmCtx.stateDurationMs = 20 * 1000; // 20초간 안보이도록
 
 
 	std::vector<tree_obj*> results;
@@ -384,12 +383,12 @@ void AtkNPCRespawnState::Enter(std::shared_ptr<GameObject> npc)
 	}
 }
 
-void AtkNPCRespawnState::Execute(std::shared_ptr<GameObject> npc)
+void AtkNPCRespawnState::Execute(const std::shared_ptr<GameObject>& npc)
 {
-	endtime = std::chrono::system_clock::now();
-	auto exectime = endtime - starttime;
+	auto endtime = std::chrono::system_clock::now();
+	auto exectime = endtime - npc->m_fsmCtx.stateEnterTime;
 	auto exec_ms = std::chrono::duration_cast<std::chrono::milliseconds>(exectime).count();
-	if (exec_ms > duration_time) {
+	if (exec_ms > npc->m_fsmCtx.stateDurationMs) {
 		// 랜덤 위치에 생성
 		npc->Sethp(20);
 
@@ -407,12 +406,12 @@ void AtkNPCRespawnState::Execute(std::shared_ptr<GameObject> npc)
 		Octree::GameObjectOctree.update(npc->GetID(), npc->GetPosition());
 
 		// 상태 전환
-		npc->FSM_manager->ChangeState(std::make_shared<AtkNPCStandingState>());
+		npc->FSM_manager->ChangeState(AtkNPCStandingState::Instance());
 		return;
 	}
 }
 
-void AtkNPCRespawnState::Exit(std::shared_ptr<GameObject> npc)
+void AtkNPCRespawnState::Exit(const std::shared_ptr<GameObject>& npc)
 {
 	npc->is_alive = true;
 
@@ -424,10 +423,10 @@ void AtkNPCRespawnState::Exit(std::shared_ptr<GameObject> npc)
 //=====================================Attack=================================================
 
 
-void AtkNPCAttackState::Enter(std::shared_ptr<GameObject> npc)
+void AtkNPCAttackState::Enter(const std::shared_ptr<GameObject>& npc)
 {
-	starttime = std::chrono::system_clock::now();
-	duration_time = 1.f * 1000; // 1초간
+	npc->m_fsmCtx.stateEnterTime = std::chrono::system_clock::now();
+	npc->m_fsmCtx.stateDurationMs = 1.f * 1000; // 1초간
 	npc->SetAnimationType(ANIMATION_TYPE::ATTACK);
 	std::vector<tree_obj*> results;
 	tree_obj n_obj{npc->GetID(), npc->GetPosition()};
@@ -441,14 +440,14 @@ void AtkNPCAttackState::Enter(std::shared_ptr<GameObject> npc)
 	}
 }
 
-void AtkNPCAttackState::Execute(std::shared_ptr<GameObject> npc)
+void AtkNPCAttackState::Execute(const std::shared_ptr<GameObject>& npc)
 {
 	// 공격모션 시간 체크 후 다시 추적하게
-	endtime = std::chrono::system_clock::now();
-	auto exectime = endtime - starttime;
+	auto endtime = std::chrono::system_clock::now();
+	auto exectime = endtime - npc->m_fsmCtx.stateEnterTime;
 	auto exec_ms = std::chrono::duration_cast<std::chrono::milliseconds>(exectime).count();
-	if (exec_ms > duration_time) {
-		npc->FSM_manager->ChangeState(std::make_shared<AtkNPCChaseState>());
+	if (exec_ms > npc->m_fsmCtx.stateDurationMs) {
+		npc->FSM_manager->ChangeState(AtkNPCChaseState::Instance());
 		return;
 	}
 	if (exec_ms < 0.25 * 1000.f) {
@@ -481,18 +480,19 @@ void AtkNPCAttackState::Execute(std::shared_ptr<GameObject> npc)
 	}
 }
 
-void AtkNPCAttackState::Exit(std::shared_ptr<GameObject> npc)
+void AtkNPCAttackState::Exit(const std::shared_ptr<GameObject>& npc)
 {
-	npc->FSM_manager->SetAtkDelay();
+	npc->m_fsmCtx.atkDelay = true;
+	npc->m_fsmCtx.atkDelayStart = std::chrono::system_clock::now();
 }
 
 //=====================================Hit(맞았을 경우)=================================================
 
-void AtkNPCHitState::Enter(std::shared_ptr<GameObject> npc)
+void AtkNPCHitState::Enter(const std::shared_ptr<GameObject>& npc)
 {
 	npc->SetAnimationType(ANIMATION_TYPE::HIT);
-	starttime = std::chrono::system_clock::now();
-	duration_time = 1.0f * 1000; // 1초간 진행
+	npc->m_fsmCtx.stateEnterTime = std::chrono::system_clock::now();
+	npc->m_fsmCtx.stateDurationMs = 1.0f * 1000; // 1초간 진행
 	std::vector<tree_obj*> results;
 	tree_obj n_obj{npc->GetID(), npc->GetPosition()};
 	Octree::PlayerOctree.query(n_obj, oct_distance, results);
@@ -505,13 +505,13 @@ void AtkNPCHitState::Enter(std::shared_ptr<GameObject> npc)
 	}
 }
 
-void AtkNPCHitState::Execute(std::shared_ptr<GameObject> npc)
+void AtkNPCHitState::Execute(const std::shared_ptr<GameObject>& npc)
 {
-	endtime = std::chrono::system_clock::now();
-	auto exectime = endtime - starttime;
+	auto endtime = std::chrono::system_clock::now();
+	auto exectime = endtime - npc->m_fsmCtx.stateEnterTime;
 	auto exec_ms = std::chrono::duration_cast<std::chrono::milliseconds>(exectime).count();
-	if (exec_ms > duration_time) {
-		npc->FSM_manager->ChangeState(std::make_shared<AtkNPCChaseState>());
+	if (exec_ms > npc->m_fsmCtx.stateDurationMs) {
+		npc->FSM_manager->ChangeState(AtkNPCChaseState::Instance());
 		return;
 	}
 	if (exec_ms < 0.25 * 1000.f) {
@@ -533,23 +533,23 @@ void AtkNPCHitState::Execute(std::shared_ptr<GameObject> npc)
 	}
 }
 
-void AtkNPCHitState::Exit(std::shared_ptr<GameObject> npc)
+void AtkNPCHitState::Exit(const std::shared_ptr<GameObject>& npc)
 {
 }
 
 
-void AtkNPCGlobalState::Enter(std::shared_ptr<GameObject> npc)
+void AtkNPCGlobalState::Enter(const std::shared_ptr<GameObject>& npc)
 {
 }
 
-void AtkNPCGlobalState::Execute(std::shared_ptr<GameObject> npc)
+void AtkNPCGlobalState::Execute(const std::shared_ptr<GameObject>& npc)
 {
-	if (is_invincible) {
+	if (npc->m_fsmCtx.invincible) {
 		auto nowtime = std::chrono::system_clock::now();
-		auto exectime = nowtime - starttime;
+		auto exectime = nowtime - npc->m_fsmCtx.invincibleStart;
 		auto exec_ms = std::chrono::duration_cast<std::chrono::milliseconds>(exectime).count();
-		if (exec_ms > sustainment_time) {
-			is_invincible = false;
+		if (exec_ms > npc->m_fsmCtx.invincibleDurationMs) {
+			npc->m_fsmCtx.invincible = false;
 			std::vector<tree_obj*> results;
 			tree_obj n_obj{npc->GetID(), npc->GetPosition()};
 			Octree::PlayerOctree.query(n_obj, oct_distance, results);
@@ -558,21 +558,21 @@ void AtkNPCGlobalState::Execute(std::shared_ptr<GameObject> npc)
 				for (auto& cl : PlayerClient::PlayerClients) {
 					if (cl.second->state != PC_INGAME) continue;
 					if (cl.second->m_id != p_obj->u_id) continue;
-					cl.second->SendInvinciblePacket(npc->GetID(), is_invincible);
+					cl.second->SendInvinciblePacket(npc->GetID(), npc->m_fsmCtx.invincible);
 				}
 			}
 		}
 	}
-	if (is_atkdelay) {
+	if (npc->m_fsmCtx.atkDelay) {
 		auto nowtime = std::chrono::system_clock::now();
-		auto exectime = nowtime - atk_delay_starttime;
+		auto exectime = nowtime - npc->m_fsmCtx.atkDelayStart;
 		auto exec_ms = std::chrono::duration_cast<std::chrono::milliseconds>(exectime).count();
 		if (exec_ms > 1.f * 1000) {
-			is_atkdelay = false;
+			npc->m_fsmCtx.atkDelay = false;
 		}
 	}
 }
 
-void AtkNPCGlobalState::Exit(std::shared_ptr<GameObject> npc)
+void AtkNPCGlobalState::Exit(const std::shared_ptr<GameObject>& npc)
 {
 }

@@ -353,30 +353,30 @@ void ProcessPacket(shared_ptr<PlayerClient>& client, char* packet)
 			if (obj->FSM_manager) {
 				obj->SetInvincible();
 				if (obj->Gethp() <= 0)
-					obj->ChangeState(std::make_shared<NonAtkNPCDieState>());
+					obj->ChangeState(NonAtkNPCDieState::Instance());
 				else
-					obj->ChangeState(std::make_shared<NonAtkNPCRunAwayState>());
+					obj->ChangeState(NonAtkNPCRunAwayState::Instance());
 			}
 		} else if (obj->GetType() == OBJECT_TYPE::OB_GOLEM) {
 			if (obj->FSM_manager) {
 				auto bosshp = obj->Gethp();
 				if (bosshp <= 0) {
 					obj->SetInvincible();
-					obj->ChangeState(std::make_shared<BossDieState>());
+					obj->ChangeState(BossDieState::Instance());
 				} else if (bosshp <= (obj->_fMaxHp / 2) && !obj->_bUsedSpecialAttack) {
 					obj->SetInvincible(5.332f * 1000);
 					obj->_bUsedSpecialAttack = true; // 플래그를 true로 설정
-					obj->ChangeState(std::make_shared<BossSpecialAttackStartState>()); // 별도의 특수 공격 상태
+					obj->ChangeState(BossSpecialAttackStartState::Instance()); // 별도의 특수 공격 상태
 				} else if (bosshp <= obj->_fMaxHp * 0.33f && !obj->_bTriggered33Percent) {
 					obj->SetInvincible();
 					obj->_bTriggered33Percent = true; // 플래그를 true로 설정해 다시는 실행되지 않도록 함
-					obj->ChangeState(std::make_shared<BossHitState>());
+					obj->ChangeState(BossHitState::Instance());
 				}
 				// 3. 체력 66% 이하로 '처음' 떨어졌을 때
 				else if (bosshp <= obj->_fMaxHp * 0.66f && !obj->_bTriggered66Percent) {
 					obj->SetInvincible();
 					obj->_bTriggered66Percent = true; // 플래그를 true로 설정
-					obj->ChangeState(std::make_shared<BossHitState>());
+					obj->ChangeState(BossHitState::Instance());
 				} else
 					obj->SetInvincible();
 			}
@@ -384,9 +384,9 @@ void ProcessPacket(shared_ptr<PlayerClient>& client, char* packet)
 			if (obj->FSM_manager) {
 				obj->SetInvincible();
 				if (obj->Gethp() <= 0)
-					obj->ChangeState(std::make_shared<AtkNPCDieState>());
+					obj->ChangeState(AtkNPCDieState::Instance());
 				else
-					obj->ChangeState(std::make_shared<AtkNPCHitState>());
+					obj->ChangeState(AtkNPCHitState::Instance());
 			}
 		}
 		for (auto& cl : PlayerClient::PlayerClients) {
@@ -1054,8 +1054,8 @@ void BuildObject()
 		obj->SetAnimationType(ANIMATION_TYPE::IDLE);
 
 		obj->InitFSM();
-		obj->FSM_manager->SetCurrentState(std::make_shared<NonAtkNPCStandingState>());
-		obj->FSM_manager->SetGlobalState(std::make_shared<NonAtkNPCGlobalState>());
+		obj->FSM_manager->SetCurrentState(NonAtkNPCStandingState::Instance());
+		obj->FSM_manager->SetGlobalState(NonAtkNPCGlobalState::Instance());
 
 		GameObject::gameObjects.push_back(obj);
 
@@ -1077,8 +1077,8 @@ void BuildObject()
 		obj->SetAnimationType(ANIMATION_TYPE::IDLE);
 
 		obj->InitFSM();
-		obj->FSM_manager->SetCurrentState(std::make_shared<NonAtkNPCStandingState>());
-		obj->FSM_manager->SetGlobalState(std::make_shared<NonAtkNPCGlobalState>());
+		obj->FSM_manager->SetCurrentState(NonAtkNPCStandingState::Instance());
+		obj->FSM_manager->SetGlobalState(NonAtkNPCGlobalState::Instance());
 
 		GameObject::gameObjects.push_back(obj);
 
@@ -1101,8 +1101,8 @@ void BuildObject()
 		obj->SetAnimationType(ANIMATION_TYPE::IDLE);
 
 		obj->InitFSM();
-		obj->FSM_manager->SetCurrentState(std::make_shared<AtkNPCStandingState>());
-		obj->FSM_manager->SetGlobalState(std::make_shared<AtkNPCGlobalState>());
+		obj->FSM_manager->SetCurrentState(AtkNPCStandingState::Instance());
+		obj->FSM_manager->SetGlobalState(AtkNPCGlobalState::Instance());
 
 		GameObject::gameObjects.push_back(obj);
 
@@ -1124,8 +1124,8 @@ void BuildObject()
 		obj->SetAnimationType(ANIMATION_TYPE::IDLE);
 
 		obj->InitFSM();
-		obj->FSM_manager->SetCurrentState(std::make_shared<AtkNPCStandingState>());
-		obj->FSM_manager->SetGlobalState(std::make_shared<AtkNPCGlobalState>());
+		obj->FSM_manager->SetCurrentState(AtkNPCStandingState::Instance());
+		obj->FSM_manager->SetGlobalState(AtkNPCGlobalState::Instance());
 
 		GameObject::gameObjects.push_back(obj);
 
@@ -1147,8 +1147,8 @@ void BuildObject()
 		obj->SetAnimationType(ANIMATION_TYPE::IDLE);
 
 		obj->InitFSM();
-		obj->FSM_manager->SetCurrentState(std::make_shared<AtkNPCStandingState>());
-		obj->FSM_manager->SetGlobalState(std::make_shared<AtkNPCGlobalState>());
+		obj->FSM_manager->SetCurrentState(AtkNPCStandingState::Instance());
+		obj->FSM_manager->SetGlobalState(AtkNPCGlobalState::Instance());
 
 		GameObject::gameObjects.push_back(obj);
 
@@ -1170,8 +1170,8 @@ void BuildObject()
 		obj->SetAnimationType(ANIMATION_TYPE::IDLE);
 
 		obj->InitFSM();
-		obj->FSM_manager->SetCurrentState(std::make_shared<AtkNPCStandingState>());
-		obj->FSM_manager->SetGlobalState(std::make_shared<AtkNPCGlobalState>());
+		obj->FSM_manager->SetCurrentState(AtkNPCStandingState::Instance());
+		obj->FSM_manager->SetGlobalState(AtkNPCGlobalState::Instance());
 
 		GameObject::gameObjects.push_back(obj);
 
@@ -1195,8 +1195,8 @@ void BuildObject()
 		obj->SetAnimationType(ANIMATION_TYPE::IDLE);
 
 		obj->InitFSM();
-		obj->FSM_manager->SetCurrentState(std::make_shared<AtkNPCStandingState>());
-		obj->FSM_manager->SetGlobalState(std::make_shared<AtkNPCGlobalState>());
+		obj->FSM_manager->SetCurrentState(AtkNPCStandingState::Instance());
+		obj->FSM_manager->SetGlobalState(AtkNPCGlobalState::Instance());
 
 		GameObject::gameObjects.push_back(obj);
 
@@ -1219,8 +1219,8 @@ void BuildObject()
 		obj->SetAnimationType(ANIMATION_TYPE::IDLE);
 
 		obj->InitFSM();
-		obj->FSM_manager->SetCurrentState(std::make_shared<BossStandingState>());
-		obj->FSM_manager->SetGlobalState(std::make_shared<BossGlobalState>());
+		obj->FSM_manager->SetCurrentState(BossStandingState::Instance());
+		obj->FSM_manager->SetGlobalState(BossGlobalState::Instance());
 
 		GameObject::gameObjects.push_back(obj);
 
