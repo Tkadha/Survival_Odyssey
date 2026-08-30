@@ -43,7 +43,7 @@ Socket::~Socket()
 
 void Socket::Bind(const Endpoint& endpoint)
 {
-	if (bind(m_fd, (sockaddr*)&endpoint.m_ipv4Endpoint, sizeof(endpoint.m_ipv4Endpoint)) < 0) {
+	if (bind(m_fd, reinterpret_cast<const sockaddr*>(&endpoint.m_ipv4Endpoint), sizeof(endpoint.m_ipv4Endpoint)) < 0) {
 		stringstream ss;
 		ss << "bind failed:" << GetLastErrorAsString();
 		throw Exception(ss.str().c_str());
@@ -52,7 +52,7 @@ void Socket::Bind(const Endpoint& endpoint)
 
 void Socket::Connect(const Endpoint& endpoint)
 {
-	if (connect(m_fd, (sockaddr*)&endpoint.m_ipv4Endpoint, sizeof(endpoint.m_ipv4Endpoint)) < 0) {
+	if (connect(m_fd, reinterpret_cast<const sockaddr*>(&endpoint.m_ipv4Endpoint), sizeof(endpoint.m_ipv4Endpoint)) < 0) {
 		stringstream ss;
 		ss << "connect failed:" << GetLastErrorAsString();
 		throw Exception(ss.str().c_str());
@@ -138,20 +138,20 @@ int Socket::UpdateAcceptContext(Socket& listenSocket)
 						 0,
 						 50,
 						 50,
-						 (sockaddr**)&ignore1,
+						 reinterpret_cast<sockaddr**>(&ignore1),
 						 &ignore2,
-						 (sockaddr**)&ignore3,
+						 reinterpret_cast<sockaddr**>(&ignore3),
 						 &ignore4);
 
 	return setsockopt(m_fd, SOL_SOCKET, SO_UPDATE_ACCEPT_CONTEXT,
-					  (char*)&listenSocket.m_fd, sizeof(listenSocket.m_fd));
+					  reinterpret_cast<const char*>(&listenSocket.m_fd), sizeof(listenSocket.m_fd));
 }
 
 Endpoint Socket::GetPeerAddr()
 {
 	Endpoint ret;
 	socklen_t retLength = sizeof(ret.m_ipv4Endpoint);
-	if (::getpeername(m_fd, (sockaddr*)&ret.m_ipv4Endpoint, &retLength) < 0) {
+	if (::getpeername(m_fd, reinterpret_cast<sockaddr*>(&ret.m_ipv4Endpoint), &retLength) < 0) {
 		stringstream ss;
 		ss << "getPeerAddr failed:" << GetLastErrorAsString();
 		throw Exception(ss.str().c_str());
@@ -167,7 +167,7 @@ Endpoint Socket::GetPeerAddr()
 
 int Socket::Receive()
 {
-	return (int)recv(m_fd, m_recv_over.send_buf, BUFSIZE, 0);
+	return static_cast<int>(recv(m_fd, m_recv_over.send_buf, BUFSIZE, 0));
 }
 int Socket::ReceiveOverlapped()
 {
@@ -203,7 +203,7 @@ std::string GetLastErrorAsString()
 
 	LPSTR messageBuffer = nullptr;
 	size_t size = FormatMessageA(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
-								 NULL, errorMessageID, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), (LPSTR)&messageBuffer, 0, NULL);
+								 NULL, errorMessageID, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), reinterpret_cast<LPSTR>(&messageBuffer), 0, NULL);
 
 	std::string message(messageBuffer, size);
 

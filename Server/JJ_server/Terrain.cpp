@@ -44,15 +44,15 @@ float Terrain::GetHeight(float fx, float fz, bool bReverseQuad)
 	fz = fz / m_xmf3Scale.z;
 	if ((fx < 0.0f) || (fz < 0.0f) || (fx >= m_nWidth) || (fz >= m_nLength)) return (0.0f);
 
-	int x = (int)fx;
-	int z = (int)fz;
+	int x = static_cast<int>(fx);
+	int z = static_cast<int>(fz);
 	float fxPercent = fx - x;
 	float fzPercent = fz - z;
 
-	float fBottomLeft = (float)m_pHeightMapPixels[x + (z * m_nWidth)];
-	float fBottomRight = (float)m_pHeightMapPixels[(x + 1) + (z * m_nWidth)];
-	float fTopLeft = (float)m_pHeightMapPixels[x + ((z + 1) * m_nWidth)];
-	float fTopRight = (float)m_pHeightMapPixels[(x + 1) + ((z + 1) * m_nWidth)];
+	float fBottomLeft = static_cast<float>(m_pHeightMapPixels[x + (z * m_nWidth)]);
+	float fBottomRight = static_cast<float>(m_pHeightMapPixels[(x + 1) + (z * m_nWidth)]);
+	float fTopLeft = static_cast<float>(m_pHeightMapPixels[x + ((z + 1) * m_nWidth)]);
+	float fTopRight = static_cast<float>(m_pHeightMapPixels[(x + 1) + ((z + 1) * m_nWidth)]);
 #ifdef _WITH_APPROXIMATE_OPPOSITE_CORNER
 	if (bReverseQuad) {
 		if (fzPercent >= fxPercent)

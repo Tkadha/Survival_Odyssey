@@ -5,7 +5,7 @@ Timer::Timer()
 {
 	::QueryPerformanceFrequency((LARGE_INTEGER*)&m_nPerformanceFrequencyPerSec);
 	::QueryPerformanceCounter((LARGE_INTEGER*)&m_nLastPerformanceCounter);
-	m_fTimeScale = 1.0 / (double)m_nPerformanceFrequencyPerSec;
+	m_fTimeScale = 1.0 / static_cast<double>(m_nPerformanceFrequencyPerSec);
 
 	m_nBasePerformanceCounter = m_nLastPerformanceCounter;
 	m_nPausedPerformanceCounter = 0;

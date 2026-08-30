@@ -19,7 +19,7 @@ Iocp::~Iocp()
 // IOCP에 socket을 추가합니다.
 void Iocp::Add(Socket& socket, void* userPtr)
 {
-	if (!CreateIoCompletionPort(reinterpret_cast<HANDLE>(socket.m_fd), m_hIocp, (ULONG_PTR)userPtr, m_threadCount))
+	if (!CreateIoCompletionPort(reinterpret_cast<HANDLE>(socket.m_fd), m_hIocp, reinterpret_cast<ULONG_PTR>(userPtr), m_threadCount))
 		throw Exception("IOCP add failed!");
 }
 

@@ -97,7 +97,7 @@ void PlayerClient::Update(float fTimeElapsed)
 	if (Terrain::terrain) {
 		XMFLOAT3 xmf3Scale = Terrain::terrain->GetScale();
 		XMFLOAT3 xmf3PlayerPosition = GetPosition();
-		int z = (int)(xmf3PlayerPosition.z / xmf3Scale.z);
+		int z = static_cast<int>(xmf3PlayerPosition.z / xmf3Scale.z);
 		bool bReverseQuad = ((z % 2) != 0);
 		float fHeight = Terrain::terrain->GetHeight(xmf3PlayerPosition.x, xmf3PlayerPosition.z, bReverseQuad) + 0.0f;
 		if (xmf3PlayerPosition.y < fHeight) {
@@ -468,7 +468,7 @@ void PlayerClient::Update_test(float deltaTime)
 
 	XMFLOAT3 xmf3Scale = Terrain::terrain->GetScale();
 	XMFLOAT3 xmf3PlayerPosition = moving_pos;
-	int z = (int)(xmf3PlayerPosition.z / xmf3Scale.z);
+	int z = static_cast<int>(xmf3PlayerPosition.z / xmf3Scale.z);
 	bool bReverseQuad = ((z % 2) != 0);
 	FLOAT move_pos_y = Terrain::terrain->GetHeight(xmf3PlayerPosition.x, xmf3PlayerPosition.z, bReverseQuad) + 0.0f;
 	if (move_pos_y < MIN_HEIGHT) {
@@ -486,7 +486,7 @@ bool PlayerClient::CheckIfGrounded()
 	if (this->state != PC_INGAME) return false;
 	XMFLOAT3 xmf3Scale = Terrain::terrain->GetScale();
 	XMFLOAT3 xmf3PlayerPosition = GetPosition();
-	int z = (int)(xmf3PlayerPosition.z / xmf3Scale.z);
+	int z = static_cast<int>(xmf3PlayerPosition.z / xmf3Scale.z);
 	bool bReverseQuad = ((z % 2) != 0);
 	float fHeight = Terrain::terrain->GetHeight(xmf3PlayerPosition.x, xmf3PlayerPosition.z, bReverseQuad) + 0.0f;
 	if (xmf3PlayerPosition.y <= fHeight) return true;
@@ -499,7 +499,7 @@ void PlayerClient::SnapToGround()
 	if (this->state != PC_INGAME) return;
 	XMFLOAT3 xmf3Scale = Terrain::terrain->GetScale();
 	XMFLOAT3 xmf3PlayerPosition = GetPosition();
-	int z = (int)(xmf3PlayerPosition.z / xmf3Scale.z);
+	int z = static_cast<int>(xmf3PlayerPosition.z / xmf3Scale.z);
 	bool bReverseQuad = ((z % 2) != 0);
 	float fHeight = Terrain::terrain->GetHeight(xmf3PlayerPosition.x, xmf3PlayerPosition.z, bReverseQuad) + 0.0f;
 

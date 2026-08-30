@@ -108,14 +108,14 @@ void worker_thread()
 			// 받은 이벤트 각각을 처리합니다.
 			for (int i = 0; i < readEvents.m_eventCount; i++) {
 				auto& readEvent = readEvents.m_events[i];
-				auto p_read_over = (OVER_EXP*)readEvent.lpOverlapped;
+				auto p_read_over = reinterpret_cast<OVER_EXP*>(readEvent.lpOverlapped);
 
 				if (readEvent.lpCompletionKey == 0 && p_read_over == nullptr) {
 					// 스레드 종료
 					return;
 				}
 
-				if (readEvent.lpCompletionKey == (ULONG_PTR)g_l_socket.get()) // 리슨소켓이면
+				if (readEvent.lpCompletionKey == reinterpret_cast<ULONG_PTR>(g_l_socket.get())) // 리슨소켓이면
 				{
 					ProcessAccept();
 				} else if (COMP_TYPE::OP_SEND == p_read_over->comp_type) {
@@ -137,7 +137,7 @@ void worker_thread()
 						continue;
 					}
 					shared_ptr<PlayerClient> Client;
-					auto it = PlayerClient::PlayerClients.find((PlayerClient*)readEvent.lpCompletionKey);
+					auto it = PlayerClient::PlayerClients.find(reinterpret_cast<PlayerClient*>(readEvent.lpCompletionKey));
 					if (it != PlayerClient::PlayerClients.end()) {
 						Client = it->second;
 					} else {
@@ -215,7 +215,7 @@ void worker_thread()
 				{
 					// 처리할 클라이언트
 					shared_ptr<PlayerClient> remoteClient;
-					remoteClient = PlayerClient::PlayerClients[(PlayerClient*)readEvent.lpCompletionKey];
+					remoteClient = PlayerClient::PlayerClients[reinterpret_cast<PlayerClient*>(readEvent.lpCompletionKey)];
 					if (remoteClient) {
 						// 이미 수신된 상태이다. 수신 완료된 것을 그냥 꺼내 쓰자.
 						remoteClient->tcpConnection.m_isReadOverlapped = false;
@@ -819,7 +819,7 @@ int main(int argc, char* argv[])
 					OVER_EXP* p_over = new OVER_EXP();
 					p_over->comp_type = COMP_TYPE::OP_FSM_UPDATE;
 					p_over->obj_id = obj->GetID();
-					PostQueuedCompletionStatus(iocp.m_hIocp, 0, (ULONG_PTR)obj.get(), &p_over->over);
+					PostQueuedCompletionStatus(iocp.m_hIocp, 0, reinterpret_cast<ULONG_PTR>(obj.get()), &p_over->over);
 				}
 			}
 			{
@@ -829,7 +829,7 @@ int main(int argc, char* argv[])
 					if (client->state != PC_INGAME) continue;
 					OVER_EXP* p_over = new OVER_EXP();
 					p_over->comp_type = COMP_TYPE::OP_PLAYER_UPDATE;
-					PostQueuedCompletionStatus(iocp.m_hIocp, 0, (ULONG_PTR)client.get(), &p_over->over);
+					PostQueuedCompletionStatus(iocp.m_hIocp, 0, reinterpret_cast<ULONG_PTR>(client.get()), &p_over->over);
 				}
 			}
 		}
